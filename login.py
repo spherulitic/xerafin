@@ -1,0 +1,41 @@
+#!/usr/bin/python
+import MySQLdb as mysql
+import sys, json
+import time
+
+# Called via AJAX when a user logs in
+# Accepts a Facebook token and updates last login date
+# If a user is new, adds them to login table and creates an empty cardbox db, default prefs, etc
+
+# JSON fields: name, photo (url), id, token
+
+print "Content-type: application/json\n\n"
+params = json.load(sys.stdin)
+result = {"status": "success"}
+userid = params["id"]
+token = params["token"]
+name = params["name"]
+photo = params["photo"]
+now = int(time.time())
+
+with mysql.connect("localhost", "***REMOVED***", "***REMOVED***", "***REMOVED***") as con:
+	if con is None:
+		result["status"] = "DB connection failure"
+	else:
+	  try:
+		command = "delete from login where userid = %s"
+		con.execute(command, userid)
+		command = "insert into login (userid, last_login, last_active, token, name, photo) values (%s, %s, %s, %s, %s, %s)"
+                con.execute(command, (userid, now, now, token, name, photo))
+	# Check if they have user preferences; if not insert defaults
+		command = "select count(*) from user_prefs where userid = %s"
+                con.execute(command, userid)
+		if con.fetchone()[0] == 0:
+                  command = "insert into user_prefs (userid, studyOrderIndex, closet, newWordsAtOnce, reschedHrs, showNumSolutions, cb0max) values (%s, 0, 20, 4, 24, 'Y', 200)"
+                  con.execute(command, userid)
+
+	  except mysql.Error, e: 
+		result["status"] = "MySQL error %d %s" % (e.args[0], e.args[1])
+		
+print json.dumps(result)
+		
