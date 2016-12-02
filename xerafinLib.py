@@ -1,0 +1,620 @@
+#!/usr/bin/python
+
+# TODO: blank cardbox quizzes
+
+import MySQLdb as mysql
+import sqlite3 as lite
+import sys
+import time
+import math
+import random
+import string
+import os
+import itertools
+import dawg_python as dawg
+
+# 	studyOrderIndex
+#	closet
+#	newWordsAtOnce
+#	reschedHrs
+#	showNumSolutions
+
+# DIFFICULTY column in QUESTIONS table being used for status
+# -1 : Immediately available to be sent by getQuestions()
+# 0 : Unlocked
+# 1 : Locked by Karatasi
+# 2 : In the backlog
+# 3 : Locked
+# 4 : In the future, not eligible to be completed now
+
+DB_HOST = "localhost"
+DB_SID = "slipkin_clipe"
+DB_PWD = "xev1ous#"
+DB_SCHEMA = "slipkin_xerafin"
+
+cardboxDBPath = "cardboxes"
+DAWG_PATH = "alpha.dawg"
+
+def getDBFile(userid):
+
+  DBFile = os.path.join(sys.path[0], cardboxDBPath, userid + ".db")
+  return DBFile
+
+def getDBCur(userid):
+  return lite.connect(getDBFile(userid)).cursor()
+  
+
+def getPrefs (prefName, userid):
+  with mysql.connect(DB_HOST, DB_SID, DB_PWD, DB_SCHEMA) as con:
+    command = "select " + prefName + " from user_prefs where userid = %s" 
+    con.execute(command, userid)
+    return con.fetchone()[0]
+
+def setPrefs2(prefName, userid, prefValue):
+  with mysql.connect(DB_HOST, DB_SID, DB_PWD, DB_SCHEMA) as con:
+    command = "update user_prefs set " + prefName + " = %s where userid = %s"
+    try:
+      con.execute(command, (prefValue, userid))
+    except:
+      return "Error updating user_prefs"
+  return "success"
+  
+def setPrefs (userid,
+		prefName = None,
+		prefValue = None,
+		studyOrderIndex = None,
+		closet = None,
+		newWordsAtOnce = None,
+		reschedHrs = None,
+		showNumSolutions = None):
+
+# TODO: check to be sure the inputs are correct data type, etc
+  with mysql.connect(DB_HOST, DB_SID, DB_PWD, DB_SCHEMA) as con:
+    try:
+      if con is None:
+        return "Error: DB Conn Failed Updating user_prefs"
+      if prefName is not None:
+        command = "update user_prefs set %s = %s where userid = %s"
+        command.execute(command, (prefName, prefValue, userid))
+      else:
+        command = "select studyOrderIndex, closet, newWordsAtOnce, reschedHrs, showNumSolutions from user_prefs where userid = %s" 
+        con.execute(command, userid)
+        newPrefs = list(con.fetchone())
+        if studyOrderIndex is not None:
+          newPrefs[0] = studyOrderIndex
+        if closet is not None:
+          newPrefs[1] = closet
+        if newWordsAtOnce is not None:
+          newPrefs[2] = newWordsAtOnce
+        if reschedHrs is not None:
+          newPrefs[3] = reschedHrs
+        if showNumSolutions is not None:
+          newPrefs[4] = showNumSolutions
+        command = "update user_prefs set studyOrderIndex = %s, closet = %s, newWordsAtOnce = %s, reschedHrs = %s, showNumSolutions = %s where userid = %s"
+        con.execute(command, tuple(newPrefs) + (userid,))
+      return "Success updating user preferences"
+    except mysql.Error, e:
+      return "MySQL error updating user_prefs %d %s" % (e.args[0], e.args[1])
+
+def getFromStudyOrder (numNeeded, userid, cur):
+  result = [ ]
+  studyOrderIndex = getPrefs("studyOrderIndex", userid)
+  if numNeeded < 1:
+    return result
+  with mysql.connect(DB_HOST, DB_SID, DB_PWD, DB_SCHEMA) as mysqlcon:
+    if mysqlcon is None:
+      return result
+    cur.execute("select question from questions where next_scheduled is not null union all select question from next_added")
+    allQuestions = set([x[0] for x in cur.fetchall()])
+    while len(result) < numNeeded:
+      mysqlcon.execute("select alphagram, studyOrderIndex from studyOrder where studyOrderIndex between %s and %s order by studyOrderIndex", (studyOrderIndex, studyOrderIndex + 100))
+      allStudyOrder = [row for row in mysqlcon.fetchall() if row[0] not in allQuestions]
+      for row in allStudyOrder:
+        result.append(row[0])
+        studyOrderIndex = row[1]+1
+        if len(result) >= numNeeded:
+          break
+      if len(allStudyOrder) == 0:
+        studyOrderIndex = studyOrderIndex + 101
+#      allStudyOrder = mysqlcon.fetchall()
+#      studyOrder = list(set([x[0] for x in allStudyOrder]) - set(allQuestions))
+#      try:
+#        studyOrderIndex = min([x[1] for x in allStudyOrder if x[0] in studyOrder])
+#      except:
+#        studyOrderIndex = 0
+#    command = "select alphagram from studyOrder where studyOrderIndex = %s"
+#    while len(result) < numNeeded:
+#      mysqlcon.execute(command, studyOrderIndex)
+#      a = mysqlcon.fetchone()
+#      if a is None:
+#        return result
+#      if a[0] in allQuestions:
+#        pass
+#      else:
+#        result.append(a[0])
+#      studyOrderIndex = studyOrderIndex + 1
+  setPrefs(userid=userid, studyOrderIndex=studyOrderIndex)
+  return result
+	
+def getCardboxScore (userid):
+
+  try:
+    with lite.connect(getDBFile(userid)) as con:
+      cur = con.cursor()
+      cur.execute("select sum(cardbox) from questions where next_scheduled is not null")
+      x = cur.fetchone()[0]
+      if x is None:
+        return "0"
+      return str(x)
+#  except lite.Error as e: 
+#      return "sql error %s" % e.message	
+#  except Exception as e:
+#      return "non-sql error " + str(e)
+  except:
+    return "0"
+
+def getCurrentDue (userid):
+  '''
+  Returns a dict: {cardbox: numberDue, cardbox: numberDue, etc }
+  '''
+  now = int(time.time())
+  result = { }
+  try:
+    with lite.connect(getDBFile(userid)) as con :
+      cur = con.cursor()
+      cur.execute("select cardbox, count(*) from questions where next_scheduled < %d and cardbox is not null group by cardbox" % now)
+      for row in cur.fetchall():
+        result[row[0]] = row[1]
+      return result			
+  except lite.Error as e: 
+#      return  "sql error %s" % e.message	
+      return {0: -1}
+  except Exception as e:
+#      return "non-sql error " + str(e)
+      return {0: -2}
+
+def getTotalByCardbox(userid):
+  '''
+  Returns a dict: {cardbox: numberDue, cardbox: numberDue, etc }
+  '''
+  result = { }
+  try:
+    with lite.connect(getDBFile(userid)) as con :
+      cur = con.cursor()
+      command = "select cardbox, count(*) from questions where next_scheduled is not null group by cardbox"
+      cur.execute(command)
+      for row in cur.fetchall():
+        result[row[0]] = row[1]
+      return result			
+  except lite.Error as e: 
+#      return  "sql error %s" % e.message	
+      return {0: -1}
+  except Exception as e:
+#      return "non-sql error " + str(e)
+      return {0: -2}
+  
+def getNext (newCardbox = 0) :
+
+  '''
+  If you are putting a word in cardbox newCardbox now,
+  returns the time (in Unix Epoch format) it needs to be reviewed
+  '''
+  now = int(time.time())
+  day = 24*3600	# number of seconds in a day
+
+  if newCardbox > 10 :
+    newCardbox = 10
+
+  random.seed()
+  offset=random.randrange(day)
+
+# List of lists 
+# cardbox x is rescheduled for a time [x,y] 
+# between x and x+y days in the future
+  r = [ [.5,1], [3,2], [5,4], [11,6], [16,10], [27,14], [50,20], [80,30], [130,40], [300,60], [430,100] ]
+	
+  return int( now + (r[newCardbox][0]*day) + (r[newCardbox][1]*offset))
+
+def correct (alpha, userid, nextCardbox=None) :
+
+  now = int(time.time())
+  with lite.connect(getDBFile(userid)) as con :
+
+    cur = con.cursor()
+    if nextCardbox is None:
+      cur.execute("select cardbox from questions where question='{0}'".format(alpha))
+      currentCardbox = cur.fetchone()[0]
+      nextCardbox = currentCardbox + 1
+    cur.execute("update questions set cardbox = {0}, next_scheduled = {1}, correct=correct+1, streak=streak+1, last_correct = {2}, difficulty=4 where question = '{3}'".format(nextCardbox, getNext(nextCardbox), now, alpha))
+		
+def wrong (alpha, userid) :
+
+  with lite.connect(getDBFile(userid)) as con:
+    cur = con.cursor()
+    cur.execute("update questions set cardbox = 0, next_scheduled = {0}, incorrect = incorrect + 1, streak = 0, difficulty=4 where question = '{1}'".format(getNext(0),alpha))
+	
+def addWord (alpha, cur) :
+
+  '''
+  Add one word to cardbox zero
+  '''
+  now = int(time.time())	
+  command = "insert into questions (question, correct, incorrect, streak, last_correct, difficulty, cardbox, next_scheduled) values (?, 0, 0, 0, 0, -1, 0, ?)"
+  cur.execute("delete from questions where next_scheduled is null and question = ?", (alpha,))
+  cur.execute(command, (alpha, now))
+  dbClean(cur)
+
+def addWords (numWords, userid, cur) :
+
+  now = int(time.time())
+	
+# We assume everything in next_added and study_order is valid 
+
+  cur.execute("select count(*) from next_added")
+  nextAddedCount = cur.fetchone()[0]
+  cur.execute("delete from questions where next_scheduled is null and question in (select question from next_added limit %s)" % numWords)
+  cur.execute("insert into questions (question, correct, incorrect, streak, last_correct, difficulty, cardbox, next_scheduled) select question, 0, 0, 0, 0, 0, 0, {0} from next_added limit {1}".format(now, numWords))
+  dbClean(cur)
+  command = "insert into questions (question, correct, incorrect, streak, last_correct, difficulty, cardbox, next_scheduled) values (?, 0, 0, 0, 0, -1, 0, ?)"
+  if numWords > nextAddedCount :
+    x = getFromStudyOrder(numWords-nextAddedCount, userid, cur)
+    for alpha in x:
+      cur.execute(command, (alpha, now))
+
+def getNextAddedCount(userid):
+  with lite.connect(getDBFile(userid)) as con:
+    cur = con.cursor()
+    cur.execute("select count(*) from next_added")
+    return cur.fetchone()[0]
+
+  
+def insertIntoNextAdded(alphagrams, cur):
+  '''
+  Takes in a list of alphagrams to add to next_added
+  Checks to make sure it's a valid alphagram
+  '''
+    
+  command = "insert into next_added (question) values (?)"
+  chCommand = "select count(*) from words where alphagram = %s"
+  with mysql.connect(DB_HOST, DB_SID, DB_PWD, DB_SCHEMA) as mysqlcon:
+    if mysqlcon is not None:
+      for alpha in alphagrams:
+        mysqlcon.execute(chCommand, alpha) 
+        if mysqlcon.fetchone()[0] > 0:
+          try:
+            cur.execute(command, (alpha,))
+          except:
+            pass 
+  dbClean(cur)
+
+
+def dbClean (cur) :
+
+# Make sure that the database is in a good state. Things happen.
+
+  cur.execute("delete from next_added where question in (select question from questions where next_scheduled is not null)")
+
+		
+def closetSweep (cur, userid) :
+
+# Note this will unlock anything locked with difficulty 3
+
+  now = int(time.time())
+  closet = getPrefs("closet", userid)
+  cur.execute("update questions set difficulty = 0 where cardbox < {0} and difficulty != 1".format(closet))
+  cur.execute("update questions set difficulty = 2 where cardbox >= {0} and difficulty != 1 and next_scheduled < {1}".format(closet, now))
+
+def futureSweep(cur) :
+  """
+  Sets things to difficulty 4 which are in the future but are in a cardbox too low to be quizzed now
+  Only moves difficulty 0 -> 4
+  Note difficulty 2 and 4 are exclusive
+  """
+  now = int(time.time())
+  cur.execute("update questions set difficulty = 0 where difficulty in (4, 50)")
+  cur.execute("update questions set difficulty = 4 where next_scheduled > {0}+(cardbox*3600*24)  and difficulty = 0".format(now))	
+
+def makeWordsAvailable (userid, cur) :
+  """
+  Sets words with difficulty = -1 to be used by getQuestions
+  Used by getQuestions 
+  """
+
+  now = int(time.time())
+  reschedHrs = getPrefs("reschedHrs", userid)
+  cb0max = getPrefs("cb0max", userid)
+
+  cur.execute("select * from cleared_until")
+  clearedUntil = max([cur.fetchone()[0], now])
+  cur.execute("select * from new_words_at")
+  newWordsAt = max([cur.fetchone()[0], now + (3600 * reschedHrs)])
+  if clearedUntil < newWordsAt:
+    clearedUntil = clearedUntil + 3600
+  else: 
+    cur.execute("select count(*) from questions where cardbox = 0")
+    cb0cnt = cur.fetchone()[0]
+    cur.execute("select count(*) from questions where difficulty != 4 and next_Scheduled is not null")
+    readycnt = cur.fetchone()[0]
+    if cb0cnt < cb0max or readycnt == 0:
+      addWords(getPrefs("newWordsAtOnce", userid), userid, cur)
+    newWordsAt = newWordsAt + 3600
+  if clearedUntil > now:
+    futureSweep(cur)
+    cur.execute("update questions set difficulty = -1 where question in (select question from questions where difficulty = 2 order by cardbox, next_scheduled limit 10)")
+  cur.execute("update questions set difficulty = -1 where difficulty = 0 and next_scheduled < %s" % clearedUntil)
+  cur.execute("update new_words_at set timeStamp = {0}".format(newWordsAt))
+  cur.execute("update cleared_until set timeStamp = {0}".format(clearedUntil))
+
+def newQuiz (userid):
+  now = int(time.time())
+  with lite.connect(getDBFile(userid)) as con:
+    cur = con.cursor()
+    checkCardboxDatabase(userid)
+    futureSweep(cur)
+    closetSweep(cur, userid)
+    command = "update questions set difficulty = -1 where difficulty in (0,4) and next_scheduled < ?"
+    cur.execute(command, (now,))
+
+def getBingoFromCardbox (userid):
+  """
+  Returns a list of alphagrams that are due, length 7 or greater
+  """
+  with lite.connect(getDBFile(userid)) as con:
+    cur = con.cursor()
+    cur.execute("select question from questions where cardbox is not null and length(question) >= 7 and difficulty in (-1,0,2) order by next_scheduled limit 1")
+    result = cur.fetchone()
+    if result is not None: 
+      return result[0]
+    cur.execute("select question from next_added where length(question) >= 7 limit 1")
+    result = cur.fetchone()
+    if result is not None:
+      addWord(result[0], cur)
+      return result[0]
+    # need to get from study order
+    studyOrderIndex = getPrefs("studyOrderIndex", userid)
+    cur.execute("select question from questions where cardbox is not null and length(question) >= 7")
+    allCardboxBingos = [ x[0] for x in cur.fetchall() ]
+    with mysql.connect(DB_HOST, DB_SID, DB_PWD, DB_SCHEMA) as mysqlcon:
+      mysqlcon.execute("select alphagram from studyOrder where length(alphagram) >= 7 and studyOrderIndex > %s", studyOrderIndex)
+      for row in mysqlcon.fetchall():
+        if row[0] not in allCardboxBingos:
+          addWord(row[0], cur)
+          return row[0]
+  return None
+    
+	   
+def getQuestions (numNeeded, userid, questionLength=None) :
+  """
+  Returns a dict with a quiz of numNeeded questions in the format { "Alphagram" -> [ Word, Word, Word ] }
+  """
+  allQuestions = []
+  quiz = {}
+  with lite.connect(getDBFile(userid)) as qCon:
+    cur = qCon.cursor()
+    getCardsQry = "select question from questions where difficulty = -1 order by cardbox, next_scheduled limit ?" 
+    cur.execute(getCardsQry, (numNeeded,))
+    result = cur.fetchall()
+    while (len(result) < numNeeded):
+   #  if questionLength is None:
+      makeWordsAvailable(userid, cur)
+      cur.execute(getCardsQry, (numNeeded,))
+      result = cur.fetchall()
+   #  else:
+   #    makeWordsAvailableWithFilter(numNeeded, questionLength)
+    for row in result:
+      allQuestions.append(row[0])
+  for alpha in allQuestions:
+    quiz[alpha] = getAnagrams(alpha)
+  return quiz
+
+##def makeWordsAvailableWithFilter (numNeeded, questionLength=None):
+##  """
+##  Returns a quiz in the format { "Alphagram" -> [Word, Word, Word] }
+##  Filtered quizzes will read ahead but will not add new words (for now)
+##  Filtered quizzes ignore the backlog flag (since there's no new words)
+##  """
+##
+##  now = int(time.time())
+##  numAvailable = 0
+##  futureSweep()
+##
+##  with lite.connect(getDBFile(userid)) as con:
+##    cur = con.cursor()
+##
+##    cur.execute("update questions set difficulty = -1 where question in (select question from questions where length(question) = {0} and difficulty in (-1,0,2) order by next_scheduled limit {1})".format(questionLength, numNeeded))
+
+def getDef (word) :
+  with mysql.connect(DB_HOST, DB_SID, DB_PWD, DB_SCHEMA) as mysqlcon:
+    if mysqlcon is None:
+      return " "
+    command = "select definition from words where word = %s"
+    mysqlcon.execute(command, word)
+    try:
+      return mysqlcon.fetchone()[0]
+    except:
+      return " "
+
+def getAnagrams (alpha) :
+  '''
+  Takes in an alphagram and returns a list of words
+  '''
+  x = []
+  with mysql.connect(DB_HOST, DB_SID, DB_PWD, DB_SCHEMA) as con:
+    if con is not None:
+      con.execute("select word from words where alphagram = '{0}'".format(alpha))
+      for row in con.fetchall():
+        x.append(row[0])
+  return x
+
+#1##def getAnagramsWithHooks (alpha) :
+#1##	x = []
+#1##	with lite.connect(A_DB_PATH) as con:
+#1##		cur = con.cursor()
+#1##		cur.execute("select front_hooks, word, back_hooks from words where alphagram = '{0}'".format(alpha))
+#1##		return cur.fetchall()
+#1##
+def getHooks (word) :
+  '''
+  Takes in a word
+  Returns a tuple (front hooks, word, back hooks)
+  '''
+  with mysql.connect(DB_HOST, DB_SID, DB_PWD, DB_SCHEMA) as con:
+    if con is not None:
+      command = "select front_hooks, word, back_hooks from words where word = %s"
+      con.execute(command, word) 
+      return con.fetchone()
+    else:
+        return (None, None, None)
+
+def getAuxInfo (alpha, userid):
+  '''
+  Returns dict: {"cardbox": x, "nextScheduled": x, "correct": x, 
+			incorrect: x, difficulty: x }
+  '''
+  with lite.connect(getDBFile(userid)) as con:
+    cur = con.cursor()
+    cur.execute("select cardbox, next_scheduled, correct, incorrect, difficulty from questions where question = '{0}'".format(alpha))
+    result = cur.fetchall()
+    if len(result) > 0:
+      return {"cardbox": result[0][0], "nextScheduled": result[0][1], "correct": result[0][2], "incorrect": result[0][3], "difficulty": result[0][4] }
+    else:
+      return {}
+
+def powerset (alpha):
+  '''
+  Takes an alphagram and returns a list of all possible subsets
+    of length 4 or more
+  '''
+  return [ u''.join(a) for a in itertools.chain.from_iterable([itertools.combinations(alpha, r) for r in range(4,len(alpha)+1)])]
+
+def getSubanagrams (alpha):
+  '''
+  Takes a valid alphagram. Returns a list with all alphagrams that make 
+   valid words which are a valid subset of the alphagram
+  '''
+  d = dawg.CompletionDAWG().load('alpha.dawg')
+  result = [ ]
+  for x in powerset(alpha):
+    if x in d and x not in result:
+      result.append(x)
+  return result
+
+##def getValidBlanagrams (alpha) :
+##
+### Takes an alphagram. Returns a list with all alphagrams that make 
+### valid words with the input plus a blank
+##
+##  alphaDawg = dawg.CompletionDAWG()
+##  alphaDawg.load(DAWG_PATH)
+##  result = []
+##  for char in string.uppercase:
+##    x = u''.join(sorted(alpha + char))
+##    if x in alphaDawg:
+##      result.append(x)
+##
+##  return result
+##
+##def getBlanagramQuestion (alpha) :
+##	
+### Takes an alphagram, picks a letter at random, replaces it with a blank
+### Returns a dict with three quiz structures {alpha: [answer, answer, answer]}
+### { "Due": { ... } , "Not Due": { ... }, "Not In": { ... } 
+##
+##  validQuestions = getValidBlanagrams(alpha)
+##  due = {}
+##  notdue = {}
+##  notin = {}
+##  now = int(time.time())
+##
+##  with lite.connect(getDBFile(userid)) as con:
+##    cur = con.cursor()
+##    for question in validQuestions:
+##      answers = getAnagrams(question)
+##      cur.execute("select next_scheduled from questions where question = '{0}'".format(question))
+##      row = cur.fetchall()
+##      if len(row) == 0:
+##        notin[question] = answers
+##      elif int(row[0][0]) <= now:
+##        due[question] = answers
+##      elif int(row[0][0]) > now:
+##        notdue[question] = answers
+##
+##  return { "Due": due, "Not Due": notdue, "Not In": notin }
+
+def checkCardboxDatabase (userid):
+
+  now = int(time.time())
+  try:
+    with lite.connect(getDBFile(userid)) as con:
+      cur = con.cursor()
+      cur.execute("select name from sqlite_master where type='table'")
+      tables = [x[0] for x in cur.fetchall()]
+      if u'questions' not in tables:
+        cur.execute("create table questions (question varchar(16), correct integer, incorrect integer, streak integer, last_correct integer, difficulty integer, cardbox integer, next_scheduled integer)")
+      if u'cleared_until' not in tables:
+        cur.execute("create table cleared_until (timeStamp integer)")
+        cur.execute("insert into cleared_until values (%s)" % now)
+      if u'new_words_at' not in tables:
+        cur.execute("create table new_words_at (timeStamp integer)")
+        cur.execute("insert into new_words_at values (%s)" % now)
+      if u'next_Added' not in tables:
+        cur.execute("create table next_Added (question varchar(16))")
+      cur.execute("create unique index if not exists question_index on questions(question)")
+      cur.execute("create unique index if not exists next_added_question_idx on next_added(question)")
+  except:
+    return False
+  return True
+	
+def getDots (word) :
+  '''
+  takes in a word, returns a list of two booleans
+  does the word lose the front / back letter and still make a word?
+  '''
+  with mysql.connect(DB_HOST, DB_SID, DB_PWD, DB_SCHEMA) as con:
+    if con is not None:
+      command = "select count(*) from words where word = %s"
+      con.execute(command, word[1:])
+      numFront = con.fetchone()[0]
+      con.execute(command, word[:-1])
+      numBack = con.fetchone()[0]
+  return [numFront > 0, numBack > 0]
+
+
+  
+
+#1### Inititalization Stuff
+#1### Run on import
+#1##
+#1##if getattr(sys, 'frozen', False):
+#1##	dataDir = sys._MEIPASS
+#1##else:
+#1##	dataDir = os.getcwd()
+#1##
+#1### prefs.pkl will be stored in $HOME/.xerafin/
+#1### Create this if it doesn't exist
+#1##XERAFIN_DIR = os.path.join(os.path.expanduser('~'), '.xerafin')
+#1##if os.path.exists(XERAFIN_DIR):
+#1##	pass
+#1##else:
+#1##	os.mkdir(XERAFIN_DIR)
+#1##
+#1##PREFS_PATH = os.path.join(XERAFIN_DIR, "prefs.pkl")
+#1##
+#1##try:
+#1##	with open(PREFS_PATH, "rb") as f:
+#1##		prefs = pickle.load(f)
+#1##except IOError:
+#1##	prefs = {}
+#1##	prefs["studyOrderIndex"] = 0
+#1##	prefs["closet"] = 20
+#1##	prefs["newWordsAtOnce"] = 4
+#1##	prefs["reschedHrs"] = 8
+#1##	prefs["showNumSolutions"] = True
+#1##	if os.path.isfile(os.path.join(os.path.expanduser('~'), 'xerafin/xerafin.db')):
+#1##		getDBFile(userid) = os.path.join(os.path.expanduser('~'), 'xerafin/xerafin.db')
+#1##	else:
+#1##		getDBFile(userid) = None
+#1##	setPrefs()
+#1##		
+#1##
+#1##
