@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Xerafin Word Study System</title>
+<!-- JQuery code -->
+<link href="styles.css" rel="stylesheet" type="text/css" /> 
+<script src="basicQuiz.js"></script>
+<script src="chat.js"></script>
+<script src="cardboxStats.js"></script>
+<script src="leaderboard.js"></script>
+<script src="manageCardbox.js"></script>
+<script src="subwordSloth.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<!-- Bootstrap code -->
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script>
+function URLExists(url) {
+   var http = new XMLHttpRequest();
+   http.open('HEAD', url, false);
+   http.send();
+   return http.status != 404;
+}
+</script>
+</head>
+
+<body>
+<script>
+
+  function statusChangeCallback(response) {
+     console.log("Login Status is " + response.status);
+     if (response.status === 'connected')  {
+     // Logged in to FB and Xerafin 
+
+        FB.api('/me', function(mydata) {
+	FB.api('/me/picture', function(mypic) {
+	loginData = {name: mydata.name, photo: mypic.data.url, id: response.authResponse.userID, token: response.authResponse.accessToken}
+	userid = response.authResponse.userID;
+        username = mydata.name;
+        questionCounter = 0;
+        leaderboardPanel = "today";
+
+        $.ajax({ type: "POST",
+           url: "getCardboxScore.py",
+	   data: JSON.stringify({user: userid}),
+	   success: function(response, responseStatus) { 
+              console.log(response[0]);
+	      startingScore = response[0].score; },
+	   error: function(jqXHR, textStatus, errorThrown) {
+	      console.log("Error getting cardbox score, status = " + textStatus + " error: " + errorThrown); }} );
+           
+        var userThumb = "<img src='"+mypic.data.url+"' style='height: 25px'> " + mydata.name;
+	document.getElementById('loginButton').innerHTML = userThumb;
+	$.ajax({
+		type: "POST",
+		url: "login.py",
+		data: JSON.stringify(loginData),
+		success: loginCallback,
+		error: function(jqXHR, textStatus, errorThrown) {
+			alert("Error, status = " + textStatus + " error: " + errorThrown);
+			}
+		});
+	} ) } );
+     } else if (response.status === 'not_authorized') {
+     // Logged in to FB but not Xerafin
+        document.getElementById('status').innerHTML += "Please log in to Xerafin with Facebook.";
+    } else { // not logged in to Facebook
+        document.getElementById('status').innerHTML += "Please log in to Facebook in order to log in to Xerafin.";
+    }
+
+  }
+
+  function checkLoginState() {
+     FB.getLoginStatus(function(response) {
+     		statusChangeCallback(response); } );
+  }
+
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '1685551981765809',
+      xfbml      : true, 
+      cookie     : true,
+      version    : 'v2.7'
+    });
+
+	FB.getLoginStatus(function(response) {
+	    statusChangeCallback(response);
+	      });
+  };  // end fbAsyncInit
+
+
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "//connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+
+function loginCallback(response, responseStatus) {
+	console.log("Login script status is " + response.status);
+        startQuiz();
+        startChat();
+}
+
+</script>
+
+<nav class="navbar navbar-inverse navbar-fixed-top">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+         <span class="icon-bar"></span>
+         <span class="icon-bar"></span>
+         <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand">Xerafin</a>
+    </div>
+    <div class="collapse navbar-collapse" id="myNavbar">
+    <ul class="nav navbar-nav">
+<!--      <li class="active"><a href="#">Home</a></li> -->
+      <li><a href="#" onClick="startQuiz()">Basic Quiz</a></li>
+      <li><a href="#" onClick="initSloth()">Subword Sloth!</a></li>
+      <li><a href="#" onClick="showCardboxStats()">Cardbox Info</a></li>
+      <li><a href="#" onClick="showLeaderboard()">Leaderboard</a></li>
+      <li><a href="#" onClick="showManageCardbox()">Manage Cardbox</a></li>
+    </ul>
+    <ul class="nav navbar-nav navbar-right">
+      <li><a href="#"><span id="loginButton">
+         <fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
+         </fb:login-button></span>
+      </a></li></ul>
+     </div>
+  </div>
+</nav>
+<div class="container-fluid">
+<div class="row">
+  <div class="col-sm-4" style="padding-left: 0px; padding-right: 0px;">
+     <div class="well" id="gameArea" style="width: 100%"> </div>
+  </div>
+  <div class="col-sm-4">
+    <div class="well" id="middleArea" style="width:100%; display:none"></div>
+  </div>
+  <div class="col-sm-4" style="padding-left: 0px; padding-right: 0px;">
+     <div class="well" id="chatArea" style="width: 100%"> </div>
+  </div>
+</div>
+
+</body>
+</html>
