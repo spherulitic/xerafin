@@ -90,8 +90,8 @@ function displayCardboxStats (response, responseStatus) {
         col3.style.padding = '2px';
         col1.innerHTML = cardbox;
         col2.innerHTML = eval('stats.totalCards["' + cardbox + '"]');
-        if (cardbox in stats.dueByCardbox)
-          col3.innerHTML = eval('stats.dueByCardbox["' + cardbox + '"]');
+        if (cardbox in stats.dueByCardbox.dueNow)
+          col3.innerHTML = eval('stats.dueByCardbox.dueNow["' + cardbox + '"]');
         row.appendChild(col1);
         row.appendChild(col2);
         row.appendChild(col3);
