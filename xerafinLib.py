@@ -173,6 +173,27 @@ def getCurrentDue (userid):
 #      return "non-sql error " + str(e)
       return {0: -2}
 
+def getDueInRange(userid, start, end):
+  '''
+  Returns a dict: {cardbox: numberDue, cardbox: numberDue, etc }
+  start and end are integers - unix epoch time
+  '''
+  result = { }
+  try:
+    with lite.connect(getDBFile(userid)) as con:
+      cur = con.cursor()
+      statement = "select cardbox, count(*) from questions where next_scheduled between ? and ? and cardbox is not null group by cardbox"
+      cur.execute(statement, (start, end))
+      for row in cur.fetchall():
+        result[row[0]] = row[1]
+      return result			
+  except lite.Error as e: 
+#      return  "sql error %s" % e.message	
+      return {0: -1}
+  except Exception as e:
+#      return "non-sql error " + str(e)
+      return {0: -2, "start": start, "end": end}
+
 def getTotalByCardbox(userid):
   '''
   Returns a dict: {cardbox: numberDue, cardbox: numberDue, etc }
