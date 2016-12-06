@@ -63,18 +63,18 @@ function startQuiz() {
   markAs.className += " quizAnswerRegion";  
   markAsCorrect.style.display = "inline-block";
   markAsCorrect.src = "checkIcon.png";
-  markAsCorrect.style.width = "11%";
+  markAsCorrect.style.width = "15%";
   markAsCorrect.id = "markAsCorrect";
   markAsCorrect.style.cssFloat = 'left';
   markAsCorrect.style.margin = "5px";
   nextQuestion.id = "nextQuestion";
   nextQuestion.style.display = 'none';
   nextQuestion.src = "nextIcon.png";
-  nextQuestion.style.width = "11%";
+  nextQuestion.style.width = "15%";
   nextQuestion.style.margin = "5px";
   //*nextQuestion.style.hidden = 'true';*//
   markAsIncorrect.src = "crossIcon.png";
-  markAsIncorrect.style.width = "11%";
+  markAsIncorrect.style.width = "15%";
   markAsIncorrect.style.cssFloat = 'right';
   markAsIncorrect.style.margin = "5px";
   markAsIncorrect.id = 'markAsIncorrect';
@@ -149,6 +149,7 @@ function startQuiz() {
 	  submitAnswer();
 //	re-enable this in getQuestion() so it happens after the 
 //	asynchronous call finishes
+//	  $(this).removeAttr("disabled", "disabled");
 	}  });
 	$('#markAsCorrect').on('click', null, true, submitQuestion);
 
@@ -289,9 +290,13 @@ function submitQuestion (correct) {
                 $('#sessionScore').html(response[0].score - startingScore); 
                 if (incrementQ) {
                   $('#questionsComplete').html(++questionCounter);
-                  if (response[0].qAnswered%50 == 0) 
-                  submitChat(username + " has completed " + response[0].qAnswered + " alphagrams today!", true); }
-                incrementQ = false; } ,
+                  if ((response[0].qAnswered%50 == 0) & (response[0].qAnswered<501)) {
+                  submitChat(username + " has completed <b>" + response[0].qAnswered + "</b> alphagrams today!", true); }
+                  else if ((response[0].qAnswered%100 == 0) & (response[0].qAnswered>501) & (response[0].qAnswered<2001)) {
+                  submitChat(username + " has completed <b>" + response[0].qAnswered + "</b> alphagrams today!", true); }
+                  else if ((response[0].qAnswered%200 == 0) & (response[0].qAnswered>2001)) {
+                  submitChat(username + " has completed <b>" + response[0].qAnswered + "</b> alphagrams today!", true); }
+                incrementQ = false; }} ,
 	   error: function(jqXHR, textStatus, errorThrown) {
 		console.log("Error: question " + alphagram + " could not be updated.");
 		submitQuestion(correct); } });

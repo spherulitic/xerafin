@@ -1,84 +1,108 @@
 function showLeaderboardHeader () {
+
   $('#middleArea').html("");
   document.getElementById('middleArea').style.display = 'inherit';
-  var lbTable = document.createElement("table");
-  lbTable.id = "lbTable";
-  lbTable.style.border = 'solid 1px';
-  lbTable.style.width = '100%';
-  lbTable.style.borderSpacing = '2px';
-  document.getElementById('middleArea').appendChild(lbTable);
-  var headerCol = document.createElement('thead');
-  var headerRow1 = document.createElement('tr');
-  var headerCell1 = document.createElement('th');
-  headerCell1.colSpan = 3;
-  headerCell1.style.textAlign = 'center';
-  var headerText1 = document.createElement('H4');
-  headerText1.innerHTML = 'Daily Leaders';
-  headerText1.style.margin = 'auto';
-  headerText1.style.display = 'inline';
+
+  /** Initialisation of Header Region **/
+  var lbHeader = document.createElement("div");
+  lbHeader.id = "lbHeader";
+  lbHeader.className += ' lbHeader';
+  document.getElementById('middleArea').appendChild(lbHeader);
+
+  /** Hide / Refresh Buttons **/
   var button1 = document.createElement('button');
   var button2 = document.createElement('button');
   button1.onclick = hideLeaderboard;
   button2.onclick = showLeaderboard;
-  button1.style.cssFloat = 'left';
-  button2.style.cssFloat = 'right';
-  button1.innerHTML = 'Hide';
-  button2.innerHTML = 'Refresh';
-  headerCell1.appendChild(button1);
-  headerCell1.appendChild(headerText1);
-  headerCell1.appendChild(button2);
-  headerRow1.appendChild(headerCell1);
+  button1.className += ' tableButtonDark';
+  button2.className += ' tableButtonDark';
+  button1.style.cssFloat = 'right';
+  button2.style.cssFloat = 'left';
+  button1.innerHTML = '✘';
+  button2.innerHTML = '↻';
 
-  var headerRow3 = document.createElement('tr');
-  headerCell1 = document.createElement('th');
-  headerCell1.colSpan = 3;
-  headerCell1.style.textAlign = 'center';
-  button1 = document.createElement('button');
-  button2 = document.createElement('button');
-  var button3 = document.createElement('button');
-  button1.onclick = function() { 
+  /** Title Div **/
+  var headerText1 = document.createElement('div');
+  headerText1.className+= ' tableHeaderDark';
+  headerText1.innerHTML = 'Leaderboard';
+  
+  /** Components of Header added **/
+  lbHeader.appendChild(button1);
+  lbHeader.appendChild(button2);
+  lbHeader.appendChild(headerText1);
+  
+  /** Initialisation of Table div **/
+  var lbContent = document.createElement('div');
+  lbContent.margin = '0 auto';
+  lbContent.id = "lbContent"
+  var lbTable = document.createElement('table');
+  lbTable.id = "lbTable";
+  lbContent.appendChild(lbTable);
+  lbTable.className += ' lbTable';
+  
+  var headerCol = document.createElement('thead');
+  var headerCell1 = document.createElement('th');
+  var header1 = document.createElement('div');
+
+/** List Box Initialisation **/
+
+  var periodList = document.createElement('select');
+  var periodOption1 = document.createElement("option");
+  periodOption1.text = "Today";
+  periodOption1.value = 1;
+  periodList.add(periodOption1);
+  var periodOption2 = document.createElement("option");
+  periodOption2.text = "Yesterday";
+  periodOption2.value = 2;
+  periodList.add(periodOption2);
+  var periodOption3 = document.createElement("option");
+  periodOption3.text = "Last 7 Days";
+  periodOption3.value = 3;
+  periodList.add(periodOption3);
+
+/** Finds previous list box value and creates default is no value present **/
+ 
+  switch (leaderboardPanel){
+    case "today": periodList.value=1;break;
+    case "yesterday": periodList.value=2;break;
+    case "lastWeek": periodList.value=3;break;
+    default: leaderboardPanel="today";periodList.value=1;
+  }
+
+/** Actions when list box value changes **/
+
+  periodList.onchange = function() { 
+    if (periodList.value == 1){
     leaderboardPanel = "today";
     showLeaderboardData(leaderboardData.today.sort(sortByAnswered)); };
-  button3.onclick = function() { 
+    if (periodList.value == 2){
     leaderboardPanel = "yesterday";
-    showLeaderboardData(leaderboardData.yesterday.sort(sortByAnswered)); };
-  button2.onclick = function() { 
+    showLeaderboardData(leaderboardData.yesterday.sort(sortByAnswered)); }
+    if (periodList.value == 3){
     leaderboardPanel = "lastWeek";
     showLeaderboardData(leaderboardData.lastWeek.sort(sortByAnswered)); };
-  button1.style.cssFloat = 'left';
-  button2.style.cssFloat = 'right';
-  button1.innerHTML = 'Today';
-  button3.innerHTML = 'Yesterday';
-  button2.innerHTML = 'Last Week';
-  headerCell1.appendChild(button1);
-  headerCell1.appendChild(button3);
-  headerCell1.appendChild(button2);
-  headerRow3.appendChild(headerCell1);
+    };
+
   
+  document.getElementById('lbHeader').appendChild(lbTable);
   var headerRow2 = document.createElement('tr');
   headerCell1 = document.createElement('th');
-  headerCell2 = document.createElement('th');
-  headerCell3 = document.createElement('th');
-  headerCell1.style.textAlign = 'center';
-  headerCell2.style.textAlign = 'center';
-  headerCell3.style.textAlign = 'center';
-  headerCell1.style.width = '50%';
-  headerCell2.style.width = '25%';
-  headerCell1.innerHTML = 'Name';
-  headerCell2.innerHTML = 'Questions Done';
-  headerCell3.innerHTML = 'Cardbox Score';
+  var headerCell4 = document.createElement('th');
+  var headerCell5 = document.createElement('th');
+  headerCell1.colSpan= "3";
+  headerCell1.appendChild(periodList);
+  headerCell4.innerHTML = 'questions done';
+  headerCell5.innerHTML = 'cardbox score';
   headerRow2.appendChild(headerCell1);
-  headerRow2.appendChild(headerCell2);
-  headerRow2.appendChild(headerCell3);
-
-  headerCol.appendChild(headerRow1);
-  headerCol.appendChild(headerRow3);
+  headerRow2.appendChild(headerCell4);
+  headerRow2.appendChild(headerCell5);
   headerCol.appendChild(headerRow2);
-  lbTable.appendChild(headerCol);
 
+  lbTable.appendChild(headerCol);
   var tableBody = document.createElement('tbody');
   tableBody.id = 'lbTableBody';
   lbTable.appendChild(tableBody);
+  
 
 }
 
@@ -110,26 +134,49 @@ function hideLeaderboard() {
 }
 
 function showLeaderboardData(data) {
-showLeaderboardHeader();
-for (var x=0;x<data.length;x++) {
-  var row = document.createElement('tr'); 
-  document.getElementById('lbTableBody').appendChild(row);
-  var col1 = document.createElement("td");
-  var col2 = document.createElement("td");
-  var col3 = document.createElement("td");
-  col1.style.border = 'solid 1px';
-  col2.style.border = 'solid 1px';
-  col3.style.border = 'solid 1px';
-  col1.style.padding = '2px';
-  col2.style.padding = '2px';
-  col3.style.padding = '2px';
-  col1.innerHTML = '<img src="'+data[x].photo+'" title="'+data[x].name+'">'+data[x].name;
-  col2.innerHTML = data[x].answered;
-  col3.innerHTML = data[x].score;
-  row.appendChild(col1);
-  row.appendChild(col2);
-  row.appendChild(col3);
-}
+  showLeaderboardHeader();
+  var getOrdinal = function(n) {
+    var s=["th","st","nd","rd"], v=n%100;
+    return (s[(v-20)%10]||s[v]||s[0]);
+  }
+  for (var x=0;x<data.length;x++) {
+    var row = document.createElement('tr'); 
+    document.getElementById('lbTableBody').appendChild(row);
+    if (x==0){row.style.fontWeight='bold';};
+    var col1 = document.createElement("td");
+    var col2 = document.createElement("td");
+    var col3 = document.createElement("td");
+    var col4 = document.createElement("td");
+    var col5 = document.createElement("td");
+    col2.style.borderRight = 'solid 0px';
+    col3.style.borderLeft = 'solid 0px';
+    col3.style.width = '50%';
+    col3.style.textAlign = 'left';
+    col1.innerHTML = (x+1)+"<sup>"+getOrdinal(x+1)+"</sup>";
+    col2.innerHTML = '<img src="'+data[x].photo+'" style="height:30px;" title="'+data[x].name+'">';
+    col3.innerHTML = data[x].name;
+    col4.innerHTML = data[x].answered;
+    col5.innerHTML = data[x].score;
+    row.appendChild(col1);
+    row.appendChild(col2);
+    row.appendChild(col3);
+    row.appendChild(col4);
+    row.appendChild(col5);
+    col1.className+=' lbTableRank';
+  }
+  var rowFoot = document.createElement("tr");
+  var footNote1 =document.createElement("td");
+  var footNote2 =document.createElement("td");
+  var footNote3 =document.createElement("td");
+  var footNote4 =document.createElement("td");
+  var footNote5 =document.createElement("td");
+  document.getElementById('lbTableBody').appendChild(rowFoot);
+  footNote1.innerHtml='&nbsp;';
+  rowFoot.appendChild(footNote1);
+  rowFoot.appendChild(footNote2);
+  rowFoot.appendChild(footNote3);
+  rowFoot.appendChild(footNote4);
+  rowFoot.appendChild(footNote5);
 }
 
 function sortByAnswered(a, b) {
