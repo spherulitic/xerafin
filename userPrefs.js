@@ -1,7 +1,14 @@
 function initUserPrefs() {
 
  // ajax call to get user prefs
-
+ d = { userid: userid };
+ $.ajax({type: "POST", 
+         url: "getUserPrefs.py",
+         data: JSON.stringify(d),
+         success: showUserPrefs,
+         error: function(jqXHR, textStatus, errorThrown) {
+           console.log("Error retrieving user prefs. Status: " + textStatus + "  Error: " + errorThrown); }
+        {);
 }
 
 function showUserPrefs(response, responseStatus) {

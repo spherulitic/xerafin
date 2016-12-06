@@ -43,6 +43,20 @@ def getDBFile(userid):
 def getDBCur(userid):
   return lite.connect(getDBFile(userid)).cursor()
   
+def getAllPrefs(userid):
+  with mysql.connect(DB_HOST, DB_SID, DB_PWD, DB_SCHEMA) as con:
+    command = "select studyOrderIndex, closet, newWordsAtOnce, reschedHrs, showNumSolutions, cb0max, showHints from user_prefs where userid = %s"
+    con.execute(command, userid)
+    row = con.fetchone()
+    result = {}
+    result["studyOrderIndex"] = row[0]
+    result["closet"] = row[1]
+    result["newWordsAtOnce"] = row[2]
+    result["reschedHrs"] = row[3]
+    result["showNumSolutions"] = row[4]
+    result["cb0max"] = row[5]
+    result["showHints"] = row[6]
+  return result
 
 def getPrefs (prefName, userid):
   with mysql.connect(DB_HOST, DB_SID, DB_PWD, DB_SCHEMA) as con:

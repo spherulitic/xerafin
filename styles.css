@@ -33,7 +33,7 @@ td.slothTD {padding: 2px;border: solid 1px;}
 
 .tableHeaderLight { 
   background-color:hsla(0,0%,95%,0.8);font-size:1.6em;font-variant:small-caps;color:#333;text-align:center;width:60%;height:40px;vertical-align:middle;
-  border:3px solid #999;margin:20px auto;margin-top:0px;
+  border:2px solid #999;margin:20px auto;margin-top:0px;
 -webkit-border-radius: 5px;
 -moz-border-radius: 5px;
 border-radius: 5px;
@@ -41,7 +41,7 @@ border-radius: 5px;
 
 .tableHeaderDark { 
   background-color:hsla(0,0%,17%,0.8);font-size:1.6em;font-variant:small-caps;color:#eee;text-align:center;width:60%;height:40px;vertical-align:middle;
-  border:3px solid black;margin:20px auto;margin-top:0px;
+  border:2px solid black;margin:20px auto;margin-top:0px;
 -webkit-border-radius: 5px;
 -moz-border-radius: 5px;
 border-radius: 5px;
@@ -50,13 +50,13 @@ border-radius: 5px;
 .lbHeader {width: 100%;}
 
 .lbTable1st {font-weight:bolder;font-size:1.1em;}
-.lbTable {width: 100%;margin: auto;border:3px solid black;
+.lbTable {width: 100%;margin: auto;border:2px solid black;
   -webkit-border-radius: 5px;
 -moz-border-radius: 5px;
 border-radius: 5px;
 }
 
-.tableButtonDark {border:3px solid black;font-size:1.5em;width:40px;height:40px;vertical-align:center;text-align:center;color:#ddd;background-color:#282828;
+.tableButtonDark {border:2px solid black;font-size:1.5em;width:40px;height:40px;vertical-align:center;text-align:center;color:#ddd;background-color:#282828;
 -webkit-border-radius: 5px;
 -moz-border-radius: 5px;
 border-radius: 5px;
@@ -67,13 +67,13 @@ border-radius: 5px;
 
 .lbTable tr:last-child {
   background-color:hsla(0,0%,17%,0.8) !important;color:#ffffff !important;font-size: 0.90em;border: 0px solid;text-align: center;font-variant:small-caps;
-  height:25px;min-height:25px;border-top:3px solid black;}
+  height:25px;min-height:25px;border-top:2px solid black;}
 .lbTable tr:nth-child(2n+1) {background-color: hsla(0,0%,98%,0.8);}
 .lbTable tr:nth-child(2n+2) {background-color: hsla(0,0%,92%,0.8);}
 
 
 .lbTable tr th {
-  background-color:hsla(0,0%,17%,0.8);color:#eee;font-size: 1em;border-bottom: 3px solid black;text-align: center;font-variant:small-caps;font-weight:normal;}
+  background-color:hsla(0,0%,17%,0.8);color:#eee;font-size: 1em;border-bottom: 2px solid black;text-align: center;font-variant:small-caps;font-weight:normal;}
 .lbTable tr th select {background-color:#333;padding-left:0.4em;padding-right:0.4em;margin-left:1.5em;border:1px solid black;font-size:1.1em;width:40%;}
 .lbTable tr th:first-child {text-align:left;}
 .lbTable td {padding: 0.2em 0.4em 0.2em 0.4em;border: 0px solid;text-align: center;background:none;color:#282828;}
