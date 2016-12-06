@@ -47,6 +47,7 @@ function URLExists(url) {
         username = mydata.name;
         questionCounter = 0;
         leaderboardPanel = "today";
+        cardboxStatsPanel = "dueNow";
 
         $.ajax({ type: "POST",
            url: "getCardboxScore.py",
