@@ -64,6 +64,7 @@ function displayLoggedInUsers(response, responseStatus) {
         userCell.textAlign = 'center';
         var userPic = document.createElement("img");
         userPic.style.height = '40px';
+        userPic.style.margin = '2px';
         userPic.src = usersArray[x].photo;
         userPic.title = usersArray[x].name;
         userCell.appendChild(userPic);
