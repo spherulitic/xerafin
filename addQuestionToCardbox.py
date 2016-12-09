@@ -2,19 +2,23 @@
 
 import xerafinLib as xl
 import json, sys
-import updateActive as ua
+import sqlite3 as lite
 
 params = json.load(sys.stdin)
 userid = params["user"]
+question = params["question"]
 #userid = "10157462952395078"  # me
-ua.updateActive(userid)
 error = {"status": "success"}
-result = { } 
+result = {"question": question } 
 
 try:
 
-  result["alpha"] = xl.getBingoFromCardbox(userid)
-#  result["alpha"] = 'ILLOTXY'
+  with lite.connect(xl.getDBFile(userid)) as con:
+    cur = con.cursor()
+    if xl.isAlphagramValid(question):
+      xl.addWord(question, cur)
+    else:
+      error["status"] = "Invalid Alphagram"
 
 except Exception as ex:
   template = "An exception of type {0} occured. Arguments:\n{1!r}"

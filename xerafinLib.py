@@ -310,18 +310,23 @@ def insertIntoNextAdded(alphagrams, cur):
   '''
     
   command = "insert into next_added (question) values (?)"
+  for alpha in alphagrams:
+    if isAlphagramValid(alpha):
+      try:
+        cur.execute(command, (alpha,))
+      except:
+        pass
+  dbClean(cur)
+
+def isAlphagramValid(alpha):
   chCommand = "select count(*) from words where alphagram = %s"
   with mysql.connect(DB_HOST, DB_SID, DB_PWD, DB_SCHEMA) as mysqlcon:
     if mysqlcon is not None:
-      for alpha in alphagrams:
-        mysqlcon.execute(chCommand, alpha) 
-        if mysqlcon.fetchone()[0] > 0:
-          try:
-            cur.execute(command, (alpha,))
-          except:
-            pass 
-  dbClean(cur)
-
+      mysqlcon.execute(chCommand, (alpha,)) 
+      return mysqlcon.fetchone()[0] > 0
+    else:
+      return False
+  return False
 
 def dbClean (cur) :
 
@@ -410,7 +415,7 @@ def getBingoFromCardbox (userid):
     cur.execute("select question from questions where cardbox is not null and length(question) >= 7")
     allCardboxBingos = [ x[0] for x in cur.fetchall() ]
     with mysql.connect(DB_HOST, DB_SID, DB_PWD, DB_SCHEMA) as mysqlcon:
-      mysqlcon.execute("select alphagram from studyOrder where length(alphagram) >= 7 and studyOrderIndex > %s", studyOrderIndex)
+      mysqlcon.execute("select alphagram from studyOrder where length(alphagram) >= 7 and studyOrderIndex > %s order by studyOrderIndex", studyOrderIndex)
       for row in mysqlcon.fetchall():
         if row[0] not in allCardboxBingos:
           addWord(row[0], cur)
