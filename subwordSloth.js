@@ -117,6 +117,8 @@ function setupSloth (response, responseStatus) {
 //  console.log("setup sloth");
   document.getElementById("startButton").style.display = "block";
   slothData = response[0];
+  console.log("Sloth Data");
+  console.log(slothData);
 var  tmpWordlist = [ ];
   for (var x=0;x<slothData.length;x++)
     for (var y=0;y<slothData[x].words.length;y++)
@@ -181,7 +183,8 @@ function slothTimerExpire () {
       // not in cardbox
       for(var y=0;y<slothData[x].words.length;y++) {
         wd = document.getElementById(slothData[x].words[y]).parentNode;
-        wd.title = "Click to add to cardbox";
+        wd.title = "Click to add cardbox";
+        wd.onclick = function () {addToCardbox(this.firstChild.id);}; 
         wd.style.backgroundColor = "SkyBlue";
        } 
     } else {
@@ -293,3 +296,35 @@ function submitSlothChat() {
   var link = "<a href='#' onclick='" + x + "'>Click here</a>";
   submitChat(username + " has completed " + slothQuestion + " on Subword Sloth with a score of " + $('#progressLabel').html() + ". " + link + " to try and beat it!", true);
   }
+
+function addToCardbox(word) {
+
+  var alpha = toAlpha(word); 
+  if (confirm("Click OK to add " + alpha + " to your cardbox.")) {
+
+      var d = {user: userid, question: alpha};
+      $.ajax({type: "POST",
+         data: JSON.stringify(d),
+         url: "addQuestionToCardbox.py",
+         success: addedToCardbox,
+	 error: function(jqXHR, textStatus, errorThrown) {
+	      console.log("Error adding " + alpha + ", status = " + textStatus + " error: " + errorThrown); 
+              }} );
+}
+}
+
+function addedToCardbox(response, responseStatus) {
+
+  if (response[1].status == "success") { 
+    var alphaAdded = response[0].question;
+    for (var x=0; x<slothData.length; x++) {
+      if(slothData[x].alpha == alphaAdded) {
+       for(var y=0;y<slothData[x].words.length;y++) {
+        wd = document.getElementById(slothData[x].words[y]).parentNode;
+        wd.removeAttribute("onclick");
+        wd.style.backgroundColor = "SandyBrown";
+        wd.title = "Added to Cardbox";
+      }}}}
+   else alert("Error adding " + response[0].question + " to Cardbox. Please try again.");
+} 
+
