@@ -96,9 +96,10 @@ function startQuiz() {
     sessionHeader1.innerHTML =  'questions';
     sessionHeader4.innerHTML =  'score';
     sessionHeader5.innerHTML =  '% correct';
+    sessionHeader5.title =  '% of questions answered correctly this session.';
+    sessionContent1.innerHTML = '<span id="questionsComplete">'+questionCounter+'</span>';
     sessionContent2.innerHTML = '<span id="cardboxNumber"></span>';
 	sessionContent3.innerHTML = '<span id="dueDate"></span>';
-	sessionContent1.innerHTML = '<span id="questionsComplete">'+questionCounter+'</span>';
 	sessionContent4.innerHTML = '<span id="sessionScore">0</span>';
 	sessionContent5.innerHTML = '<span id="correctPercent">0%</span>';
 	if (questionCounter!==0) {
@@ -165,16 +166,16 @@ function startQuiz() {
               getQuestion();  }} );
 
 /** Button Adjustment on resize **/
-$( window ).resize(function() {
+/**$( window ).resize(function() {
 		$('#markAsCorrect').height=($('#markAsCorrect').css('width'));
 		$('#markAsIncorrect').height=($('#markAsIncorrect').width);
 		$('#nextQuestion').height=($('#nextQuestion').css('width'));
-	}).resize();
+	}).resize();**/
 }
 
 function getQuestion() {
   $('#nextQuestion').off("click");
-  var d = { numQuestions: 1, user: userid }
+  var d = { numQuestions: 1, user: userid };
   $.ajax({ type: "POST",
            url: "getQuestion.py",
 	   data: JSON.stringify(d),
@@ -239,6 +240,7 @@ function displayQuestion(response, responseStatus) {
     var dueDate = new Date(aux.nextScheduled * 1000);
     $('#dueDate').html(formatDateForDisplay(dueDate));  
     $('#cardboxNumber').html(aux.cardbox);
+    if (questionCounter!==0) {$('#correctPercent').html((((correctCounter)/(questionCounter))*100).toFixed(2)+'%');}
     totalAnswers=Object.keys(wordData).length;
     $('#answerAmount').html('<b>Answers:</b> ' + correctProgress +'  of ' + totalAnswers);
     $('#nextQuestion').hide();
@@ -255,6 +257,7 @@ function submitAnswer () {
   if (quizState == "finished") {
   	correctCounter+=correctState;
   	questionCounter++;
+  	$('#questionsComplete').html(questionCounter);
     getQuestion(); }
   else {
     answer = $.trim($('#answerBox').val().toUpperCase());
@@ -295,9 +298,8 @@ function submitQuestion (correct) {
 	   data: JSON.stringify(d),
 	   success: function(response, responseStatus) { 
 		console.log("Question " + alphagram + " updated in cardbox."); 
-                $('#sessionScore').html(response[0].score - startingScore); 
+                $('#sessionScore').html(response[0].score - startingScore);
                 if (incrementQ) {
-                $('#questionsComplete').html(questionCounter+1);
                   if ((response[0].qAnswered%50 == 0) & (response[0].qAnswered<501)) {
                   submitChat(username + " has completed <b>" + response[0].qAnswered + "</b> alphagrams today!", true); }
                   else if ((response[0].qAnswered%100 == 0) & (response[0].qAnswered>501) & (response[0].qAnswered<2001)) {
@@ -317,7 +319,7 @@ function submitQuestion (correct) {
     $('#nextQuestion').show();
     $('#nextQuestion').css('float', 'left');
     correctState=1;
-    $('#correctPercent').html((((correctCounter+1)/(questionCounter+1))*100).toFixed(2)+'%');
+  
   }
   else {
     //console.log("Incorrect Question");
@@ -327,10 +329,12 @@ function submitQuestion (correct) {
     $('#nextQuestion').show();
     $('#nextQuestion').css('float', 'right');
     correctState=0;
-    $('#correctPercent').html(((correctCounter/(questionCounter+1))*100).toFixed(2)+'%');
   }
   quizState = "finished";
-  
+  	
+    $('#correctPercent').html((((correctCounter+correctState)/(questionCounter+1))*100).toFixed(2)+'%');
+    $('#questionsComplete').html(questionCounter+1);
+
   for (var x=0;x<answers.length;x++)  {
     displayAnswer(answers[x]);    
   }
