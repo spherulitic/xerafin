@@ -49,7 +49,7 @@ function createCardboxStatsTable() {
 
   /** Title Div **/
   
-  headerText1.innerHTML = 'Cardbox Statistics';
+  headerText1.innerHTML = 'Cardbox Info';
 
   /** Components of Area Added **/
   document.getElementById('middleArea').appendChild(lbHeader);
@@ -145,11 +145,6 @@ function displayCardboxStats (response, responseStatus) {
         row.appendChild(col1);
         row.appendChild(col2);
         row.appendChild(col3);
-
-        /*  col1.innerHTML = cardbox;
-        col2.innerHTML = eval('stats.totalCards["' + cardbox + '"]');
-        if (cardbox in stats.dueByCardbox.dueNow)
-          col3.innerHTML = eval('stats.dueByCardbox.dueNow["' + cardbox + '"]'); */
    });
   var rowFoot = document.createElement("tr");
   var footNote1 =document.createElement("td");
