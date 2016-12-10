@@ -4,27 +4,24 @@ function startChat () {
    chatQueue = [ ];
    CHAT_QUEUE_MAX_LENGTH = 100;
    var usersLabel = document.createElement("div");
-   usersLabel.className += ' tableHeaderLight'
-   usersLabel.innerHTML = "User Chat";
    var userDisplayArea = document.createElement("div");
-   userDisplayArea.id = "userDisplayArea";
-   userDisplayArea.style.width = "100%";
-   userDisplayArea.style.padding = '5px';
    var chatBox = document.createElement("input");
+   var chatDisplayBox = document.createElement("div");
    chatDisplayTable = document.createElement("table");
+   usersLabel.className += ' tableHeaderLight'
+   usersLabel.innerHTML = "User Chat"; 
+   userDisplayArea.id = "userDisplayArea";
+   /*userDisplayArea.className+= " chatActiveUsers"; */
+   chatDisplayBox.id = "chatDisplayBox";
+   chatDisplayBox.className+=' well well-sm pre-scrollable';    
    chatBox.type = "text";
    chatBox.id = "chatBox";
-   chatBox.style.display = "block";
-   chatBox.style.width = "100%";
-   chatBox.style.marginTop = "5px";
-   chatBox.style.marginBottom = "5px";
+   chatBox.className+=' chatInput';
    chatBox.addEventListener("keypress", function(e) {
 	if (e.which === 13 && $(this).val().trim()) {
            submitChat($(this).val(), false);
            $(this).val("");
         } });
-   var chatDisplayBox = document.createElement("div");
-   chatDisplayBox.id = "chatDisplayBox";
    updateChats();
    chatArea = document.getElementById("chatArea");
    chatArea.appendChild(usersLabel);
@@ -48,31 +45,37 @@ function displayLoggedInUsers(response, responseStatus) {
    console.log(response); 
    $('#userDisplayArea').html("");
    usersArray = response[0];
-   var userDisplayTable = document.createElement("div");
-   userDisplayTable.style.width = '100%';
-   userDisplayTable.style.borderCollapse = 'collapse';
-   userDisplayTable.style.borderTop = '1px solid #ddd;';
-   userDisplayTable.style.borderBottom = '1px solid #ddd;';
-
-
+   var activeUserHeading = document.createElement('div');
+   var userDisplayTable = document.createElement("table");
    var userDisplayTableBody = document.createElement("tbody");
-   for (var x=0;x<(usersArray.length)/4;x++) {
+ 
+   activeUserHeading.className+= " activeUserHeading"; 
+   activeUserHeading.id= "activeUserHeading"; 
+   activeUserHeading.innerHTML = usersArray.length+' active user(s)';
+
+   userDisplayTable.className+= "  chatActiveUsers";
+   if (usersArray.length!==0){
        var userRow = document.createElement("tr");
+       userRow.id= 'userRow';
+       userRow.style.width = Math.min(40*usersArray.length,($('#activeUserHeading').width()-79));
        userDisplayTableBody.appendChild(userRow);
-      for (var x=0;x<usersArray.length;x++) {
+       /*for argument is short term hack.  May cause display issues on mobile 10.12.2016 RF*/
+      for (var y=0;(y<usersArray.length) && (y< 9);y++) {        
         var userCell = document.createElement("td");
-        userCell.textAlign = 'center';
+        userCell.style.width='40px';
+        userCell.textAlign = 'left';
         var userPic = document.createElement("img");
-        userPic.style.height = '40px';
-        userPic.style.margin = '2px';
-        userPic.src = usersArray[x].photo;
-        userPic.title = usersArray[x].name;
+        userPic.className+=' activePic';
+        userPic.src = usersArray[y].photo;
+        userPic.title = usersArray[y].name;
         userCell.appendChild(userPic);
         userRow.appendChild(userCell);
        }
-    }
+   }
     userDisplayTable.appendChild(userDisplayTableBody);
+    userDisplayArea.appendChild(activeUserHeading);
     userDisplayArea.appendChild(userDisplayTable);
+
    
 }
 
@@ -93,7 +96,8 @@ function displayChats (response, responseStatus) {
    console.log("Get Chat Response");
    console.log(response);
    chatDisplayTable.innerHTML="";
-   document.getElementById('chatDisplayBox').className+=' well well-sm pre-scrollable';
+   
+   chatDisplayBox.style.border = '1px solid #999';
    for (var x=0; x<newChats.length;x++) {
      chatQueue.push(newChats[x]);
      // the DB query orders these ascending by time stamp
@@ -105,7 +109,8 @@ function displayChats (response, responseStatus) {
 
    for (x=chatQueue.length-1;x>=0;x--) {
      var chatNode = document.createElement("tr");
-     
+     chatNode.style.backgroundImage = 'b27.png';
+     chatNode.style.backgroundRepeat = 'repeat';
      chatNode.style.marginTop = '0.2em;';
      chatNode.style.width = '100%';
      chatNode.style.display = 'table';
@@ -121,19 +126,19 @@ function displayChats (response, responseStatus) {
      else {chatText.style.borderTop = "1px solid #ddd";}
      
      chatDateNode.style.width='10%';
+     chatDateNode.style.textAlign='right';
+
      chatDateNode.innerHTML = chatDate.getHours() + ':' + (chatDate.getMinutes() < 10 ? '0' : '') + chatDate.getMinutes();
      chatDateNode.title = chatDate.getHours() + ':' + (chatDate.getMinutes() < 10 ? '0' : '') + chatDate.getMinutes() + ':' + (chatDate.getSeconds() < 10 ? '0' : '') + chatDate.getSeconds();
      chatPic.src = chatQueue[x].photo;
      if (chatPic.src == 'http://cross-tables.com/xerafin/xerafin.png') {
-         chatNode.style.backgroundColor="#dfdfdf";
-         chatNode.style.border='1px solid #666';
-         chatNode.style.marginTop = '0.5em';
-         chatText.style.borderTop = "1px solid #666";
-         
+         chatNode.className+=' xeraBroadcast';
+         chatText.className+=' xeraBroadcastBorderFix';
+         chatPicNode.className+=' xeraBroadcastImageAlign';
      }
      if (x!==0) {
         if (chatQueue[x-1].photo !== 'http://cross-tables.com/xerafin/xerafin.png'){
-             chatNode.style.marginBottom = '0.5em';
+             chatNode.style.marginBottom = '0.3em';
         }
      }
      chatPic.title = chatQueue[x].name;
@@ -143,11 +148,7 @@ function displayChats (response, responseStatus) {
      chatPicNode.style.textAlign = 'center';
      chatText.style.verticalAlign = 'middle';
      chatDateNode.style.verticalAlign = 'middle';
-     chatDateNode.style.paddingLeft = '0.3em';
-
-
-    
-     
+     chatDateNode.style.paddingLeft = '0.3em';     
      chatText.innerHTML = chatQueue[x].chatText;
      chatText.style.textAlign = 'left';
      chatNode.appendChild(chatDateNode);

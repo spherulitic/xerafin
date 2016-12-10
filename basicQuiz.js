@@ -21,26 +21,25 @@ function startQuiz() {
   var sessionHeader2 = document.createElement('th');
   var sessionHeader3 = document.createElement('th');
   var sessionHeader4 = document.createElement('th');
+  var sessionHeader5 = document.createElement('th');
   var sessionContent = document.createElement('tr');
   var sessionContent1 = document.createElement('td');
   var sessionContent2 = document.createElement('td');
   var sessionContent3 = document.createElement('td');
   var sessionContent4 = document.createElement('td');
-
+  var sessionContent5 = document.createElement('td');
   var alphaSuper = document.createElement("div");
   var alphaContainer = document.createElement("div");
   var alphagramLabel = document.createElement("div");
   var leftHookLabel = document.createElement("div");
   var rightHookLabel = document.createElement("div");
- 
   var markAs = document.createElement("div");
-  var markAsCorrect = document.createElement("img");
-  var markAsIncorrect = document.createElement("img");
-  var nextQuestion = document.createElement("img");
+  var markAsCorrect = document.createElement("button");
+  var markAsIncorrect = document.createElement("button");
+  var nextQuestion = document.createElement("button");
   var answerContainer = document.createElement("div");
   var answerAmount = document.createElement("div");
-  var answerBox = document.createElement("input");
-  
+  var answerBox = document.createElement("input");  
   var correctAnswers = document.createElement("table");
   var wrongAnswers = document.createElement("div");
 
@@ -49,6 +48,7 @@ function startQuiz() {
   sessionInfo.className += ' quizSessionTable';
   sessionHeader2.className += ' quizSessionTableHCardbox';
   sessionHeader3.className += ' quizSessionTableHDue';
+  sessionHeader5.className += ' quizSessionTableHCorrect';
   
   alphaSuper.className += " quizAlphaSuper";
   alphaContainer.id = "alphaContainer";
@@ -60,29 +60,26 @@ function startQuiz() {
   rightHookLabel.id = "rightHook";
   rightHookLabel.className += " quizAlphaRight";
 
-  markAs.className += " quizAnswerRegion";  
-  markAsCorrect.style.display = "inline-block";
-  markAsCorrect.src = "checkIcon.png";
-  markAsCorrect.style.width = "15%";
+  markAs.className += " quizAnswerRegion"; 
   markAsCorrect.id = "markAsCorrect";
-  markAsCorrect.style.cssFloat = 'left';
-  markAsCorrect.style.margin = "5px";
+  markAsCorrect.className+=' quizButton quizButtonCorrect';
+  markAsCorrect.title = "Mark as Correct";
+  markAsCorrect.innerHTML='&#10004;';   
   nextQuestion.id = "nextQuestion";
+  nextQuestion.className+=' quizButton quizButtonNext';
+  nextQuestion.innerHTML='&#10144;';
   nextQuestion.style.display = 'none';
-  nextQuestion.src = "nextIcon.png";
-  nextQuestion.style.width = "15%";
-  nextQuestion.style.margin = "5px";
-  //*nextQuestion.style.hidden = 'true';*//
-  markAsIncorrect.src = "crossIcon.png";
-  markAsIncorrect.style.width = "15%";
-  markAsIncorrect.style.cssFloat = 'right';
-  markAsIncorrect.style.margin = "5px";
+  nextQuestion.title = "Next Question";
   markAsIncorrect.id = 'markAsIncorrect';
+  markAsIncorrect.title = "Mark as Incorrect";
+  markAsIncorrect.className+=' quizButton quizButtonIncorrect';
+  markAsIncorrect.innerHTML='✘';
   
   answerContainer.id = "answerContainer";
   answerContainer.className += " quizAnswerContain";
   answerBox.type = "text";
   answerBox.id = "answerBox";
+  answerBox.maxLength = '15';
   answerBox.className += " quizAnswerBox";
   answerAmount.id = "answerAmount";
   answerAmount.className += " quizAnswerNumber";
@@ -98,11 +95,14 @@ function startQuiz() {
     sessionHeader3.innerHTML =  'due date';
     sessionHeader1.innerHTML =  'questions';
     sessionHeader4.innerHTML =  'score';
+    sessionHeader5.innerHTML =  '% correct';
     sessionContent2.innerHTML = '<span id="cardboxNumber"></span>';
 	sessionContent3.innerHTML = '<span id="dueDate"></span>';
 	sessionContent1.innerHTML = '<span id="questionsComplete">'+questionCounter+'</span>';
 	sessionContent4.innerHTML = '<span id="sessionScore">0</span>';
-	
+	sessionContent5.innerHTML = '<span id="correctPercent">0%</span>';
+	if (questionCounter!==0) {
+		sessionContent5.innerHTML= '<span id="correctPercent">'+(correctCounter/(questionCounter)*100).toFixed(2)+'%</span>';}
 	leftHookLabel.innerHTML = '&nbsp;&nbsp;'
 	rightHookLabel.innerHTML = '&nbsp;&nbsp;'
 
@@ -114,31 +114,30 @@ function startQuiz() {
   alphaContainer.appendChild(alphagramLabel);
   alphaContainer.appendChild(rightHookLabel);
 
+
   gameArea.appendChild(markAs);
   markAs.appendChild(markAsCorrect);
   markAs.appendChild(nextQuestion);
   markAs.appendChild(answerContainer);
-  answerContainer.appendChild(answerAmount);
   answerContainer.appendChild(answerBox);
+  answerContainer.appendChild(answerAmount);
   markAs.appendChild(markAsIncorrect);
-  
+
   gameArea.appendChild(sessionInfo);
   sessionInfo.appendChild(sessionHeader);
   sessionHeader.appendChild(sessionHeader1);
   sessionHeader.appendChild(sessionHeader2);
   sessionHeader.appendChild(sessionHeader3);
   sessionHeader.appendChild(sessionHeader4);
+  sessionHeader.appendChild(sessionHeader5);
   sessionInfo.appendChild(sessionContent);
   sessionContent.appendChild(sessionContent1);
   sessionContent.appendChild(sessionContent2);
   sessionContent.appendChild(sessionContent3);
   sessionContent.appendChild(sessionContent4);
-
+   sessionContent.appendChild(sessionContent5);
   gameArea.appendChild(correctAnswers);
   gameArea.appendChild(wrongAnswers);
-
-  sessionContent3.className += ' quizSessionTableCDue';
-  
 /** Event Listeners **/ 
   $('#nextQuestion').click(function() { textFocus = false;
                                 getQuestion(); });
@@ -165,6 +164,12 @@ function startQuiz() {
 	      console.log("Error, status = " + textStatus + " error: " + errorThrown); 
               getQuestion();  }} );
 
+/** Button Adjustment on resize **/
+$( window ).resize(function() {
+		$('#markAsCorrect').height=($('#markAsCorrect').css('width'));
+		$('#markAsIncorrect').height=($('#markAsIncorrect').width);
+		$('#nextQuestion').height=($('#nextQuestion').css('width'));
+	}).resize();
 }
 
 function getQuestion() {
@@ -217,7 +222,7 @@ function displayQuestion(response, responseStatus) {
     alphagram = Object.keys(question)[0];
     answers = eval("question." + alphagram);
     allAnswers = answers.slice();
-  
+  	nextQuestion.disabled=false;
     $('#alphagram').html(alphagram)
     document.getElementById("alphagram").style.color = "black";
     $('#leftHook').html("&nbsp;");
@@ -227,6 +232,7 @@ function displayQuestion(response, responseStatus) {
     $('#answerBox').val("");
     $('#answerBox').removeAttr("disabled", "disabled");
     $('#nextQuestion').click(function() { textFocus = false;
+    							nextQuestion.disabled=true;
                                 getQuestion(); });
     if (textFocus) $('#answerBox').focus();
     textFocus = true;
@@ -247,6 +253,8 @@ function displayQuestion(response, responseStatus) {
 function submitAnswer () {
 
   if (quizState == "finished") {
+  	correctCounter+=correctState;
+  	questionCounter++;
     getQuestion(); }
   else {
     answer = $.trim($('#answerBox').val().toUpperCase());
@@ -267,10 +275,10 @@ function submitAnswer () {
       }
       else { console.log("Incorrect Answer"); 
       if ($.inArray(answer, allAnswers) >= 0 || toAlpha(answer) != alphagram) 
-        $('#answerBox').css('background-color', 'Khaki');
-      else { $('#answerBox').css('background-color', 'LightPink');
+        $('#answerBox').css('background', 'yellow');
+      else { $('#answerBox').css('background', 'red');
              incorrectAnswerFlag = true; document.getElementById("wrongAnswers").innerHTML+=answer+" ";}
-      setTimeout(function() { $('#answerBox').css('background-color', 'white');}, 100);
+      setTimeout(function() { $('#answerBox').css('background', 'url("b34.png") repeat');}, 100);
       }
       document.getElementById("answerBox").value = "";
     }
@@ -289,7 +297,7 @@ function submitQuestion (correct) {
 		console.log("Question " + alphagram + " updated in cardbox."); 
                 $('#sessionScore').html(response[0].score - startingScore); 
                 if (incrementQ) {
-                  $('#questionsComplete').html(++questionCounter);
+                $('#questionsComplete').html(questionCounter+1);
                   if ((response[0].qAnswered%50 == 0) & (response[0].qAnswered<501)) {
                   submitChat(username + " has completed <b>" + response[0].qAnswered + "</b> alphagrams today!", true); }
                   else if ((response[0].qAnswered%100 == 0) & (response[0].qAnswered>501) & (response[0].qAnswered<2001)) {
@@ -308,6 +316,8 @@ function submitQuestion (correct) {
     $('#markAsIncorrect').show();
     $('#nextQuestion').show();
     $('#nextQuestion').css('float', 'left');
+    correctState=1;
+    $('#correctPercent').html((((correctCounter+1)/(questionCounter+1))*100).toFixed(2)+'%');
   }
   else {
     //console.log("Incorrect Question");
@@ -316,11 +326,15 @@ function submitQuestion (correct) {
     $('#markAsCorrect').show();
     $('#nextQuestion').show();
     $('#nextQuestion').css('float', 'right');
+    correctState=0;
+    $('#correctPercent').html(((correctCounter/(questionCounter+1))*100).toFixed(2)+'%');
   }
   quizState = "finished";
+  
   for (var x=0;x<answers.length;x++)  {
-    displayAnswer(answers[x]);
+    displayAnswer(answers[x]);    
   }
+  
   answers = []; 
   var temp=getWordWithHook(Object.keys(wordData)[0])
   var maxWidths=0;
