@@ -6,8 +6,10 @@ function startQuiz() {
   incorrectAnswerFlag = false;
   incrementQ = true;
   correctProgress = 0;
+  correctState = 0;
   totalAnswers = 0;
   console.log("Starting Quiz");
+  correctPercent = 0.0;
   
 /** Game Div Defined and Cleared **/
   var gameArea = document.getElementById("gameArea");
@@ -101,9 +103,7 @@ function startQuiz() {
     sessionContent2.innerHTML = '<span id="cardboxNumber"></span>';
 	sessionContent3.innerHTML = '<span id="dueDate"></span>';
 	sessionContent4.innerHTML = '<span id="sessionScore">0</span>';
-	sessionContent5.innerHTML = '<span id="correctPercent">0%</span>';
-	if (questionCounter!==0) {
-		sessionContent5.innerHTML= '<span id="correctPercent">'+(correctCounter/(questionCounter)*100).toFixed(2)+'%</span>';}
+	sessionContent5.innerHTML= '<span id="correctPercent">'+correctPercent.toFixed(2)+'%'+'</span>';
 	leftHookLabel.innerHTML = '&nbsp;&nbsp;'
 	rightHookLabel.innerHTML = '&nbsp;&nbsp;'
 
@@ -145,17 +145,17 @@ function startQuiz() {
   markAsIncorrect.addEventListener("click", function(e) {submitQuestion(false)});
   answerBox.addEventListener("keypress", function(e) {
 	if (e.which === 13) {
-	  $(this).attr("disabled", "disabled");
-	  submitAnswer();
 //	re-enable this in getQuestion() so it happens after the 
 //	asynchronous call finishes
-//	  $(this).removeAttr("disabled", "disabled");
+	  $(this).attr("disabled", "disabled");
+	  submitAnswer();
 	}  });
 	$('#markAsCorrect').on('click', null, true, submitQuestion);
 
   
 /** AJaX call to get question **/
-	
+/** newQuiz.py refreshes the quiz, ie, you start to get things
+ *  from the lowest cardbox again **/
   var d = { user: userid };
   $.ajax({type: "POST",
          data: JSON.stringify(d),
@@ -220,6 +220,7 @@ function displayQuestion(response, responseStatus) {
     $('#answerBox').val("Loading Question ...");
   } else {
   	correctProgress=0;
+		correctState = 0;
     alphagram = Object.keys(question)[0];
     answers = eval("question." + alphagram);
     allAnswers = answers.slice();
@@ -240,7 +241,8 @@ function displayQuestion(response, responseStatus) {
     var dueDate = new Date(aux.nextScheduled * 1000);
     $('#dueDate').html(formatDateForDisplay(dueDate));  
     $('#cardboxNumber').html(aux.cardbox);
-    if (questionCounter!==0) {$('#correctPercent').html((((correctCounter)/(questionCounter))*100).toFixed(2)+'%');}
+	if(questionCounter>0) correctPercent = (correctCounter/questionCounter)*100;
+	$('#correctPercent').html(correctPercent.toFixed(2)+'%');
     totalAnswers=Object.keys(wordData).length;
     $('#answerAmount').html('<b>Answers:</b> ' + correctProgress +'  of ' + totalAnswers);
     $('#nextQuestion').hide();
@@ -255,9 +257,6 @@ function displayQuestion(response, responseStatus) {
 function submitAnswer () {
 
   if (quizState == "finished") {
-  	correctCounter+=correctState;
-  	questionCounter++;
-  	$('#questionsComplete').html(questionCounter);
     getQuestion(); }
   else {
     answer = $.trim($('#answerBox').val().toUpperCase());
@@ -318,6 +317,7 @@ function submitQuestion (correct) {
     $('#markAsIncorrect').show();
     $('#nextQuestion').show();
     $('#nextQuestion').css('float', 'left');
+	if (correctState == 0) correctCounter++;
     correctState=1;
   
   }
@@ -328,12 +328,15 @@ function submitQuestion (correct) {
     $('#markAsCorrect').show();
     $('#nextQuestion').show();
     $('#nextQuestion').css('float', 'right');
+	if (correctState == 1) correctCounter--;
     correctState=0;
   }
   quizState = "finished";
   	
-    $('#correctPercent').html((((correctCounter+correctState)/(questionCounter+1))*100).toFixed(2)+'%');
-    $('#questionsComplete').html(questionCounter+1);
+    if (incrementQ) { questionCounter++; }
+	correctPercent = (correctCounter/questionCounter)*100;
+    $('#correctPercent').html(correctPercent.toFixed(2)+'%');
+    $('#questionsComplete').html(questionCounter);
 
   for (var x=0;x<answers.length;x++)  {
     displayAnswer(answers[x]);    
