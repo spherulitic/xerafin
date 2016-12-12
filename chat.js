@@ -88,7 +88,7 @@ function updateChats () {
      success: displayChats,
        error: function(jqXHR, textStatus, errorThrown) {
            console.log("Error: chats could not be updated."); 
-           updateChats(); } } );
+           setTimeout(updateChats, 3000); } } );
 }
 
 function displayChats (response, responseStatus) {
