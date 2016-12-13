@@ -3,6 +3,7 @@ function startChat () {
    mostRecent = (new Date).getTime() - 86400000; // One Day Ago
    chatQueue = [ ];
    CHAT_QUEUE_MAX_LENGTH = 100;
+   lastReadRow = 0;
    var usersLabel = document.createElement("div");
    var userDisplayArea = document.createElement("div");
    var chatBox = document.createElement("input");
@@ -22,7 +23,7 @@ function startChat () {
            submitChat($(this).val(), false);
            $(this).val("");
         } });
-   updateChats();
+   getInitChats();
    chatArea = document.getElementById("chatArea");
    chatArea.appendChild(usersLabel);
    chatArea.appendChild(userDisplayArea);
@@ -79,11 +80,10 @@ function displayLoggedInUsers(response, responseStatus) {
    
 }
 
-function updateChats () {
-  d = { mostRecent: mostRecent } ;
-  getLoggedInUsers();
+function getInitChats () {
+  var d = { mostRecent: mostRecent, userid: userid } ;
   $.ajax({type: "POST",
-         url: "getChats.py",
+         url: "getChatsInit.py",
         data: JSON.stringify(d),
      success: displayChats,
        error: function(jqXHR, textStatus, errorThrown) {
@@ -91,8 +91,21 @@ function updateChats () {
            setTimeout(updateChats, 3000); } } );
 }
 
+function updateChats () {
+  var d = { userid: userid, rownum: lastReadRow } ;
+  getLoggedInUsers();
+  $.ajax({type: "POST",
+         url: "getChats.py",
+        data: JSON.stringify(d),
+     success: displayChats,
+       error: function(jqXHR, textStatus, errorThrown) {
+           console.log("Error: chats could not be updated."); 
+           setTimeout(updateChats, 5000); } } );
+}
+
 function displayChats (response, responseStatus) {
    var newChats = response[0];
+   lastReadRow = response[1];
    console.log("Get Chat Response");
    console.log(response);
    chatDisplayTable.innerHTML="";

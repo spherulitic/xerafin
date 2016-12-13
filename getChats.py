@@ -1,35 +1,52 @@
 #!/usr/bin/python
 
-import json, sys
+import json, sys, os
 import MySQLdb as mysql
 import time
 
+
+def appendChatToResult(line):
+  temp = line.split(',')
+  userid = temp[0]
+  timeStamp = temp[1]
+  message = ','.join(temp[2:])
+
+
+  with mysql.connect("localhost", "***REMOVED***", "***REMOVED***", "***REMOVED***") as con: 
+    if con is None:
+      pass
+    else:
+      con.execute("select photo, name from login where userid = %s", userid)
+      row = con.fetchone()
+      return {"chatDate": int(timeStamp), "photo": row[0], "name": row[1], "chatText": message }
+
+#  return {"chatDate": 0, "photo": "", "name": "Stinky McCheese", "chatText": userid}
+
 params = json.load(sys.stdin);
-now = int(params["mostRecent"]) 
-error = {"status": "success at %s" % now}
+userid = params["userid"]
+lastReadRow = params["rownum"]
+error = {"status": "success"}
 result = [ ]
 MAX_TRIES = 45
-TRY_DELAY = .66 # in seconds
+TRY_DELAY = 1.0 # in seconds
 tries = 0
-command = "select name, photo, timeStamp, message from chat join login on chat.userid = login.userid where timeStamp > %s order by timeStamp asc"
-
-with mysql.connect("localhost", "***REMOVED***", "***REMOVED***", "***REMOVED***") as con:
-  while not result and tries < MAX_TRIES:
-    tries = tries + 1
-    if con is None:
-      error["status"] = "Chat Database Connection Failed"
-    else:
-      try:
-        con.execute(command, now)
-        for row in con.fetchall():
-          result.append({"chatDate": row[2], "photo": row[1], "name": row[0], "chatText": row[3] })
-      except mysql.Error, e:
-        error["status"] = "MySQL error %d %s " % (e.args[0], e.args[1])
-      except:
-        error["status"] = "Chat DB Failure"
-    time.sleep(TRY_DELAY);
-
+time.sleep(4)
+chatFile = os.path.join('chats', userid + '.chat')
+with open(chatFile, 'r') as f:
+  lineCounter = 0
+  while lineCounter < lastReadRow:
+    f.readline()
+    lineCounter = lineCounter + 1
+  while tries < MAX_TRIES:
+    line = f.readline()
+    if line:
+      while line:
+        result.append(appendChatToResult(line))
+        line = f.readline()
+        lastReadRow = lastReadRow + 1
+      break
+    time.sleep(TRY_DELAY)
+    tries = tries + 1 
+          
 print "Content-type: application/json\n\n"
-print json.dumps([result, error])
-
-
+print json.dumps([result, lastReadRow, error])
