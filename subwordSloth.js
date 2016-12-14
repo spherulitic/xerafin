@@ -256,9 +256,9 @@ function submitSlothAnswer () {
     e = document.getElementById(answer);
     if (e) {
       if (e.style.visibility == 'visible')
-         $('#answerBox').css('background-color', 'Khaki');
+         $('#answerBox').css('background', 'Khaki');
       else {
-      $('#answerBox').css('background-color', 'LightGreen');
+      $('#answerBox').css('background', 'LightGreen');
       e.style.visibility = 'visible';
       slothScore += Math.pow(answer.length, 2);
       var progress = Math.round((slothScore/totalScore)*100) + '%';
@@ -271,11 +271,11 @@ function submitSlothAnswer () {
       }
     } else { 
        if (isSubAlpha(toAlpha(answer), slothQuestion))
-          $('#answerBox').css('background-color', 'LightPink');
+          $('#answerBox').css('background', 'LightPink');
        else
-          $('#answerBox').css('background-color', 'Khaki');
+          $('#answerBox').css('background', 'Khaki');
     }
-    setTimeout(function() { $('#answerBox').css('background-color', 'white');}, 100);
+    setTimeout(function() { $('#answerBox').css('background', 'url("b34.png") repeat');}, 300);
     $('#answerBox').focus();
 }
 
