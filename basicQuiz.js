@@ -16,20 +16,34 @@ function startQuiz() {
   gameArea.innerHTML = "";
 
 /** Quiz Regions Defined **/ 
+
+/** Session Region Generation **/
   var sessionInfo = document.createElement("table");
+  sessionInfo.className += ' quizSessionTable';
   var sessionScoreLabel = document.createElement("div");
   var sessionHeader = document.createElement('thead');
-  var sessionHeader1 = document.createElement('th');
-  var sessionHeader2 = document.createElement('th');
-  var sessionHeader3 = document.createElement('th');
-  var sessionHeader4 = document.createElement('th');
-  var sessionHeader5 = document.createElement('th');
   var sessionContent = document.createElement('tr');
-  var sessionContent1 = document.createElement('td');
-  var sessionContent2 = document.createElement('td');
-  var sessionContent3 = document.createElement('td');
-  var sessionContent4 = document.createElement('td');
-  var sessionContent5 = document.createElement('td');
+  var sessionHeaderCell = [];
+  var sessionHeaderContent = ['questions', 'cardbox', 'due date', 'score', '% correct'];
+  var sessionHeaderClasses = ['',' quizSessionTableHCardbox',' quizSessionTableHDue','',' quizSessionTableHCorrect']
+  var sessionContentCell= [];
+  var sessionContentContent = ['<span id="questionsComplete">'+questionCounter+'</span>', '<span id="cardboxNumber"></span>', 
+  '<span id="dueDate"></span>', '<span id="sessionScore">0</span>', '<span id="correctPercent">'+correctPercent.toFixed(2)+'%'+'</span>'];
+  for (var i=0;i<5;i++){
+  	sessionHeaderCell[i]= document.createElement('th');
+  	sessionHeaderCell[i].innerHTML = sessionHeaderContent[i];
+  	sessionHeaderCell[i].className += sessionHeaderClasses[i];
+  	sessionContentCell[i]= document.createElement('td');
+  	sessionContentCell[i].innerHTML= sessionContentContent[i];
+  	sessionHeader.appendChild(sessionHeaderCell[i]);
+  	sessionContent.appendChild(sessionContentCell[i]);
+  }
+  sessionHeaderCell[4].title='% of questions answered correctly this session.';
+  sessionInfo.appendChild(sessionHeader);
+  sessionInfo.appendChild(sessionContent);
+
+/** Other Regions **/
+
   var alphaSuper = document.createElement("div");
   var alphaContainer = document.createElement("div");
   var alphagramLabel = document.createElement("div");
@@ -45,13 +59,7 @@ function startQuiz() {
   var correctAnswers = document.createElement("table");
   var wrongAnswers = document.createElement("div");
 
-/** Styling & ID initialisation **/
-  
-  sessionInfo.className += ' quizSessionTable';
-  sessionHeader2.className += ' quizSessionTableHCardbox';
-  sessionHeader3.className += ' quizSessionTableHDue';
-  sessionHeader5.className += ' quizSessionTableHCorrect';
-  
+/** Styling & ID initialisation **/  
   alphaSuper.className += " quizAlphaSuper";
   alphaContainer.id = "alphaContainer";
   alphaContainer.className += " quizAlphaContain";
@@ -61,7 +69,8 @@ function startQuiz() {
   leftHookLabel.className += " quizAlphaLeft";
   rightHookLabel.id = "rightHook";
   rightHookLabel.className += " quizAlphaRight";
-
+  leftHookLabel.innerHTML = '&nbsp;&nbsp;'
+  rightHookLabel.innerHTML = '&nbsp;&nbsp;'
   markAs.className += " quizAnswerRegion"; 
   markAsCorrect.id = "markAsCorrect";
   markAsCorrect.className+=' quizButton quizButtonCorrect';
@@ -76,7 +85,6 @@ function startQuiz() {
   markAsIncorrect.title = "Mark as Incorrect";
   markAsIncorrect.className+=' quizButton quizButtonIncorrect';
   markAsIncorrect.innerHTML='✘';
-  
   answerContainer.id = "answerContainer";
   answerContainer.className += " quizAnswerContain";
   answerBox.type = "text";
@@ -84,38 +92,18 @@ function startQuiz() {
   answerBox.maxLength = '15';
   answerBox.className += " quizAnswerBox";
   answerAmount.id = "answerAmount";
-  answerAmount.className += " quizAnswerNumber";
-  
+  answerAmount.className += " quizAnswerNumber"; 
   correctAnswers.id = "correctAnswers";
   correctAnswers.className += " wordTable";
   wrongAnswers.id = "wrongAnswers";
   wrongAnswers.className += " wordTableWrong"
   wrongAnswers.innerHTML = "";
-  
-/** Start Values Displayed **/
-    sessionHeader2.innerHTML =  'cardbox';
-    sessionHeader3.innerHTML =  'due date';
-    sessionHeader1.innerHTML =  'questions';
-    sessionHeader4.innerHTML =  'score';
-    sessionHeader5.innerHTML =  '% correct';
-    sessionHeader5.title =  '% of questions answered correctly this session.';
-    sessionContent1.innerHTML = '<span id="questionsComplete">'+questionCounter+'</span>';
-    sessionContent2.innerHTML = '<span id="cardboxNumber"></span>';
-	sessionContent3.innerHTML = '<span id="dueDate"></span>';
-	sessionContent4.innerHTML = '<span id="sessionScore">0</span>';
-	sessionContent5.innerHTML= '<span id="correctPercent">'+correctPercent.toFixed(2)+'%'+'</span>';
-	leftHookLabel.innerHTML = '&nbsp;&nbsp;'
-	rightHookLabel.innerHTML = '&nbsp;&nbsp;'
-
-/** Quiz Screen Generation **/
-  
+/** Quiz Screen Generation **/ 
   gameArea.appendChild(alphaSuper);
   alphaSuper.appendChild(alphaContainer);
   alphaContainer.appendChild(leftHookLabel);
   alphaContainer.appendChild(alphagramLabel);
   alphaContainer.appendChild(rightHookLabel);
-
-
   gameArea.appendChild(markAs);
   markAs.appendChild(markAsCorrect);
   markAs.appendChild(nextQuestion);
@@ -123,22 +111,10 @@ function startQuiz() {
   answerContainer.appendChild(answerBox);
   answerContainer.appendChild(answerAmount);
   markAs.appendChild(markAsIncorrect);
-
-  gameArea.appendChild(sessionInfo);
-  sessionInfo.appendChild(sessionHeader);
-  sessionHeader.appendChild(sessionHeader1);
-  sessionHeader.appendChild(sessionHeader2);
-  sessionHeader.appendChild(sessionHeader3);
-  sessionHeader.appendChild(sessionHeader4);
-  sessionHeader.appendChild(sessionHeader5);
-  sessionInfo.appendChild(sessionContent);
-  sessionContent.appendChild(sessionContent1);
-  sessionContent.appendChild(sessionContent2);
-  sessionContent.appendChild(sessionContent3);
-  sessionContent.appendChild(sessionContent4);
-   sessionContent.appendChild(sessionContent5);
+  gameArea.appendChild(sessionInfo);  
   gameArea.appendChild(correctAnswers);
   gameArea.appendChild(wrongAnswers);
+  
 /** Event Listeners **/ 
   $('#nextQuestion').click(function() { textFocus = false;
                                 getQuestion(); });
@@ -151,8 +127,6 @@ function startQuiz() {
 	  submitAnswer();
 	}  });
 	$('#markAsCorrect').on('click', null, true, submitQuestion);
-
-  
 /** AJaX call to get question **/
 /** newQuiz.py refreshes the quiz, ie, you start to get things
  *  from the lowest cardbox again **/
@@ -164,13 +138,6 @@ function startQuiz() {
 	 error: function(jqXHR, textStatus, errorThrown) {
 	      console.log("Error, status = " + textStatus + " error: " + errorThrown); 
               getQuestion();  }} );
-
-/** Button Adjustment on resize **/
-/**$( window ).resize(function() {
-		$('#markAsCorrect').height=($('#markAsCorrect').css('width'));
-		$('#markAsIncorrect').height=($('#markAsIncorrect').width);
-		$('#nextQuestion').height=($('#nextQuestion').css('width'));
-	}).resize();**/
 }
 
 function getQuestion() {
@@ -220,13 +187,14 @@ function displayQuestion(response, responseStatus) {
     $('#answerBox').val("Loading Question ...");
   } else {
   	correctProgress=0;
-		correctState = 0;
+	correctState = 0;
     alphagram = Object.keys(question)[0];
     answers = eval("question." + alphagram);
     allAnswers = answers.slice();
   	nextQuestion.disabled=false;
-    $('#alphagram').html(alphagram)
-    document.getElementById("alphagram").style.color = "black";
+    $('#alphagram').html(alphagram);
+    $('#alphagram').css('color', 'black');
+    //*document.getElementById("alphagram").style.color = "black";*//
     $('#leftHook').html("&nbsp;");
     $('#rightHook').html("&nbsp;");
     $('#correctAnswers').html("");
@@ -280,14 +248,13 @@ function submitAnswer () {
         $('#answerBox').css('background', 'yellow');
       else { $('#answerBox').css('background', 'red');
              incorrectAnswerFlag = true; document.getElementById("wrongAnswers").innerHTML+=answer+" ";}
-      setTimeout(function() { $('#answerBox').css('background', 'url("b34.png") repeat');}, 100);
+      setTimeout(function() { $('#answerBox').css('background', 'url("b34.png") repeat');}, 300);
       }
       document.getElementById("answerBox").value = "";
     }
    $('#answerBox').removeAttr("disabled", "disabled");
    $('#answerBox').focus();
   }  
-  
 }
 
 function submitQuestion (correct) {
@@ -318,8 +285,7 @@ function submitQuestion (correct) {
     $('#nextQuestion').show();
     $('#nextQuestion').css('float', 'left');
 	if (correctState == 0) correctCounter++;
-    correctState=1;
-  
+    correctState=1;  
   }
   else {
     //console.log("Incorrect Question");
@@ -345,6 +311,7 @@ function submitQuestion (correct) {
   answers = []; 
   var temp=getWordWithHook(Object.keys(wordData)[0])
   var maxWidths=0;
+  var counter = 0;
   temp[0]= addLineBreaks (temp[0], 8);
   temp[2]= addLineBreaks (temp[2], 8);
   $('#alphagram').html(temp[1]);
@@ -352,35 +319,26 @@ function submitQuestion (correct) {
   $('#rightHook').html(temp[2]);
   maxWidths = Math.max($('#rightHook').width(), $('#leftHook').width());
   $('#rightHook').width(maxWidths);
-  $('#leftHook').width(maxWidths);
-  
-  var counter = 0;
+  $('#leftHook').width(maxWidths); 
   if (typeof scrollTimer !== 'undefined' && scrollTimer !== null)
     clearInterval(scrollTimer);
   scrollTimer = setInterval(function() { 
   	var temp2=getWordWithHook(allAnswers[counter%allAnswers.length]);
   	temp2[0]= addLineBreaks (temp2[0], 8);
-    temp2[2]= addLineBreaks (temp2[2], 8);
-    
+    temp2[2]= addLineBreaks (temp2[2], 8);  
     $('#alphagram').html(temp2[1]);
     $('#leftHook').html(temp2[0]);
-    $('#rightHook').html(temp2[2]);
-    
+    $('#rightHook').html(temp2[2]); 
   maxWidths = Math.max($('#rightHook').width(), $('#leftHook').width());
   $('#rightHook').width(maxWidths);
   $('#leftHook').width(maxWidths);
-  
     counter++; }, 2500);
   $('#nextQuestion').show();
-  
-
 }
 
-function displayAnswer(answer){
-  
+function displayAnswer(answer){ 
   var x = document.getElementById("correctAnswers");
   var dot = "&#183;";
-
 /** Find row number to insert new answer into **/
   if (document.getElementById("correctAnswers").rows.length > 0){
 		for (var z=0;z<x.rows.length;z++){	
@@ -393,12 +351,10 @@ function displayAnswer(answer){
 	else {y=-1;}
 /** create row **/
 	var row = x.insertRow(y);
-	var cell1 = row.insertCell(0);
-  	var cell2 = row.insertCell(1);
-  	var cell3 = row.insertCell(2);
-  	var cell4 = row.insertCell(3);
-  	var cell5 = row.insertCell(4);
-  	var cell6 = row.insertCell(5);
+	var cells = [];
+	for (var i=0;i<6;i++){	
+		cells[i] = row.insertCell(i);
+	}
 /** clear previously highlighted word and highlight new answer **/
 for (var i=0;i<x.rows.length;i++){	
 	if ( document.getElementById("correctAnswers").rows[i].classList.contains('wordTableHighlight') ) {
@@ -410,26 +366,16 @@ if (quizState !== "finished"){
 }	
 else {
 	row.className += ' wordTableHighlightWrong';
-}		
-	
+}			
 /**Insert Data**/
-
   data = eval("wordData." + answer);
-  cell1.className += " wordTableLeftHook";
-  cell1.innerHTML = data[0];
-  cell2.className += " wordTableInnerLeft";
-  cell2.innerHTML = (data[3][0]?dot:"");
-  cell3.className += " wordTableWord";
-  cell3.innerHTML= answer;
-  cell4.className += " wordTableInnerRight";
-  cell4.innerHTML = (data[3][1]?dot:"");
-  cell5.className += " wordTableRightHook";
-  cell5.innerHTML = data[1];
-  cell6.className += " wordTableDefinition";
-  cell6.innerHTML = data[2];
-  
+  var cellClass = [" wordTableLeftHook", " wordTableInnerLeft", " wordTableWord", " wordTableInnerRight", " wordTableRightHook", " wordTableDefinition"];
+  var cellContent = [data[0], (data[3][0]?dot:""), answer, (data[3][1]?dot:""), data[1], data[2]];
+  for (var i=0;i<6;i++){	
+  	cells[i].className += cellClass[i];
+  	cells[i].innerHTML = cellContent[i];
+  }  
 }
-
 
 function toAlpha(word) {
   return word.split('').sort().join(''); }	
@@ -443,14 +389,12 @@ function getWordWithHook(word) {
 }
 
 function formatDateForDisplay(d) {
-
     var months = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
    return d.getDate() + " " + months[d.getMonth()] + " " + d.getFullYear() + " " + d.getHours()+":"+(d.getMinutes()<10 ? "0" : "") + d.getMinutes();
 
 }
 
 function isSubAlpha(a1, a2) {
-
   // is a1 a sub alphagram of a2
   var idx = 0;
   var result = true;
@@ -464,6 +408,7 @@ function isSubAlpha(a1, a2) {
 function getDivisor (item, divideBy) {
 	if (divideBy !== 0){return Math.ceil(item.length/divideBy);}
 }
+
 function addLineBreaks (item, divideBy) {
 	var divisor = getDivisor (item,divideBy);
 	if (divisor>1){	
