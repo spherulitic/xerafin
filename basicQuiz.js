@@ -191,18 +191,17 @@ function displayQuestion(response, responseStatus) {
     alphagram = Object.keys(question)[0];
     answers = eval("question." + alphagram);
     allAnswers = answers.slice();
-  	nextQuestion.disabled=false;
+    document.getElementById('nextQuestion').disabled = false;
     $('#alphagram').html(alphagram);
     $('#alphagram').css('color', 'black');
-    //*document.getElementById("alphagram").style.color = "black";*//
     $('#leftHook').html("&nbsp;");
-    $('#rightHook').html("&nbsp;");
+    $('#rightHook').html("&nbsp;"); 
     $('#correctAnswers').html("");
     $('#wrongAnswers').html("");
     $('#answerBox').val("");
     $('#answerBox').removeAttr("disabled", "disabled");
     $('#nextQuestion').click(function() { textFocus = false;
-    							nextQuestion.disabled=true;
+    							document.getElementById('nextQuestion').disabled=true;
                                 getQuestion(); });
     if (textFocus) $('#answerBox').focus();
     textFocus = true;
@@ -248,7 +247,7 @@ function submitAnswer () {
         $('#answerBox').css('background', 'yellow');
       else { $('#answerBox').css('background', 'red');
              incorrectAnswerFlag = true; document.getElementById("wrongAnswers").innerHTML+=answer+" ";}
-      setTimeout(function() { $('#answerBox').css('background', 'url("b34.png") repeat');}, 300);
+      setTimeout(function() { $('#answerBox').css('background', 'url("b34.png") repeat');}, 200);
       }
       document.getElementById("answerBox").value = "";
     }

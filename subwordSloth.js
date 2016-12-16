@@ -7,10 +7,11 @@ if (typeof question !== 'undefined') {
   slothQuestion = question;
   initSloth2(); }
 else {
-  d = { user: userid };
+  var d = { user: userid, dummy: new Date().getTime() };
   $.ajax({type: "POST",
          data: JSON.stringify(d),
          url: "getNextBingo.py",
+         cache: false,
          success: populateSlothQuestion,
 	 error: function(jqXHR, textStatus, errorThrown) {
 	      console.log("Error getting bingo, status = " + textStatus + " error: " + errorThrown); 
@@ -19,7 +20,8 @@ else {
    } }
 
 function populateSlothQuestion(response, responseStatus) {
-//  console.log(response);
+  console.log("Response from get next bingo");
+  console.log(response);
   slothQuestion = response[0].alpha;
   initSloth2();
  }
@@ -60,12 +62,12 @@ function initSloth2() {
   progressBar.style.position = "relative";
   progressBar.style.width = "100%";
   progressBar.style.height = "30px";
-  progressBar.style.backgroundColor = "lightgray";
+  progressBar.style.background = "lightgray";
   progressBar.style.margin = "5px";
   progressDone.style.position = "absolute";
   progressDone.style.width = "0%";
   progressDone.style.height = "100%";
-  progressDone.style.backgroundColor = "green";
+  progressDone.style.background = "green";
   progressDone.id = "progressDone";
   progressBar.appendChild(progressLabel);
   progressBar.appendChild(progressDone);
@@ -89,11 +91,13 @@ function initSloth2() {
   answerBox.addEventListener("keypress", function(e) {
 	if (e.which === 13) { submitSlothAnswer(); }  });
 
-  var answerField = document.createElement("table");
-  var answerFieldBody = document.createElement("tbody");
+  var answerField = document.createElement("div");
+  var answerFieldBody = document.createElement("div");
+  answerFieldBody.className += ' well well-sm pre-scrollable';
   answerField.appendChild(answerFieldBody);
   answerFieldBody.id = "answerField";
   answerField.style.width = "100%";
+  answerField.paddingBottom = "10px";
 		
   gameArea.appendChild(alphagramLabel);
   gameArea.appendChild(timerLabel);
@@ -110,6 +114,14 @@ function initSloth2() {
 	 error: function(jqXHR, textStatus, errorThrown) {
 	      console.log("Error, status = " + textStatus + " error: " + errorThrown); 
               }} );
+/**
+  $(document).ready(function(){
+    $("#answerField").scrollspy({
+		target: "#answerField",
+		offset: 70
+	}) 
+});
+**/
 }
 
 function setupSloth (response, responseStatus) {
@@ -126,32 +138,64 @@ var  tmpWordlist = [ ];
   
  var wordlist = tmpWordlist.sort(function f (a,b) {
     return a.length < b.length || (a.length == b.length && a < b) ? -1 : a.length > b.length || (a.length == b.length && a > b) ? 1 : 0  });
-  var NUMROWS = 6;
+  var minSubLength = 4;
   totalScore = 0;
   slothScore = 0;
   slothTimerCount = Math.max(180, wordlist.length*3);
-  var tableRows = Math.ceil(wordlist.length / NUMROWS);
   var answerField = document.getElementById("answerField");
-  for (var x=0;x<tableRows;x++) {
-    var tr = document.createElement('tr');
-    answerField.appendChild(tr);
-    var idx = x;
-    for (var i=0;i<NUMROWS;i++) 
-      if (idx < wordlist.length) {
-        var td = document.createElement('td');
-        td.className = "slothTD";
-        td.style.border = 'solid 1px';
-        tr.appendChild(td);
-        var span = document.createElement('span');
-        td.appendChild(span);
-        span.style.visibility = "hidden";
-        span.style.fontWeight = 'bold';
-        span.id = wordlist[idx];
-        span.innerHTML = wordlist[idx];
-        totalScore += Math.pow(wordlist[idx].length,2);
-        idx += tableRows
-    }
+  for (var y=slothQuestion.length;y>=minSubLength;y--){
+  	var content = wordlist.filter( function( element ) {
+  		return element.length == y;
+	});
+	if (content.length!==0){generateSlothTable (content,y)};
   }
+}
+
+function generateSlothTable (content,wordLength) {
+	var slothColumns = [0,0,15,10,8,7,6,6,5,5,4,4,3,3,2,2];
+	var slothTableHeadings = ['','','Twos','Threes','Fours','Fives','Sixes','Sevens','Eights','Nines','Tens','Elevens','Twelves','Thirteens','Fourteens','Fifteens']
+	var currentTable = document.createElement('table');
+	if (content.length>=slothColumns[wordLength]){
+		currentTable.style.width='100%';}
+	currentTable.id='slothTable'+wordLength;
+	currentTable.style.borderCollapse = 'separate'; 
+	currentTable.style.borderSpacing= '2px';
+	var tableHeading = document.createElement('div');
+	tableHeading.id='slothHeading'+wordLength;
+	tableHeading.style.background='url("b42.png") repeat';
+	/**tableHeading.style.background='#6ac';**/
+	tableHeading.style.paddingLeft='5px';
+	tableHeading.style.color='#000';
+	tableHeading.style.border='1px solid #333';
+	tableHeading.style.width='100%';
+	tableHeading.style.fontSize='0.9em';
+	tableHeading.style.fontVariant='small-caps';
+	tableHeading.innerHTML=slothTableHeadings[wordLength]+' ('+content.length+')';
+	document.getElementById("answerField").appendChild(tableHeading);
+	var tableRows = Math.ceil(content.length / slothColumns[wordLength]);
+	for (var x=0; x< tableRows; x++) {
+		var tr = document.createElement('tr');
+		var idx = x;
+		for (var i=0;i < slothColumns[wordLength];i++) {
+			if (idx < content.length) {
+				var td = document.createElement('td');
+        		td.className = "slothTD";
+        		td.style.border = 'solid 1px #ccc';
+        		td.style.fontSize = '0.9em';
+        		var span = document.createElement('span');
+        		span.style.visibility = "hidden";
+        		span.style.fontWeight = 'bold';
+        		span.id = content[idx];
+        		span.innerHTML = content[idx];
+       			totalScore += Math.pow(content[idx].length,2);
+        		tr.appendChild(td);
+        		td.appendChild(span);
+        		idx += tableRows;
+			}	
+		}		
+		currentTable.appendChild(tr);
+	}
+	document.getElementById("answerField").appendChild(currentTable);
 }
 
 function startSloth () {
@@ -185,7 +229,7 @@ function slothTimerExpire () {
         wd = document.getElementById(slothData[x].words[y]).parentNode;
         wd.title = "Click to add cardbox";
         wd.onclick = function () {addToCardbox(this.firstChild.id);}; 
-        wd.style.backgroundColor = "SkyBlue";
+        wd.style.background = "SkyBlue";
        } 
     } else {
     var allCorrect = true;
@@ -199,7 +243,7 @@ function slothTimerExpire () {
       for(var y=0;y<slothData[x].words.length;y++) {
         wd = document.getElementById(slothData[x].words[y]).parentNode;
         wd.title = "Not due - rescheduled";
-        wd.style.backgroundColor = "LightGreen"; }
+        wd.style.background = "LightGreen"; }
       }
     else if (allCorrect && slothData[x].auxInfo.difficulty != 4) {
       // correct and due now
@@ -210,7 +254,7 @@ function slothTimerExpire () {
         var nextCardbox = slothData[x].auxInfo.cardbox + 1;
         wd = document.getElementById(slothData[x].words[y]).parentNode;
         wd.title = "Moved up to cardbox " + nextCardbox;
-        wd.style.backgroundColor = "DarkSeaGreen"; }
+        wd.style.background = "DarkSeaGreen"; }
       }
     else { // not correct 
       if (slothData[x].alpha == slothQuestion) {
@@ -219,7 +263,7 @@ function slothTimerExpire () {
       for(var y=0;y<slothData[x].words.length;y++) {
         wd = document.getElementById(slothData[x].words[y]).parentNode;
         wd.title = "Moved to cardbox 0";
-        wd.style.backgroundColor = "pink"; }
+        wd.style.background = "pink"; }
 //        console.log(slothData[x].alpha + " is not correct"); 
     }
     } 
@@ -260,7 +304,16 @@ function submitSlothAnswer () {
       else {
       $('#answerBox').css('background', 'LightGreen');
       e.style.visibility = 'visible';
+      e.parentNode.style.background = "url('b34.png') repeat";
       slothScore += Math.pow(answer.length, 2);
+      /**NEW**/
+       document.getElementById('answerField').scrollTop = 0;
+      var elem = $("#slothHeading"+answer.length);
+	  var offset = elem.offset().top - elem.parent().offset().top-10;
+      var topPos = $('#slothHeading'+answer.length).position().top;
+	  document.getElementById('answerField').scrollTop = offset;
+	  /**$('#slothHeading4').html(offset+' '+topPos);**/
+      /*******/
       var progress = Math.round((slothScore/totalScore)*100) + '%';
       
       $('#progressDone').css('width', progress);
@@ -322,7 +375,7 @@ function addedToCardbox(response, responseStatus) {
        for(var y=0;y<slothData[x].words.length;y++) {
         wd = document.getElementById(slothData[x].words[y]).parentNode;
         wd.removeAttribute("onclick");
-        wd.style.backgroundColor = "SandyBrown";
+        wd.style.background = "SandyBrown";
         wd.title = "Added to Cardbox";
       }}}}
    else alert("Error adding " + response[0].question + " to Cardbox. Please try again.");

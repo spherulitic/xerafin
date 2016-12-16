@@ -18,7 +18,7 @@ input[type=text] {background-color:#fff;color:#000;-webkit-border-radius: 5px;-m
 
 /*Sloth Specific*/
 
-td.slothTD {padding: 2px;border: solid 1px;}
+td.slothTD {padding: 2px;/**border: solid 1px;**/}
 
 /*Region Level Header and Button classes */
 
@@ -146,9 +146,10 @@ background-image: url('b42.png');background-repeat: repeat;
 .activePic {height:40px;margin:0px;}
 .activeUserHeading {background-image: url('b42.png');background-repeat: repeat;font-variant:small-caps;font-size:0.9em;padding-left:2px;margin:0px;padding:3px;font-weight:bolder;border-top:1px solid #999;border-bottom:1px solid #999;}
 .chatInput {display:block;width:100%;margin-top:5px;margin-bottom:5px;}
-.xeraBroadcast {background-color:#adf;background-image: url('b42.png');background-repeat: repeat;border:1px solid #333;margin.top:0.3em;padding-right:0.5em;}
+.xeraBroadcast {background-image: url('b42.png');background-repeat: repeat;border:1px solid #333;margin.top:0.3em;padding-right:0.5em;}
 .xeraBroadcastBorderFix {border-top:1px solid #333 !important;font-size:0.85em;}
 .xeraBroadcastImageAlign {vertical-align:middle;padding:1px;}
  
 /*-------------Bootstrap Override-----------------*/
 #chatDisplayBox {background: url('b34.png') repeat;padding:8px;border: 1px solid #999;}
+#answerField {background: url('b52.png') repeat;padding:8px;border: 1px solid #999;min-height:420px !important;}
