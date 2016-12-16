@@ -1,12 +1,12 @@
 #!/usr/bin/python
-import MySQLdb as mysql
+import xerafinSetup as xs
 
 print "Content-type: text/html\n\n"
 print "<html><head></head>"
 print "<body>"
 
 try:
-  with mysql.connect("localhost", "slipkin_clipe", "xev1ous#", "slipkin_xerafin") as con:
+  with xs.getMysqlCon() as con:
 	if con is None:
 		print "Database connection failed\n"
 	else:
