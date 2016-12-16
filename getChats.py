@@ -3,6 +3,8 @@
 import json, sys, os
 import MySQLdb as mysql
 import time
+import updateActive as ua
+import xerafinSetup as xs
 
 
 def appendChatToResult(line):
@@ -12,7 +14,7 @@ def appendChatToResult(line):
   message = ','.join(temp[2:])
 
 
-  with mysql.connect("localhost", "slipkin_clipe", "xev1ous#", "slipkin_xerafin") as con: 
+  with xs.getMysqlCon() as con:
     if con is None:
       pass
     else:
@@ -32,6 +34,7 @@ TRY_DELAY = 1.0 # in seconds
 tries = 0
 time.sleep(4)
 chatFile = os.path.join('chats', userid + '.chat')
+ua.updateActive(userid)
 with open(chatFile, 'r') as f:
   lineCounter = 0
   while lineCounter < lastReadRow:
