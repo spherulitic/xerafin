@@ -2,6 +2,7 @@
 import MySQLdb as mysql
 import sys, json
 import time
+import xerafinSetup as xs
 
 # Called via AJAX and returns photo URL, name, and last active time of all logged in users
 
@@ -15,7 +16,7 @@ print "Content-type: application/json\n\n"
 result = [ ]
 error = {"status": "success"}
 
-with mysql.connect("localhost", "***REMOVED***", "***REMOVED***", "***REMOVED***") as con:
+with xs.getMysqlCon() as con:
   if con is None:
     error["status"] = "DB connection failure"
   else:

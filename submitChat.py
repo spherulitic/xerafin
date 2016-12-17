@@ -4,6 +4,7 @@ import json, sys, os
 import MySQLdb as mysql
 import time
 import updateActive as ua
+import xerafinSetup as xs
 
 error = {"status": "success"}
 result = [ ]
@@ -18,7 +19,7 @@ AUTOLOGOFF = .1 # in hours
 logoffTime = now - (3600*AUTOLOGOFF)
 
 try:
-  with mysql.connect("localhost", "***REMOVED***", "***REMOVED***", "***REMOVED***") as con:
+  with xs.getMysqlCon() as con:
     if con is None:
       result["status"] = "Chat Database Connection Failed"
     else:
