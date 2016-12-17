@@ -12,6 +12,7 @@ import string
 import os
 import itertools
 import dawg_python as dawg
+import xerafinSetup as xs
 
 # 	studyOrderIndex
 #	closet
@@ -27,11 +28,6 @@ import dawg_python as dawg
 # 3 : Locked
 # 4 : In the future, not eligible to be completed now
 
-DB_HOST = "localhost"
-DB_SID = "slipkin_clipe"
-DB_PWD = "xev1ous#"
-DB_SCHEMA = "slipkin_xerafin"
-
 cardboxDBPath = "cardboxes"
 DAWG_PATH = "alpha.dawg"
 
@@ -44,7 +40,7 @@ def getDBCur(userid):
   return lite.connect(getDBFile(userid)).cursor()
   
 def getAllPrefs(userid):
-  with mysql.connect(DB_HOST, DB_SID, DB_PWD, DB_SCHEMA) as con:
+  with xs.getMysqlCon() as con:
     command = "select studyOrderIndex, closet, newWordsAtOnce, reschedHrs, showNumSolutions, cb0max, showHints from user_prefs where userid = %s"
     con.execute(command, userid)
     row = con.fetchone()
@@ -59,13 +55,13 @@ def getAllPrefs(userid):
   return result
 
 def getPrefs (prefName, userid):
-  with mysql.connect(DB_HOST, DB_SID, DB_PWD, DB_SCHEMA) as con:
+  with xs.getMysqlCon() as con:
     command = "select " + prefName + " from user_prefs where userid = %s" 
     con.execute(command, userid)
     return con.fetchone()[0]
 
 def setPrefs2(prefName, userid, prefValue):
-  with mysql.connect(DB_HOST, DB_SID, DB_PWD, DB_SCHEMA) as con:
+  with xs.getMysqlCon() as con:
     command = "update user_prefs set " + prefName + " = %s where userid = %s"
     try:
       con.execute(command, (prefValue, userid))
@@ -83,7 +79,7 @@ def setPrefs (userid,
 		showNumSolutions = None):
 
 # TODO: check to be sure the inputs are correct data type, etc
-  with mysql.connect(DB_HOST, DB_SID, DB_PWD, DB_SCHEMA) as con:
+  with xs.getMysqlCon() as con:
     try:
       if con is None:
         return "Error: DB Conn Failed Updating user_prefs"
@@ -115,7 +111,7 @@ def getFromStudyOrder (numNeeded, userid, cur):
   studyOrderIndex = getPrefs("studyOrderIndex", userid)
   if numNeeded < 1:
     return result
-  with mysql.connect(DB_HOST, DB_SID, DB_PWD, DB_SCHEMA) as mysqlcon:
+  with xs.getMysqlCon() as mysqlcon:
     if mysqlcon is None:
       return result
     cur.execute("select question from questions where next_scheduled is not null union all select question from next_added")
@@ -320,10 +316,10 @@ def insertIntoNextAdded(alphagrams, cur):
 
 def isAlphagramValid(alpha):
   chCommand = "select count(*) from words where alphagram = %s"
-  with mysql.connect(DB_HOST, DB_SID, DB_PWD, DB_SCHEMA) as mysqlcon:
-    if mysqlcon is not None:
-      mysqlcon.execute(chCommand, (alpha,)) 
-      return mysqlcon.fetchone()[0] > 0
+  with xs.getMysqlCon() as con:
+    if con is not None:
+      con.execute(chCommand, (alpha,)) 
+      return con.fetchone()[0] > 0
     else:
       return False
   return False
@@ -414,7 +410,7 @@ def getBingoFromCardbox (userid):
     studyOrderIndex = getPrefs("studyOrderIndex", userid)
     cur.execute("select question from questions where cardbox is not null and length(question) >= 7")
     allCardboxBingos = [ x[0] for x in cur.fetchall() ]
-    with mysql.connect(DB_HOST, DB_SID, DB_PWD, DB_SCHEMA) as mysqlcon:
+    with xs.getMysqlCon() as mysqlcon:
       mysqlcon.execute("select alphagram from studyOrder where length(alphagram) >= 7 and studyOrderIndex > %s order by studyOrderIndex", studyOrderIndex)
       for row in mysqlcon.fetchall():
         if row[0] not in allCardboxBingos:
@@ -464,13 +460,13 @@ def getQuestions (numNeeded, userid, questionLength=None) :
 ##    cur.execute("update questions set difficulty = -1 where question in (select question from questions where length(question) = {0} and difficulty in (-1,0,2) order by next_scheduled limit {1})".format(questionLength, numNeeded))
 
 def getDef (word) :
-  with mysql.connect(DB_HOST, DB_SID, DB_PWD, DB_SCHEMA) as mysqlcon:
-    if mysqlcon is None:
+  with xs.getMysqlCon() as con:
+    if con is None:
       return " "
     command = "select definition from words where word = %s"
-    mysqlcon.execute(command, word)
+    con.execute(command, word)
     try:
-      return mysqlcon.fetchone()[0]
+      return con.fetchone()[0]
     except:
       return " "
 
@@ -479,7 +475,7 @@ def getAnagrams (alpha) :
   Takes in an alphagram and returns a list of words
   '''
   x = []
-  with mysql.connect(DB_HOST, DB_SID, DB_PWD, DB_SCHEMA) as con:
+  with xs.getMysqlCon() as con:
     if con is not None:
       con.execute("select word from words where alphagram = '{0}'".format(alpha))
       for row in con.fetchall():
@@ -498,7 +494,7 @@ def getHooks (word) :
   Takes in a word
   Returns a tuple (front hooks, word, back hooks)
   '''
-  with mysql.connect(DB_HOST, DB_SID, DB_PWD, DB_SCHEMA) as con:
+  with xs.getMysqlCon() as con:
     if con is not None:
       command = "select front_hooks, word, back_hooks from words where word = %s"
       con.execute(command, word) 
@@ -610,7 +606,7 @@ def getDots (word) :
   takes in a word, returns a list of two booleans
   does the word lose the front / back letter and still make a word?
   '''
-  with mysql.connect(DB_HOST, DB_SID, DB_PWD, DB_SCHEMA) as con:
+  with xs.getMysqlCon() as con:
     if con is not None:
       command = "select count(*) from words where word = %s"
       con.execute(command, word[1:])

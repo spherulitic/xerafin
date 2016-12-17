@@ -4,8 +4,8 @@ import xerafinLib as xl
 import json, sys
 import updateActive as ua
 import MySQLdb as mysql
+import xerafinSetup as xs
 
-#userid = "10157462952395078"
 params = json.load(sys.stdin)
 userid = params["user"]
 alpha = params["question"]
@@ -24,7 +24,7 @@ result = { }
 
 try:
   if increment:
-    with mysql.connect("localhost", "slipkin_clipe", "xev1ous#", "slipkin_xerafin") as con:
+    with xs.getMysqlCon() as con:
       con.execute("update leaderboard set questionsAnswered = questionsAnswered+1 where userid = %s and dateStamp = curdate()", userid)
       if con.rowcount == 0:
         con.execute("insert into leaderboard (userid, dateStamp, questionsAnswered, startScore) values (%s, curdate(), 1, %s)", (userid, xl.getCardboxScore(userid)))

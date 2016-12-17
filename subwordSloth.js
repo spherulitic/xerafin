@@ -7,11 +7,10 @@ if (typeof question !== 'undefined') {
   slothQuestion = question;
   initSloth2(); }
 else {
-  var d = { user: userid, dummy: new Date().getTime() };
+  d = { user: userid };
   $.ajax({type: "POST",
          data: JSON.stringify(d),
          url: "getNextBingo.py",
-         cache: false,
          success: populateSlothQuestion,
 	 error: function(jqXHR, textStatus, errorThrown) {
 	      console.log("Error getting bingo, status = " + textStatus + " error: " + errorThrown); 
@@ -20,8 +19,7 @@ else {
    } }
 
 function populateSlothQuestion(response, responseStatus) {
-  console.log("Response from get next bingo");
-  console.log(response);
+//  console.log(response);
   slothQuestion = response[0].alpha;
   initSloth2();
  }
@@ -114,14 +112,6 @@ function initSloth2() {
 	 error: function(jqXHR, textStatus, errorThrown) {
 	      console.log("Error, status = " + textStatus + " error: " + errorThrown); 
               }} );
-/**
-  $(document).ready(function(){
-    $("#answerField").scrollspy({
-		target: "#answerField",
-		offset: 70
-	}) 
-});
-**/
 }
 
 function setupSloth (response, responseStatus) {
@@ -149,6 +139,7 @@ var  tmpWordlist = [ ];
 	});
 	if (content.length!==0){generateSlothTable (content,y)};
   }
+  
 }
 
 function generateSlothTable (content,wordLength) {
@@ -181,7 +172,7 @@ function generateSlothTable (content,wordLength) {
 				var td = document.createElement('td');
         		td.className = "slothTD";
         		td.style.border = 'solid 1px #ccc';
-        		td.style.fontSize = '0.9em';
+        		td.style.fontSize = '0.85em';
         		var span = document.createElement('span');
         		span.style.visibility = "hidden";
         		span.style.fontWeight = 'bold';
@@ -196,7 +187,7 @@ function generateSlothTable (content,wordLength) {
 		currentTable.appendChild(tr);
 	}
 	document.getElementById("answerField").appendChild(currentTable);
-}
+} 
 
 function startSloth () {
 
@@ -206,6 +197,7 @@ function startSloth () {
   $('#timerText').css('display', 'initial');
   $('#slothAlphagram').html(slothQuestion);
   document.getElementById('answerBox').disabled = false;
+  $('#answerBox').focus();
   slothTimer = setInterval(updateSlothTimer, 1000);
 
 }
@@ -308,11 +300,12 @@ function submitSlothAnswer () {
       slothScore += Math.pow(answer.length, 2);
       /**NEW**/
        document.getElementById('answerField').scrollTop = 0;
-      var elem = $("#slothHeading"+answer.length);
-	  var offset = elem.offset().top - elem.parent().offset().top-10;
-      var topPos = $('#slothHeading'+answer.length).position().top;
+      var elem = $("#slothTable"+answer.length);
+	  var offset = (elem.offset().top - elem.parent().offset().top + 20)+ (elem.outerHeight() - elem.parent().height()  - 20)  ;
+      var topPos = $('#slothTable'+answer.length).position().top;
 	  document.getElementById('answerField').scrollTop = offset;
-	  /**$('#slothHeading4').html(offset+' '+topPos);**/
+	  /**Test of parameters when scrolling**/
+	  /**$('#slothHeading4').html(offset+' '+topPos + ' ' + elem.parent().height() + ' ' + elem.outerHeight());**/
       /*******/
       var progress = Math.round((slothScore/totalScore)*100) + '%';
       

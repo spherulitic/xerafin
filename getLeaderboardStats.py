@@ -3,6 +3,7 @@
 import json, sys
 import MySQLdb as mysql
 import xerafinLib as xl
+import xerafinSetup as xs
 
 result = {"today": [ ], "yesterday": [ ], "lastWeek": [ ] }
 error = {"status": "success"}
@@ -10,8 +11,7 @@ startScores = { }
 todayScore = { }
 
 try:
-  with mysql.connect("localhost", "slipkin_clipe", "xev1ous#", "slipkin_xerafin") as con:
-
+  with xs.getMysqlCon() as con:
     con.execute("select userid from login")
     for row in con.fetchall():
       userid = row[0]
