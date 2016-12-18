@@ -107,7 +107,9 @@ console.log(d);
  $.ajax({type: "POST", 
          url: "setUserPrefs.py",
          data: JSON.stringify(d),
-         success: initUserPrefs,
+         success: function(response) {
+            if (response.status == "success") {initUserPrefs();}
+            else alert("Error setting user prefs: " + response.status);},
          error: function(jqXHR, textStatus, errorThrown) {
            console.log("Error setting user prefs. Status: " + textStatus + "  Error: " + errorThrown); 
            alert("Error setting user prefs: " + errorThrown);
