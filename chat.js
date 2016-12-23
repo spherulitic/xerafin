@@ -144,7 +144,8 @@ function displayChats (response, responseStatus) {
      chatDateNode.innerHTML = chatDate.getHours() + ':' + (chatDate.getMinutes() < 10 ? '0' : '') + chatDate.getMinutes();
      chatDateNode.title = chatDate.getHours() + ':' + (chatDate.getMinutes() < 10 ? '0' : '') + chatDate.getMinutes() + ':' + (chatDate.getSeconds() < 10 ? '0' : '') + chatDate.getSeconds();
      chatPic.src = chatQueue[x].photo;
-     if (chatPic.src == 'http://cross-tables.com/xerafin/xerafin.png') {
+//     if (chatPic.src == 'http://cross-tables.com/xerafin/xerafin.png') {
+     if (parseInt(chatQueue[x].chatUser) < 10) {
          chatNode.className+=' xeraBroadcast';
          chatText.className+=' xeraBroadcastBorderFix';
          chatPicNode.className+=' xeraBroadcastImageAlign';
@@ -172,9 +173,9 @@ function displayChats (response, responseStatus) {
    updateChats();
 } 
 
-function submitChat(message, isSystemGenerated) {
+function submitChat(message, isSystemGenerated, systemUserid = 0) {
    d = { chatText: message, userid: userid, chatTime: (new Date).getTime() };
-   if (isSystemGenerated) d.userid = 0;
+   if (isSystemGenerated) d.userid = systemUserid;
    console.log ("sending chat:");
    console.log(d);
    $.ajax({type: "POST", 

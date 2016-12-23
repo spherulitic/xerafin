@@ -14,7 +14,7 @@ now = int(params["mostRecent"])
 userid = params["userid"]
 chatFile = os.path.join("chats", userid + ".chat")
 open(chatFile, 'w').close()
-command = "select name, photo, timeStamp, message from chat join login on chat.userid = login.userid where timeStamp > %s order by timeStamp asc"
+command = "select name, photo, timeStamp, message, chat.userid from chat join login on chat.userid = login.userid where timeStamp > %s order by timeStamp asc"
 
 with xs.getMysqlCon() as con:
     if con is None:
@@ -23,7 +23,7 @@ with xs.getMysqlCon() as con:
       try:
         con.execute(command, now)
         for row in con.fetchall():
-          result.append({"chatDate": row[2], "photo": row[1], "name": row[0], "chatText": row[3] })
+          result.append({"chatDate": row[2], "photo": row[1], "name": row[0], "chatText": row[3], "chatUser": row[4] })
       except mysql.Error, e:
         error["status"] = "MySQL error %d %s " % (e.args[0], e.args[1])
       except:

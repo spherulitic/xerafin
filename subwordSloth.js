@@ -340,7 +340,7 @@ function slothSubmitQuestion(d) {
 function submitSlothChat() {
   var x = 'initSloth("' + slothQuestion + '")';
   var link = "<a href='#' onclick='" + x + "'>Click here</a>";
-  submitChat(username + " has completed " + slothQuestion + " on Subword Sloth with a score of " + $('#progressLabel').html() + ". " + link + " to try and beat it!", true);
+  submitChat(username + " has completed " + slothQuestion + " on Subword Sloth with a score of " + $('#progressLabel').html() + ". " + link + " to try and beat it!", true, 1); // system userid for Subword Sloth is 1
   }
 
 function addToCardbox(word) {

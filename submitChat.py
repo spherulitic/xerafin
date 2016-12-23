@@ -13,7 +13,7 @@ userid = params["userid"]
 message = params["chatText"]
 chatTime = int(params["chatTime"])  # Epoch * 1000 -- in milliseconds
 now = int(time.time())
-if userid != '0':
+if int(userid) > 10:
   ua.updateActive(userid)
 AUTOLOGOFF = .1 # in hours
 logoffTime = now - (3600*AUTOLOGOFF)

@@ -20,9 +20,7 @@ def appendChatToResult(line):
     else:
       con.execute("select photo, name from login where userid = %s", userid)
       row = con.fetchone()
-      return {"chatDate": int(timeStamp), "photo": row[0], "name": row[1], "chatText": message }
-
-#  return {"chatDate": 0, "photo": "", "name": "Stinky McCheese", "chatText": userid}
+      return {"chatDate": int(timeStamp), "photo": row[0], "name": row[1], "chatText": message, "chatUser": userid }
 
 params = json.load(sys.stdin);
 userid = params["userid"]
