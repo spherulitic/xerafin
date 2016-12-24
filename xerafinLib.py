@@ -385,11 +385,13 @@ def newQuiz (userid):
   now = int(time.time())
   with lite.connect(getDBFile(userid)) as con:
     cur = con.cursor()
+    cur.execute("select * from cleared_until")
+    clearedUntil = cur.fetchone()[0]
     checkCardboxDatabase(userid)
     futureSweep(cur)
     closetSweep(cur, userid)
     command = "update questions set difficulty = -1 where difficulty in (0,4) and next_scheduled < ?"
-    cur.execute(command, (now,))
+    cur.execute(command, (max(now, clearedUntil),))
 
 def getBingoFromCardbox (userid):
   """
