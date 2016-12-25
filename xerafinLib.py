@@ -343,12 +343,12 @@ def closetSweep (cur, userid) :
 def futureSweep(cur) :
   """
   Sets things to difficulty 4 which are in the future but are in a cardbox too low to be quizzed now
-  Only moves difficulty 0 -> 4
+  Only moves difficulty 0 and -1 -> 4
   Note difficulty 2 and 4 are exclusive
   """
   now = int(time.time())
   cur.execute("update questions set difficulty = 0 where difficulty in (4, 50)")
-  cur.execute("update questions set difficulty = 4 where next_scheduled > {0}+(cardbox*3600*24)  and difficulty = 0".format(now))	
+  cur.execute("update questions set difficulty = 4 where next_scheduled > ?+(cardbox*3600*24) and difficulty in (0, -1)", (now,))
 
 def makeWordsAvailable (userid, cur) :
   """
@@ -388,9 +388,9 @@ def newQuiz (userid):
     cur.execute("select * from cleared_until")
     clearedUntil = cur.fetchone()[0]
     checkCardboxDatabase(userid)
-    futureSweep(cur)
     closetSweep(cur, userid)
-    command = "update questions set difficulty = -1 where difficulty in (0,4) and next_scheduled < ?"
+    futureSweep(cur)
+    command = "update questions set difficulty = -1 where difficulty = 0 and next_scheduled < ?"
     cur.execute(command, (max(now, clearedUntil),))
 
 def getBingoFromCardbox (userid):
