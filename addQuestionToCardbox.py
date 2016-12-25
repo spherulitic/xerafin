@@ -19,6 +19,7 @@ try:
       xl.addWord(question, cur)
     else:
       error["status"] = "Invalid Alphagram"
+  xl.wrong(question, userid)
 
 except Exception as ex:
   template = "An exception of type {0} occured. Arguments:\n{1!r}"
