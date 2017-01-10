@@ -230,11 +230,12 @@ function slothTimerExpire () {
     if (allCorrect && slothData[x].auxInfo.difficulty == 4) {
       // correct and due in future
 //      console.log(slothData[x].alpha + " is correct and due in the future.");
-      d = { user: userid, question: slothData[x].alpha, correct: true, cardbox: slothData[x].auxInfo.cardbox-1, incrementQ: false };
-      slothSubmitQuestion(d);
+// Don't reschedule things that aren't due
+//      d = { user: userid, question: slothData[x].alpha, correct: true, cardbox: slothData[x].auxInfo.cardbox-1, incrementQ: false };
+//      slothSubmitQuestion(d);
       for(var y=0;y<slothData[x].words.length;y++) {
         wd = document.getElementById(slothData[x].words[y]).parentNode;
-        wd.title = "Not due - rescheduled";
+        wd.title = "Not due";
         wd.style.background = "LightGreen"; }
       }
     else if (allCorrect && slothData[x].auxInfo.difficulty != 4) {
@@ -332,7 +333,7 @@ function slothSubmitQuestion(d) {
          url: "submitQuestion.py",
          success: function(response) { console.log(d.question + " updated.");
 			console.log(response); 
-			if (incrementQ){
+			if (d.incrementQ){
 			checkMilestones(response[0].qAnswered);}
 			},
 	 error: function(jqXHR, textStatus, errorThrown) {
