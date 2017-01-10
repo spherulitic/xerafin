@@ -23,13 +23,13 @@ result = { }
 # to reschedule in current CB, need to pass in cardbox-1
 
 try:
-  if increment:
-    with xs.getMysqlCon() as con:
+  with xs.getMysqlCon() as con:
+    if increment:
       con.execute("update leaderboard set questionsAnswered = questionsAnswered+1 where userid = %s and dateStamp = curdate()", userid)
       if con.rowcount == 0:
         con.execute("insert into leaderboard (userid, dateStamp, questionsAnswered, startScore) values (%s, curdate(), 1, %s)", (userid, xl.getCardboxScore(userid)))
-      con.execute("select questionsAnswered from leaderboard where userid = %s and dateStamp = curdate()" % userid)
-      result["qAnswered"] = con.fetchone()[0]
+    con.execute("select questionsAnswered from leaderboard where userid = %s and dateStamp = curdate()" % userid)
+    result["qAnswered"] = con.fetchone()[0]
 
   if correct:
     xl.correct(alpha, userid, currentCardbox+1)
