@@ -331,7 +331,10 @@ function slothSubmitQuestion(d) {
          data: JSON.stringify(d),
          url: "submitQuestion.py",
          success: function(response) { console.log(d.question + " updated.");
-			console.log(response); },
+			console.log(response); 
+			if (incrementQ){
+			checkMilestones(response[0].qAnswered);}
+			},
 	 error: function(jqXHR, textStatus, errorThrown) {
 	      console.log("Error getting bingo, status = " + textStatus + " error: " + errorThrown); 
               }} );

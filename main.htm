@@ -37,6 +37,10 @@ $.ajaxSetup({cache: false});
 <body>
 <script>
 
+  if (!localStorage.qQCounter) {localStorage.qQCounter = 0;}
+  if (!localStorage.qQCorrect) {localStorage.qQCorrect = 0;}
+  if (!localStorage.qQAlpha) {localStorage.qQAlpha = 0;}
+ 
   function statusChangeCallback(response) {
      console.log("Login Status is " + response.status);
      if (response.status === 'connected')  {
@@ -57,7 +61,9 @@ $.ajaxSetup({cache: false});
 	   data: JSON.stringify({user: userid}),
 	   success: function(response, responseStatus) { 
               console.log(response[0]);
-	      startingScore = response[0].score; },
+              if (!localStorage.qQScore) {localStorage.qQScore = response[0].score;}
+              if (!localStorage.qQAlpha) {localStorage.qQAlpha = 0;}
+	   },
 	   error: function(jqXHR, textStatus, errorThrown) {
 	      console.log("Error getting cardbox score, status = " + textStatus + " error: " + errorThrown); }} );
            

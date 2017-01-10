@@ -1,15 +1,17 @@
 function startQuiz() {
 
 /** Initialisation Variables **/
+  
   alphagram = "";  
+  totalAnswers = 0;
   textFocus = true;
   incorrectAnswerFlag = false;
   incrementQ = true;
   correctProgress = 0;
   correctState = 0;
-  totalAnswers = 0;
   console.log("Starting Quiz");
   correctPercent = 0.0;
+  lastAlphaState = 0;
   
 /** Game Div Defined and Cleared **/
   var gameArea = document.getElementById("gameArea");
@@ -27,8 +29,8 @@ function startQuiz() {
   var sessionHeaderContent = ['questions', 'cardbox', 'due date', 'score', '% correct'];
   var sessionHeaderClasses = ['',' quizSessionTableHCardbox',' quizSessionTableHDue','',' quizSessionTableHCorrect']
   var sessionContentCell= [];
-  var sessionContentContent = ['<span id="questionsComplete">'+questionCounter+'</span>', '<span id="cardboxNumber"></span>', 
-  '<span id="dueDate"></span>', '<span id="sessionScore">0</span>', '<span id="correctPercent">'+correctPercent.toFixed(2)+'%'+'</span>'];
+  var sessionContentContent = ['<span id="questionsComplete">'+localStorage.qQCounter+'</span>', '<span id="cardboxNumber"></span>', 
+  '<span id="dueDate"></span>', '<span id="sessionScore">'+localStorage.qQAlpha+'</span>', '<span id="correctPercent">'+correctPercent.toFixed(2)+'%'+'</span>'];
   for (var i=0;i<5;i++){
   	sessionHeaderCell[i]= document.createElement('th');
   	sessionHeaderCell[i].innerHTML = sessionHeaderContent[i];
@@ -58,8 +60,10 @@ function startQuiz() {
   var answerBox = document.createElement("input");  
   var correctAnswers = document.createElement("table");
   var wrongAnswers = document.createElement("div");
+  var counterReset = document.createElement("button");
 
 /** Styling & ID initialisation **/  
+  alphaSuper.id = "alphaSuper";
   alphaSuper.className += " quizAlphaSuper";
   alphaContainer.id = "alphaContainer";
   alphaContainer.className += " quizAlphaContain";
@@ -98,6 +102,9 @@ function startQuiz() {
   wrongAnswers.id = "wrongAnswers";
   wrongAnswers.className += " wordTableWrong"
   wrongAnswers.innerHTML = "";
+  counterReset.id = "counterReset";
+  counterReset.innerHTML = "Reset Counters";
+  counterReset.style.marginTop = '10px';
 /** Quiz Screen Generation **/ 
   gameArea.appendChild(alphaSuper);
   alphaSuper.appendChild(alphaContainer);
@@ -114,10 +121,19 @@ function startQuiz() {
   gameArea.appendChild(sessionInfo);  
   gameArea.appendChild(correctAnswers);
   gameArea.appendChild(wrongAnswers);
+  gameArea.appendChild(counterReset);
   
 /** Event Listeners **/ 
   $('#nextQuestion').click(function() { textFocus = false;
                                 getQuestion(); });
+  $('#counterReset').click(function() {
+	localStorage.qQCounter = '0';
+	localStorage.qQCorrect = '0';
+	localStorage.qQAlpha = '0';
+	$('#questionsComplete').html(Number(localStorage.qQCounter));
+	$('#sessionScore').html(Number(localStorage.qQAlpha));
+	$('#correctPercent').html('0.00%');
+  })
   markAsIncorrect.addEventListener("click", function(e) {submitQuestion(false)});
   answerBox.addEventListener("keypress", function(e) {
 	if (e.which === 13) {
@@ -157,10 +173,10 @@ function getQuestion() {
                                 getQuestion(); });
 	      }
 	 });
+	 correctState = 0;
  }
 
-function displayQuestion(response, responseStatus) {
-
+function displayQuestion(response, responseStatus) {	
   console.log("Question Response");
   if (typeof scrollTimer !== 'undefined' && scrollTimer !== null)
     clearInterval(scrollTimer);
@@ -187,13 +203,12 @@ function displayQuestion(response, responseStatus) {
     $('#answerBox').val("Loading Question ...");
   } else {
   	correctProgress=0;
-	correctState = 0;
     alphagram = Object.keys(question)[0];
     answers = eval("question." + alphagram);
     allAnswers = answers.slice();
     document.getElementById('nextQuestion').disabled = false;
     $('#alphagram').html(alphagram);
-    $('#alphagram').css('color', 'black');
+    $('#alphaSuper').css('background', 'url("b42.png") repeat');
     $('#leftHook').html("&nbsp;");
     $('#rightHook').html("&nbsp;"); 
     $('#correctAnswers').html("");
@@ -208,7 +223,7 @@ function displayQuestion(response, responseStatus) {
     var dueDate = new Date(aux.nextScheduled * 1000);
     $('#dueDate').html(formatDateForDisplay(dueDate));  
     $('#cardboxNumber').html(aux.cardbox);
-	if(questionCounter>0) correctPercent = (correctCounter/questionCounter)*100;
+	if(localStorage.qQCounter>0) correctPercent = (localStorage.qQCorrect/localStorage.qQCounter)*100;
 	$('#correctPercent').html(correctPercent.toFixed(2)+'%');
     totalAnswers=Object.keys(wordData).length;
     $('#answerAmount').html('<b>Answers:</b> ' + correctProgress +'  of ' + totalAnswers);
@@ -255,53 +270,75 @@ function submitAnswer () {
    $('#answerBox').focus();
   }  
 }
+function checkMilestones (answered) {
+	var ranges = [[50,49,301],[100,301,1001],[200,1001,50000]]
+	for (var i=0;i<ranges.length;i++) {
+		if ((answered%(ranges[i][0])==0) && (answered>ranges[i][1]) && (answered<ranges[i][2])) {
+			submitChat(username + " has completed <b>" + answered + "</b> alphagrams today!", true);
+		}
+	}
+}
+function adjustAlphaChange (corrected, states) {
+	var adjustment = [[0-aux.cardbox,0-aux.cardbox-1],[1,(aux.cardbox+1)]];
+	var a = (corrected) ? 1 : 0;
+	localStorage.qQAlpha = Number(localStorage.qQAlpha) + adjustment[a][states];
+}
 
 function submitQuestion (correct) {
   d = { user: userid, question: alphagram, correct: correct, cardbox: aux.cardbox, incrementQ: incrementQ };
   $.ajax({ type: "POST",
-           url: "submitQuestion.py",
+        url: "submitQuestion.py",
 	   data: JSON.stringify(d),
 	   success: function(response, responseStatus) { 
-		console.log("Question " + alphagram + " updated in cardbox."); 
-                $('#sessionScore').html(response[0].score - startingScore);
-                if (incrementQ) {
-                  if ((response[0].qAnswered%50 == 0) & (response[0].qAnswered<501)) {
-                  submitChat(username + " has completed <b>" + response[0].qAnswered + "</b> alphagrams today!", true); }
-                  else if ((response[0].qAnswered%100 == 0) & (response[0].qAnswered>501) & (response[0].qAnswered<2001)) {
-                  submitChat(username + " has completed <b>" + response[0].qAnswered + "</b> alphagrams today!", true); }
-                  else if ((response[0].qAnswered%200 == 0) & (response[0].qAnswered>2001)) {
-                  submitChat(username + " has completed <b>" + response[0].qAnswered + "</b> alphagrams today!", true); }
-                incrementQ = false; }} ,
+				console.log("Question " + alphagram + " updated in cardbox.");
+				if ((typeof response[0].qAnswered !== null)) { 
+					if (incrementQ) {
+                  		checkMilestones(response[0].qAnswered);
+                		incrementQ = false; 
+                	}		
+				}
+				else {
+                	setTimeout(function () {submitQuestion(correct);},3000);
+				}
+            } ,
 	   error: function(jqXHR, textStatus, errorThrown) {
 		console.log("Error: question " + alphagram + " could not be updated.");
 		submitQuestion(correct); } });
   
   if (correct) {
     //console.log("Correct Question");
-    document.getElementById("alphagram").style.color = "green";
+    $('#alphaSuper').css('background', 'yellowgreen');
     $('#markAsCorrect').hide();
     $('#markAsIncorrect').show();
     $('#nextQuestion').show();
     $('#nextQuestion').css('float', 'left');
-	if (correctState == 0) correctCounter++;
-    correctState=1;  
+	if (correctState == 0) {	
+		if (incrementQ) { localStorage.qQCounter++; }
+	}
+	adjustAlphaChange (correct,correctState);
+	correctState=1;
+	localStorage.qQCorrect++;       
   }
   else {
     //console.log("Incorrect Question");
-    document.getElementById("alphagram").style.color = "red";
+    $('#alphaSuper').css('background', 'tomato');
     $('#markAsIncorrect').hide();
     $('#markAsCorrect').show();
     $('#nextQuestion').show();
     $('#nextQuestion').css('float', 'right');
-	if (correctState == 1) correctCounter--;
-    correctState=0;
+	if (correctState == 0) {
+		if (incrementQ) { localStorage.qQCounter++; }
+	} else {
+		localStorage.qQCorrect--;
+	}
+	adjustAlphaChange (correct,correctState);
+	correctState=1;	   
   }
   quizState = "finished";
-  	
-    if (incrementQ) { questionCounter++; }
-	correctPercent = (correctCounter/questionCounter)*100;
+	correctPercent = (localStorage.qQCorrect/localStorage.qQCounter)*100;
     $('#correctPercent').html(correctPercent.toFixed(2)+'%');
-    $('#questionsComplete').html(questionCounter);
+    $('#questionsComplete').html(localStorage.qQCounter);
+    $('#sessionScore').html(localStorage.qQAlpha);
 
   for (var x=0;x<answers.length;x++)  {
     displayAnswer(answers[x]);    
