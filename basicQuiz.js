@@ -285,26 +285,27 @@ function adjustAlphaChange (corrected, states) {
 }
 
 function submitQuestion (correct) {
+	var failFlag = false;
   d = { user: userid, question: alphagram, correct: correct, cardbox: aux.cardbox, incrementQ: incrementQ };
   $.ajax({ type: "POST",
         url: "submitQuestion.py",
 	   data: JSON.stringify(d),
 	   success: function(response, responseStatus) { 
 				console.log("Question " + alphagram + " updated in cardbox.");
-				if ((typeof response[0].qAnswered !== null)) { 
+				if ((response[0].qAnswered !== null)) { 
 					if (incrementQ) {
                   		checkMilestones(response[0].qAnswered);
                 		incrementQ = false; 
                 	}		
 				}
 				else {
-                	setTimeout(function () {submitQuestion(correct);},3000);
+                	failFlag=true;
 				}
             } ,
 	   error: function(jqXHR, textStatus, errorThrown) {
 		console.log("Error: question " + alphagram + " could not be updated.");
-		submitQuestion(correct); } });
-  
+		failFlag=true; } });
+  if (failFlag) {failFlag=false;submitQuestion(correct);}
   if (correct) {
     //console.log("Correct Question");
     $('#alphaSuper').css('background', 'yellowgreen');
