@@ -207,7 +207,7 @@ function displayQuestion(response, responseStatus) {
     answers = eval("question." + alphagram);
     allAnswers = answers.slice();
     document.getElementById('nextQuestion').disabled = false;
-    $('#alphagram').html(alphagram);
+    $('#alphagram').html(alphaSortMethod (alphagram, Number(localStorage.gAlphaSortInput)));
     $('#alphaSuper').css('background', 'url("b42.png") repeat');
     $('#leftHook').html("&nbsp;");
     $('#rightHook').html("&nbsp;"); 
@@ -457,4 +457,21 @@ function addLineBreaks (item, divideBy) {
     	return splitUp;
     }
 	return item;
+}
+function alphaSortVC (content, type){
+	var consonants = content.replace (/[aeiou]/ig,'');
+	var vowels = content.replace (/[bcdfghjklmnpqrstvwxyz]/ig,'');
+	if (type===0){ return vowels+consonants; }
+	else { return consonants+vowels; }
+}
+function alphaSortMethod (content, type){
+	var output = content;
+	switch (type) {
+		case 0: output=content; break;
+		case 1: output=alphaSortVC(content, 0); break;
+		case 2: output=alphaSortVC(content, 1);break;
+		case 3: output = output.split('').sort(function(){return 0.5-Math.random()}).join('');break;
+		default: output=content; break;
+	}
+	return output;
 }

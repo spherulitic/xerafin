@@ -195,7 +195,7 @@ function startSloth () {
 //  console.log("start sloth");
   document.getElementById("startButton").style.display = 'none';
   $('#timerText').css('display', 'initial');
-  $('#slothAlphagram').html(slothQuestion);
+  $('#slothAlphagram').html(alphaSortMethod (slothQuestion, Number(localStorage.gAlphaSortInput)));
   document.getElementById('answerBox').disabled = false;
   $('#answerBox').focus();
   slothTimer = setInterval(updateSlothTimer, 1000);
@@ -230,12 +230,11 @@ function slothTimerExpire () {
     if (allCorrect && slothData[x].auxInfo.difficulty == 4) {
       // correct and due in future
 //      console.log(slothData[x].alpha + " is correct and due in the future.");
-// Don't reschedule things that aren't due
-//      d = { user: userid, question: slothData[x].alpha, correct: true, cardbox: slothData[x].auxInfo.cardbox-1, incrementQ: false };
-//      slothSubmitQuestion(d);
+      d = { user: userid, question: slothData[x].alpha, correct: true, cardbox: slothData[x].auxInfo.cardbox-1, incrementQ: false };
+      slothSubmitQuestion(d);
       for(var y=0;y<slothData[x].words.length;y++) {
         wd = document.getElementById(slothData[x].words[y]).parentNode;
-        wd.title = "Not due";
+        wd.title = "Not due - rescheduled";
         wd.style.background = "LightGreen"; }
       }
     else if (allCorrect && slothData[x].auxInfo.difficulty != 4) {

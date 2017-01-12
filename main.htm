@@ -36,10 +36,10 @@ $.ajaxSetup({cache: false});
 
 <body>
 <script>
-
   if (!localStorage.qQCounter) {localStorage.qQCounter = 0;}
   if (!localStorage.qQCorrect) {localStorage.qQCorrect = 0;}
   if (!localStorage.qQAlpha) {localStorage.qQAlpha = 0;}
+  if (!localStorage.gAlphaSortInput) {localStorage.gAlphaSortInput = 0;}
  
   function statusChangeCallback(response) {
      console.log("Login Status is " + response.status);
