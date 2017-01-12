@@ -383,11 +383,11 @@ def makeWordsAvailable (userid, cur) :
 
 def newQuiz (userid):
   now = int(time.time())
+  checkCardboxDatabase(userid)
   with lite.connect(getDBFile(userid)) as con:
     cur = con.cursor()
     cur.execute("select * from cleared_until")
     clearedUntil = cur.fetchone()[0]
-    checkCardboxDatabase(userid)
     closetSweep(cur, userid)
     futureSweep(cur)
     command = "update questions set difficulty = -1 where difficulty = 0 and next_scheduled < ?"
