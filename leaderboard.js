@@ -74,13 +74,16 @@ function showLeaderboardHeader () {
   periodList.onchange = function() { 
     if (periodList.value == 1){
     leaderboardPanel = "today";
-    showLeaderboardData(leaderboardData.today.sort(sortByAnswered)); };
+    showLeaderboardData(leaderboardData.today.sort(sortByAnswered),
+      leaderboardData.myRank.today); };
     if (periodList.value == 2){
     leaderboardPanel = "yesterday";
-    showLeaderboardData(leaderboardData.yesterday.sort(sortByAnswered)); }
+    showLeaderboardData(leaderboardData.yesterday.sort(sortByAnswered),
+      leaderboardData.myRank.yesterday); }
     if (periodList.value == 3){
     leaderboardPanel = "lastWeek";
-    showLeaderboardData(leaderboardData.lastWeek.sort(sortByAnswered)); };
+    showLeaderboardData(leaderboardData.lastWeek.sort(sortByAnswered),
+      leaderboardData.myRank.lastWeek); };
     };
 
   
@@ -107,8 +110,10 @@ function showLeaderboardHeader () {
 }
 
 function showLeaderboard () {
-  $.ajax({type: "GET",
+  var d = {userid: userid}
+  $.ajax({type: "POST",
           url: "getLeaderboardStats.py",
+          data: JSON.stringify(d),
           success: displayLeaderboardStats,
           error: function(jqXHR, textStatus, errorThrown) {
           console.log("Error getting leaderboard stats, status = " + textStatus + " error: " + errorThrown);
@@ -121,11 +126,14 @@ function displayLeaderboardStats (response, responseStatus) {
   console.log(response);
   leaderboardData = response[0];
   if (leaderboardPanel == "today") 
-    showLeaderboardData(leaderboardData.today.sort(sortByAnswered));
+    showLeaderboardData(leaderboardData.today.sort(sortByAnswered), 
+            leaderboardData.myRank.today);
   else if (leaderboardPanel == "yesterday")
-    showLeaderboardData(leaderboardData.yesterday.sort(sortByAnswered));
+    showLeaderboardData(leaderboardData.yesterday.sort(sortByAnswered),
+            leaderboardData.myRank.yesterday);
   else if (leaderboardPanel == "lastWeek")
-    showLeaderboardData(leaderboardData.lastWeek.sort(sortByAnswered));
+    showLeaderboardData(leaderboardData.lastWeek.sort(sortByAnswered),
+            leaderboardData.myRank.lastWeek);
 }
 
 function hideLeaderboard() {
@@ -133,7 +141,9 @@ function hideLeaderboard() {
   $('#middleArea').html("");
 }
 
-function showLeaderboardData(data) {
+function showLeaderboardData(data, myRank) {
+  var MAX_TOP_PLAYERS = 10 // leaderboard should show the top x players
+             // if there is an x+1th player, it's me; show with myRank
   showLeaderboardHeader();
   var getOrdinal = function(n) {
     var s=["th","st","nd","rd"], v=n%100;
@@ -152,7 +162,10 @@ function showLeaderboardData(data) {
     col3.style.borderLeft = 'solid 0px';
     col3.style.width = '50%';
     col3.style.textAlign = 'left';
-    col1.innerHTML = (x+1)+"<sup>"+getOrdinal(x+1)+"</sup>";
+    if (x<MAX_TOP_PLAYERS)
+      col1.innerHTML = (x+1)+"<sup>"+getOrdinal(x+1)+"</sup>";
+    else 
+      col1.innerHTML = (myRank)+"<sup>"+getOrdinal(myRank)+"</sup>";
     col2.innerHTML = '<img src="'+data[x].photo+'" style="height:30px;" title="'+data[x].name+'">';
     col3.innerHTML = data[x].name;
     col4.innerHTML = data[x].answered;
