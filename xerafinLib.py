@@ -399,7 +399,7 @@ def getBingoFromCardbox (userid):
   """
   with lite.connect(getDBFile(userid)) as con:
     cur = con.cursor()
-    cur.execute("select question from questions where cardbox is not null and length(question) >= 7 and difficulty in (-1,0,2) order by next_scheduled limit 1")
+    cur.execute("select question from questions where cardbox is not null and length(question) >= 7 and difficulty in (-1,0,2) order by difficulty, cardbox, next_scheduled limit 1")
     result = cur.fetchone()
     if result is not None: 
       return result[0]
