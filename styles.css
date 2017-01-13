@@ -63,7 +63,7 @@ margin:3px;display:inline-block;font-weight:lighter;
   background: -moz-radial-gradient(#6cf 15%, #9cc,#ddd); 
   background: radial-gradient(#6cf 15%,  #9cc, #ddd);
 }
-button:disabled {float:left;
+button:disabled {
   background:#68a;
   background: -webkit-radial-gradient(#68a 15%, #999, #aaa);
   background: -o-radial-gradient(#68a 15%, #999,#aaa); 
@@ -116,8 +116,8 @@ border-radius: 5px;
 
 /*Basic Quiz Specific Classes */
 
-.quizSessionTable {width:100%;margin-bottom:20px;}
-.quizSessionTable Table {min-width:99.5%;width:99.5%;margin:auto;text-align:center;}
+.quizSessionTable {width:100%;margin-bottom:0px;}
+.quizSessionTable Table {min-width:99.5%;width:99.5%;margin:auto;text-align:center;padding:0px;}
 .quizSessionTable th {text-align:center;font-size:0.9em;font-variant:small-caps;border-top:1px solid #ccc;border-bottom:1px solid #ccc;background-image: url('b42.png');/**background: #67c8ff**/; background-repeat: repeat;}
 .quizSessionTable tr:last-child {background-color:#f0f0f0;background: url('b34.png') repeat;text-align:center;font-size:1.1em;border-bottom:1px solid #ccc;color:#000;font-variant:small-caps;}
 .quizSessionTableHCardbox {width:14%;}
@@ -131,7 +131,7 @@ border-radius: 5px;
 -moz-border-radius: 10px;
 border-radius: 10px;
 background-image: url('b42.png');background-repeat: repeat;
-box-shadow: -1px -1px 3px #000;
+box-shadow: -1px -1px -3px #000;
 }
 .quizAlphaContain {background: inherit;margin:0 auto;text-align:center;display:table;}
 .quizAlpha {background:inherit;font-size:2.8em;text-align:center;padding-left:10px;padding-right:10px;display: table-cell;vertical-align:top;line-height:1.5em;}
@@ -147,7 +147,7 @@ box-shadow: -1px -1px 3px #000;
 @media screen and (min-width: 600px) {.quizAnswerContain {width:35%;}}
 @media screen and (min-width: 800px) {.quizAnswerContain {width:40%;}}
 
-.wordTable {width:100%;margin-top:15px;align:left;border-top:1px solid #ccc;}
+.wordTable {width:100%;margin-top:10px;align:left;border-top:1px solid #ccc;}
 .wordTable tr {border-bottom: 1px solid #ccc;}
 .wordTableHighlight {background-color: hsla(0,0%,95%,0.7);background: url('b34.png') repeat;}
 .wordTableHighlightWrong {background-color: #CCCCCC;}

@@ -60,7 +60,9 @@ function startQuiz() {
   var answerBox = document.createElement("input");  
   var correctAnswers = document.createElement("table");
   var wrongAnswers = document.createElement("div");
+  var buttonRow = document.createElement("div");
   var counterReset = document.createElement("button");
+  var shuffleButton = document.createElement("button");
 
 /** Styling & ID initialisation **/  
   alphaSuper.id = "alphaSuper";
@@ -102,9 +104,18 @@ function startQuiz() {
   wrongAnswers.id = "wrongAnswers";
   wrongAnswers.className += " wordTableWrong"
   wrongAnswers.innerHTML = "";
+  buttonRow.id= "buttonRow";
+  buttonRow.style.display= 'inline-block';
+  buttonRow.style.width = '100%';
+  buttonRow.style.marginTop = '20px';
+
   counterReset.id = "counterReset";
   counterReset.innerHTML = "Reset Counters";
-  counterReset.style.marginTop = '10px';
+  counterReset.style.cssFloat = 'right';
+  shuffleButton.id = "shuffleButton";
+  shuffleButton.innerHTML = "Shuffle";
+  shuffleButton.style.cssFloat = 'left';
+
 /** Quiz Screen Generation **/ 
   gameArea.appendChild(alphaSuper);
   alphaSuper.appendChild(alphaContainer);
@@ -120,9 +131,10 @@ function startQuiz() {
   markAs.appendChild(markAsIncorrect);
   gameArea.appendChild(sessionInfo);  
   gameArea.appendChild(correctAnswers);
-  gameArea.appendChild(wrongAnswers);
-  gameArea.appendChild(counterReset);
-  
+  gameArea.appendChild(wrongAnswers); 
+  gameArea.appendChild(buttonRow);
+  buttonRow.appendChild(shuffleButton);
+  buttonRow.appendChild(counterReset);
 /** Event Listeners **/ 
   $('#nextQuestion').click(function() { textFocus = false;
                                 getQuestion(); });
@@ -133,7 +145,10 @@ function startQuiz() {
 	$('#questionsComplete').html(Number(localStorage.qQCounter));
 	$('#sessionScore').html(Number(localStorage.qQAlpha));
 	$('#correctPercent').html('0.00%');
-  })
+  });
+  $('#shuffleButton').click(function() {
+	$('#alphagram').html(alphaShuffle(alphagram));
+  });
   markAsIncorrect.addEventListener("click", function(e) {submitQuestion(false)});
   answerBox.addEventListener("keypress", function(e) {
 	if (e.which === 13) {
@@ -203,6 +218,7 @@ function displayQuestion(response, responseStatus) {
     $('#answerBox').val("Loading Question ...");
   } else {
   	correctProgress=0;
+  	document.getElementById('shuffleButton').disabled=false;
     alphagram = Object.keys(question)[0];
     answers = eval("question." + alphagram);
     allAnswers = answers.slice();
@@ -285,6 +301,7 @@ function adjustAlphaChange (corrected, states) {
 }
 
 function submitQuestion (correct) {
+	document.getElementById('shuffleButton').disabled=true;
 	var failFlag = false;
   d = { user: userid, question: alphagram, correct: correct, cardbox: aux.cardbox, incrementQ: incrementQ };
   $.ajax({ type: "POST",
@@ -464,13 +481,16 @@ function alphaSortVC (content, type){
 	if (type===0){ return vowels+consonants; }
 	else { return consonants+vowels; }
 }
+function alphaShuffle (content){
+	return content.split('').sort(function(){return 0.5-Math.random()}).join('');
+}
 function alphaSortMethod (content, type){
 	var output = content;
 	switch (type) {
 		case 0: output=content; break;
 		case 1: output=alphaSortVC(content, 0); break;
 		case 2: output=alphaSortVC(content, 1);break;
-		case 3: output = output.split('').sort(function(){return 0.5-Math.random()}).join('');break;
+		case 3: output = alphaShuffle(content);break;
 		default: output=content; break;
 	}
 	return output;
