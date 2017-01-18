@@ -18,11 +18,7 @@ function startChat () {
    chatBox.type = "text";
    chatBox.id = "chatBox";
    chatBox.className+=' chatInput';
-   chatBox.addEventListener("keypress", function(e) {
-	if (e.which === 13 && $(this).val().trim()) {
-           submitChat($(this).val(), false);
-           $(this).val("");
-        } });
+ 
    getInitChats();
    chatArea = document.getElementById("chatArea");
    chatArea.appendChild(usersLabel);
@@ -30,6 +26,18 @@ function startChat () {
    chatArea.appendChild(chatBox);
    chatArea.appendChild(chatDisplayBox);
    chatDisplayBox.appendChild(chatDisplayTable);
+
+/**Event Listeners**/
+   window.addEventListener('resize', function(event){displayUserArray(usersArray)});
+   chatBox.addEventListener("keypress", function(e) {
+        if (e.which === 13 && $(this).val().trim()) {
+           submitChat($(this).val(), false);
+           $(this).val("");
+        } });
+	$('#chatBox').keypress("m",function(e) {
+        if(e.ctrlKey) 
+        $(this).val("");
+    });
 }
 
 function getLoggedInUsers() {
@@ -40,44 +48,64 @@ function getLoggedInUsers() {
           console.log("Error getting users, status = " + textStatus + " error: " + errorThrown);
           } } );
  }
-
-function displayLoggedInUsers(response, responseStatus) {
-   console.log("Logged in users:");
-   console.log(response); 
-   $('#userDisplayArea').html("");
-   usersArray = response[0];
+function displayUserArray (userList) {
+         $('#userDisplayArea').html("");
    var activeUserHeading = document.createElement('div');
    var userDisplayTable = document.createElement("table");
    var userDisplayTableBody = document.createElement("tbody");
- 
+   var picWidth = 50;
+   var picRowWidth = 0;
+   var rows = 1;
+   var enoughSpace=true;
+   userDisplayArea.appendChild(activeUserHeading);
    activeUserHeading.className+= " activeUserHeading"; 
    activeUserHeading.id= "activeUserHeading"; 
-   activeUserHeading.innerHTML = usersArray.length+' active user(s)';
-
+   picRowWidth = $('#activeUserHeading').width();
+   if (userList.length * picWidth > picRowWidth) {picWidth = 40};
+   if (userList.length * picWidth > picRowWidth) {picWidth = 30};
+   if (userList.length * picWidth > picRowWidth) {picWidth = 25};
+   if (userList.length * picWidth > picRowWidth) {rows = 2};
+   if (userList.length * picWidth > (picRowWidth*2)) {enoughSpace = false};
+   activeUserHeading.innerHTML = userList.length+' active user(s) ';/**+picRowWidth+' '+ Math.ceil((picRowWidth-(picWidth+1))/picWidth) + ' ' + picWidth;**/
    userDisplayTable.className+= "  chatActiveUsers";
-   if (usersArray.length!==0){
-       var userRow = document.createElement("tr");
-       userRow.id= 'userRow';
-       userRow.style.width = Math.min(40*usersArray.length,($('#activeUserHeading').width()-79));
-       userDisplayTableBody.appendChild(userRow);
-       /*for argument is short term hack.  May cause display issues on mobile 10.12.2016 RF*/
-      for (var y=0;(y<usersArray.length) && (y< 9);y++) {        
-        var userCell = document.createElement("td");
-        userCell.style.width='40px';
-        userCell.textAlign = 'left';
-        var userPic = document.createElement("img");
-        userPic.className+=' activePic';
-        userPic.src = usersArray[y].photo;
-        userPic.title = usersArray[y].name;
-        userCell.appendChild(userPic);
-        userRow.appendChild(userCell);
+   if (userList.length!==0){ 
+       var maxPics = Math.ceil((picRowWidth-(picWidth-1))/picWidth);   
+       var userRow= [];
+       for (var z=0;z<(rows);z++) { 
+        userRow[z] = document.createElement("tr");
+        userRow[z].id= 'userRow';
+        userRow[z].style.width = Math.min(picWidth*userList.length,picRowWidth-(picWidth+1));
+        userDisplayTableBody.appendChild(userRow[z]);
+        for (var y=z*maxPics;(y<usersArray.length) && (y<((z+1)*maxPics));y++) {     
+            var userCell = document.createElement("td");
+            if ((y==(maxPics*rows)-1) && (usersArray.length>(maxPics*rows))){
+              userCell.style.background="#45CCCC";
+              userCell.innerHTML="+"+(usersArray.length-y);
+              userCell.style.fontSize='1.1em';
+              userCell.style.textAlign='center';
+            }
+            else { 
+            userCell.style.width=picWidth+'px';
+            userCell.textAlign = 'left';
+            var userPic = document.createElement("img");
+            userPic.className+=' activePic';
+            userPic.style.height=picWidth+'px';
+            userPic.src = userList[y].photo;
+            userPic.title = userList[y].name;
+            userCell.appendChild(userPic);
+            }
+            userRow[z].appendChild(userCell);
+      }
        }
    }
     userDisplayTable.appendChild(userDisplayTableBody);
-    userDisplayArea.appendChild(activeUserHeading);
     userDisplayArea.appendChild(userDisplayTable);
-
-   
+}
+function displayLoggedInUsers(response, responseStatus) {
+   console.log("Logged in users:");
+   if (response) {usersArray = response[0];}
+   console.log(response); 
+   displayUserArray(usersArray);
 }
 
 function getInitChats () {

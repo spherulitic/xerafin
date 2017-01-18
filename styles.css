@@ -64,11 +64,11 @@ margin:3px;display:inline-block;font-weight:lighter;
   background: radial-gradient(#6cf 15%,  #9cc, #ddd);
 }
 button:disabled {
-  background:#68a;
-  background: -webkit-radial-gradient(#68a 15%, #999, #aaa);
-  background: -o-radial-gradient(#68a 15%, #999,#aaa); 
-  background: -moz-radial-gradient(#68a 15%, #999,#aaa); 
-  background: radial-gradient(#68a 15%,  #999, #aaa);
+  background:#666;
+  background: -webkit-radial-gradient(#666 15%, #999, #aaa);
+  background: -o-radial-gradient(#666 15%, #999,#aaa); 
+  background: -moz-radial-gradient(#666 15%, #999,#aaa); 
+  background: radial-gradient(#666 15%,  #999, #aaa);
 }
 .quizButton:hover {box-shadow: 0px 0px 5px #222;}
 
@@ -125,29 +125,29 @@ border-radius: 5px;
 .quizSessionTableHQuestion {width:14%;}
 .quizSessionTableHCorrect {width:18%;}
 .quizSessionTableHScore {width:18%;}
-.quizAlphaSuper {width:100%;text-align:center;margin-top:1.5em;margin-bottom:2.5em;display:inline-block;border-bottom:1px solid #ccc;border-top:1px solid #ccc;
-  border:1px solid #a98;
+.quizAlphaSuper {width:100%;text-align:center;margin-top:1em;margin-bottom:2.5em;display:inline-block;border-bottom:1px solid #ccc;border-top:1px solid #ccc;
+  border:1px solid #999;
   -webkit-border-radius: 10px;
 -moz-border-radius: 10px;
 border-radius: 10px;
-background-image: url('b42.png');background-repeat: repeat;
-box-shadow: -1px -1px -3px #000;
+background-image: background-repeat: repeat;
+box-shadow: -2px -2px 3px #444;
 }
 .quizAlphaContain {background: inherit;margin:0 auto;text-align:center;display:table;}
-.quizAlpha {background:inherit;font-size:2.8em;text-align:center;padding-left:10px;padding-right:10px;display: table-cell;vertical-align:top;line-height:1.5em;}
-.quizAlphaLeft, .quizAlphaRight {background:inherit;font-size:1.9em;line-height:0.8em;display: table-cell;vertical-align:middle;color:#444;font-variant:small-caps;}
+.quizAlpha {background:inherit;text-align:center;padding-left:10px;padding-right:10px;display: table-cell;vertical-align:top;font-size:1em;padding-top:0.5em;padding-bottom:0.5em;}
+.quizAlphaLeft, .quizAlphaRight {background:inherit;font-size:1.8em;line-height:1em;display: table-cell;vertical-align:middle;color:#222;font-variant:small-caps;}
 .quizAlphaLeft {text-align:right;padding-right:0px;}
 .quizAlphaRight {text-align:left;padding-left:0px;}
-
-.quizAnswerRegion {padding-bottom:10px;width:100%;vertical-align:middle;overflow:auto;text-align:center;display:inline-block;margin:0 auto;}
+.quizPlaceholder {background-color: lightblue;display:inline-block;}
+.quizAnswerRegion {padding-bottom:5px;width:100%;vertical-align:middle;overflow:auto;text-align:center;display:inline-block;margin:5px auto;margin-bottom:1.2em;}
 .quizAnswerContain {width:50%;display:inline-block;vertical-align:middle;padding:0px;}
-.quizAnswerNumber {width:100%;text-align:center;margin-top:5px;font-variant:small-caps;display:inline-block;}
-.quizAnswerBox {text-align:center;width:100%;margin:auto;text-transform:uppercase;font-size:1.1em;display:inline-block;}
+.quizAnswerNumber {width:100%;text-align:center;margin-top:5px;font-variant:small-caps;display:inline-block;font-size:1.2em}
+.quizAnswerBox {text-align:center;width:100%;margin:auto;text-transform:uppercase;font-size:1.1em;display:inline-block;margin-top:10px;}
 @media screen and (min-width: 300px) {.quizAnswerContain {width:130px;}}
 @media screen and (min-width: 600px) {.quizAnswerContain {width:35%;}}
 @media screen and (min-width: 800px) {.quizAnswerContain {width:40%;}}
 
-.wordTable {width:100%;margin-top:10px;align:left;border-top:1px solid #ccc;}
+.wordTable {width:100%;margin-top:1.5em;align:left;border-top:1px solid #ccc;}
 .wordTable tr {border-bottom: 1px solid #ccc;}
 .wordTableHighlight {background-color: hsla(0,0%,95%,0.7);background: url('b34.png') repeat;}
 .wordTableHighlightWrong {background-color: #CCCCCC;}
@@ -162,10 +162,10 @@ box-shadow: -1px -1px -3px #000;
    
 /* Chat Specific Classes */
 
-.chatActiveUsers {padding:5px;border-top:1px solid #ddd;border:0px;border-bottom:1px solid #ddd;border-collapse:collapse;}
+.chatActiveUsers {border-top:1px solid #ddd;border:0px;border-bottom:1px solid #ddd;border-collapse:collapse;}
 .userNumber {font-size:1.1em;}
 .activePic {height:40px;margin:0px;}
-.activeUserHeading {background-image: url('b42.png');background-repeat: repeat;font-variant:small-caps;font-size:0.9em;padding-left:2px;margin:0px;padding:3px;font-weight:bolder;border-top:1px solid #999;border-bottom:1px solid #999;}
+.activeUserHeading {width:100%;background-image: url('b42.png');background-repeat: repeat;font-variant:small-caps;font-size:0.9em;padding-left:2px;margin:0px;padding:3px;font-weight:bolder;border-top:1px solid #999;border-bottom:1px solid #999;}
 .chatInput {display:block;width:100%;margin-top:5px;margin-bottom:5px;}
 .xeraBroadcast {background-image: url('b42.png');background-repeat: repeat;border:1px solid #333;margin.top:0.3em;padding-right:0.5em;}
 .xeraBroadcastBorderFix {border-top:1px solid #333 !important;font-size:0.85em;}
@@ -174,3 +174,6 @@ box-shadow: -1px -1px -3px #000;
 /*-------------Bootstrap Override-----------------*/
 #chatDisplayBox {background: url('b34.png') repeat;padding:8px;border: 1px solid #999;}
 #answerField {background: url('b52.png') repeat;padding:8px;border: 1px solid #999;min-height:420px !important;}
+
+/*Tiles*/
+.xeraTiles {border:1px solid #1f1f1f;background:#1f1f1f;display:inline-block;textAlign:center;padding:0px;color:#e8e8e8;margin-right:2px;border-radius:4px;vertical-align:middle;box-shadow:2px 2px 1px #666;}

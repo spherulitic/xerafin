@@ -103,6 +103,23 @@ function showUserPrefs(response, responseStatus) {
   p6.appendChild(s61);
   p6.appendChild(i6);
   
+  var p7 = document.createElement("p");
+  var s71 = document.createElement ("span");
+  s71.innerHTML = "Alphagrams are to be displayed as ";
+
+  var i7 = document.createElement("select");
+  var i7Options = ['Tiles','Capital Letters'];
+      i7.id = "alphaSortInput";
+      for (var x=0;x<i7Options.length;x++) {
+        var op = document.createElement("option");
+        op.text = i7Options[x];
+        op.value = x;
+        i7.add(op);
+      }      
+      i7.value = Number(localStorage.gAlphaDisplay);
+      i7.onchange = function () {localStorage.gAlphaDisplay = i7.value;}
+  p7.appendChild(s71);
+  p7.appendChild(i7);
   i5 = document.createElement("button");
   i5.innerHTML = "Save";
   i5.setAttribute("onclick", "setPrefs()");
@@ -114,6 +131,8 @@ function showUserPrefs(response, responseStatus) {
   document.getElementById('gameArea').appendChild(p4);
   document.getElementById('gameArea').appendChild(document.createElement("br"));
   document.getElementById('gameArea').appendChild(p6);
+  document.getElementById('gameArea').appendChild(document.createElement("br"));
+  document.getElementById('gameArea').appendChild(p7);
   document.getElementById('gameArea').appendChild(document.createElement("br"));
   document.getElementById('gameArea').appendChild(i5);
   }
