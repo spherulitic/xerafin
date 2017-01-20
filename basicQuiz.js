@@ -64,6 +64,7 @@ function startQuiz() {
     var buttonRow = document.createElement("div");
     var counterReset = document.createElement("button");
     var shuffleButton = document.createElement("button");
+    var skipButton = document.createElement("button");
     
     /** Styling & ID initialisation **/
     alphaSuper.id = "alphaSuper";
@@ -109,6 +110,7 @@ function startQuiz() {
     buttonRow.style.display = 'inline-block';
     buttonRow.style.width = '100%';
     buttonRow.style.marginTop = '20px';
+    buttonRow.style.textAlign = 'center';
     
     counterReset.id = "counterReset";
     counterReset.innerHTML = "Reset Counters";
@@ -116,6 +118,8 @@ function startQuiz() {
     shuffleButton.id = "shuffleButton";
     shuffleButton.innerHTML = "Shuffle";
     shuffleButton.style.cssFloat = 'left';
+    skipButton.innerHTML = 'Skip';
+    skipButton.id = 'skipButton';
     
     /** Quiz Screen Generation **/
     gameArea.appendChild(alphaSuper);
@@ -136,6 +140,7 @@ function startQuiz() {
     gameArea.appendChild(buttonRow);
     buttonRow.appendChild(shuffleButton);
     buttonRow.appendChild(counterReset);
+    buttonRow.appendChild(skipButton);
     if ((Number(localStorage.gAlphaDisplay))==1) {
         alphagramLabel.style.fontSize='2.8em';
         alphagramLabel.style.lineHeight='0em';
@@ -159,6 +164,7 @@ function startQuiz() {
         if ((Number(localStorage.gAlphaDisplay))==0) {stringToTiles(alphaShuffle(alphagram), tileSize)}
         else {$('#alphagram').html(alphaShuffle(alphagram));}       
     });
+    $('#skipButton').click(skipQuestion);
     markAsIncorrect.addEventListener("click", function(e) {
         submitQuestion(false)
     });
@@ -175,7 +181,7 @@ function startQuiz() {
         $(this).val("");
     });
     $('#answerBox').keypress(function(e) {
-        if (e.keyCode == 0 || e.keyCode == 32) {
+        if (e.which == 32) {
            if (quizState !== "finished"){
                 $(this).attr("disabled", "disabled");
                 submitAnswer();
@@ -264,6 +270,7 @@ function displayQuestion(response, responseStatus) {
         $('#rightHook').width(1);
         $('#leftHook').width(1);
         document.getElementById('shuffleButton').disabled = false;
+        document.getElementById('skipButton').disabled = false;
         alphagram = Object.keys(question)[0];
         answers = eval("question." + alphagram);
         allAnswers = answers.slice();
@@ -363,8 +370,24 @@ function adjustAlphaChange(corrected, states) {
     localStorage.qQAlpha = Number(localStorage.qQAlpha) + adjustment[a][states];
 }
 
+function skipQuestion() {
+    document.getElementById('skipButton').disabled = true;
+    var d = {user: userid, question: alphagram};
+    $.ajax({ type: "POST",
+             url: "delayQuestion.py",
+             data: JSON.stringify(d),
+            success: function(response, responseStatus) { 
+                      console.log(alphagram + " delayed. ");
+                      getQuestion(); },
+         error: function(jqXHR, textStatus, errorThrown) {
+            document.getElementById('skipButton').disabled = false;
+            console.log("Error: question " + alphagram + " could not be updated. " + errorThrown + " " + textStatus);
+             }});
+}
+
 function submitQuestion(correct) {
     document.getElementById('shuffleButton').disabled = true;
+    document.getElementById('skipButton').disabled = true;
     var failFlag = false;
     d = {
         user: userid,

@@ -50,6 +50,7 @@ function getLoggedInUsers() {
  }
 function displayUserArray (userList) {
          $('#userDisplayArea').html("");
+   var activeUserContainer = document.createElement('div');
    var activeUserHeading = document.createElement('div');
    var userDisplayTable = document.createElement("table");
    var userDisplayTableBody = document.createElement("tbody");
@@ -61,15 +62,19 @@ function displayUserArray (userList) {
    activeUserHeading.className+= " activeUserHeading"; 
    activeUserHeading.id= "activeUserHeading"; 
    picRowWidth = $('#activeUserHeading').width();
+   if (userList.length * picWidth > picRowWidth) {picWidth = 45};
    if (userList.length * picWidth > picRowWidth) {picWidth = 40};
+   if (userList.length * picWidth > picRowWidth) {picWidth = 35};
    if (userList.length * picWidth > picRowWidth) {picWidth = 30};
    if (userList.length * picWidth > picRowWidth) {picWidth = 25};
    if (userList.length * picWidth > picRowWidth) {rows = 2};
    if (userList.length * picWidth > (picRowWidth*2)) {enoughSpace = false};
    activeUserHeading.innerHTML = userList.length+' active user(s) ';/**+picRowWidth+' '+ Math.ceil((picRowWidth-(picWidth+1))/picWidth) + ' ' + picWidth;**/
-   userDisplayTable.className+= "  chatActiveUsers";
+   userDisplayTable.className+= " chatActiveUsers";
+   activeUserContainer.className+= " chatActiveUsersContainer";
    if (userList.length!==0){ 
        var maxPics = Math.ceil((picRowWidth-(picWidth-1))/picWidth);   
+       if (usersArray.length<=(maxPics*rows)){maxPics=Math.ceil(usersArray.length/rows);}
        var userRow= [];
        for (var z=0;z<(rows);z++) { 
         userRow[z] = document.createElement("tr");
@@ -90,6 +95,7 @@ function displayUserArray (userList) {
             var userPic = document.createElement("img");
             userPic.className+=' activePic';
             userPic.style.height=picWidth+'px';
+            console.log(y);
             userPic.src = userList[y].photo;
             userPic.title = userList[y].name;
             userCell.appendChild(userPic);
@@ -99,7 +105,9 @@ function displayUserArray (userList) {
        }
    }
     userDisplayTable.appendChild(userDisplayTableBody);
-    userDisplayArea.appendChild(userDisplayTable);
+    activeUserContainer.appendChild(userDisplayTable);
+    userDisplayArea.appendChild(activeUserContainer);
+
 }
 function displayLoggedInUsers(response, responseStatus) {
    console.log("Logged in users:");

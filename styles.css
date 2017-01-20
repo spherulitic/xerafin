@@ -162,10 +162,11 @@ box-shadow: -2px -2px 3px #444;
    
 /* Chat Specific Classes */
 
-.chatActiveUsers {border-top:1px solid #ddd;border:0px;border-bottom:1px solid #ddd;border-collapse:collapse;}
+.chatActiveUsersContainer {width:100%;border-bottom:1px solid #999;background:#eee;}
+.chatActiveUsers {border-top:1px solid #ddd;border:0px;border-collapse:collapse;text-align:center;margin:0 auto;}
 .userNumber {font-size:1.1em;}
 .activePic {height:40px;margin:0px;}
-.activeUserHeading {width:100%;background-image: url('b42.png');background-repeat: repeat;font-variant:small-caps;font-size:0.9em;padding-left:2px;margin:0px;padding:3px;font-weight:bolder;border-top:1px solid #999;border-bottom:1px solid #999;}
+.activeUserHeading {width:100%;background-image: url('b42.png');background-repeat: repeat;font-variant:small-caps;font-size:0.9em;padding-left:2px;margin:0px;padding:3px;font-weight:bolder;border-top:1px solid #999;border-bottom:1px solid #999;text-align:center;}
 .chatInput {display:block;width:100%;margin-top:5px;margin-bottom:5px;}
 .xeraBroadcast {background-image: url('b42.png');background-repeat: repeat;border:1px solid #333;margin.top:0.3em;padding-right:0.5em;}
 .xeraBroadcastBorderFix {border-top:1px solid #333 !important;font-size:0.85em;}
