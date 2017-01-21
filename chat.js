@@ -48,66 +48,71 @@ function getLoggedInUsers() {
           console.log("Error getting users, status = " + textStatus + " error: " + errorThrown);
           } } );
  }
+ 
+function getActiveUserDimensions (pRW,pW,uLL,aRows,mRows,mPW){
+        var result = {};
+        if ((uLL*pW > pRW) && (pW>mPW)) {
+                var x=getActiveUserDimensions(pRW,pW-1,uLL,aRows,mRows,mPW);
+                result = {rows: x.rows, picWidth: x.picWidth};
+                }
+        else {
+                if ((aRows<mRows) && (uLL*pW > pRW*aRows)){
+                        var x=getActiveUserDimensions(pRW,pW,uLL,aRows+1,mRows,mPW);
+                        result = {rows: x.rows, picWidth: x.picWidth};
+                }
+                else {result = {rows: aRows, picWidth: pW};}            
+        }
+        return result;
+}
+
 function displayUserArray (userList) {
          $('#userDisplayArea').html("");
    var activeUserContainer = document.createElement('div');
    var activeUserHeading = document.createElement('div');
    var userDisplayTable = document.createElement("table");
    var userDisplayTableBody = document.createElement("tbody");
-   var picWidth = 50;
-   var picRowWidth = 0;
-   var rows = 1;
-   var enoughSpace=true;
    userDisplayArea.appendChild(activeUserHeading);
    activeUserHeading.className+= " activeUserHeading"; 
    activeUserHeading.id= "activeUserHeading"; 
-   picRowWidth = $('#activeUserHeading').width();
-   if (userList.length * picWidth > picRowWidth) {picWidth = 45};
-   if (userList.length * picWidth > picRowWidth) {picWidth = 40};
-   if (userList.length * picWidth > picRowWidth) {picWidth = 35};
-   if (userList.length * picWidth > picRowWidth) {picWidth = 30};
-   if (userList.length * picWidth > picRowWidth) {picWidth = 25};
-   if (userList.length * picWidth > picRowWidth) {rows = 2};
-   if (userList.length * picWidth > (picRowWidth*2)) {enoughSpace = false};
+   var widths=getActiveUserDimensions ($('#activeUserHeading').width(),50,userList.length,1,2,25);
    activeUserHeading.innerHTML = userList.length+' active user(s) ';/**+picRowWidth+' '+ Math.ceil((picRowWidth-(picWidth+1))/picWidth) + ' ' + picWidth;**/
    userDisplayTable.className+= " chatActiveUsers";
    activeUserContainer.className+= " chatActiveUsersContainer";
    if (userList.length!==0){ 
-       var maxPics = Math.ceil((picRowWidth-(picWidth-1))/picWidth);   
-       if (usersArray.length<=(maxPics*rows)){maxPics=Math.ceil(usersArray.length/rows);}
+       var maxPics = Math.ceil(($('#activeUserHeading').width()-(widths.picWidth-1))/widths.picWidth);   
+       if (usersArray.length<=(maxPics*widths.rows)){maxPics=Math.ceil(usersArray.length/widths.rows);}
        var userRow= [];
-       for (var z=0;z<(rows);z++) { 
+       for (var z=0;z<(widths.rows);z++) { 
         userRow[z] = document.createElement("tr");
         userRow[z].id= 'userRow';
-        userRow[z].style.width = Math.min(picWidth*userList.length,picRowWidth-(picWidth+1));
+        userRow[z].style.width = Math.min(widths.picWidth*userList.length,$('#activeUserHeading').width()-(widths.picWidth+1));
         userDisplayTableBody.appendChild(userRow[z]);
         for (var y=z*maxPics;(y<usersArray.length) && (y<((z+1)*maxPics));y++) {     
             var userCell = document.createElement("td");
-            if ((y==(maxPics*rows)-1) && (usersArray.length>(maxPics*rows))){
+            if ((y==(maxPics*widths.rows)-1) && (usersArray.length>(maxPics*widths.rows))){
               userCell.style.background="#45CCCC";
+              userCell.style.width=widths.picWidth+'px';
               userCell.innerHTML="+"+(usersArray.length-y);
               userCell.style.fontSize='1.1em';
               userCell.style.textAlign='center';
             }
             else { 
-            userCell.style.width=picWidth+'px';
-            userCell.textAlign = 'left';
-            var userPic = document.createElement("img");
-            userPic.className+=' activePic';
-            userPic.style.height=picWidth+'px';
-            console.log(y);
-            userPic.src = userList[y].photo;
-            userPic.title = userList[y].name;
-            userCell.appendChild(userPic);
+                userCell.style.width=widths.picWidth+'px';
+                userCell.textAlign = 'left';
+                var userPic = document.createElement("img");
+                userPic.className+=' activePic';
+                userPic.style.height=widths.picWidth+'px';
+                userPic.src = userList[y].photo;
+                userPic.title = userList[y].name;
+                userCell.appendChild(userPic);
             }
             userRow[z].appendChild(userCell);
-      }
+        }
        }
-   }
+    }
     userDisplayTable.appendChild(userDisplayTableBody);
     activeUserContainer.appendChild(userDisplayTable);
     userDisplayArea.appendChild(activeUserContainer);
-
 }
 function displayLoggedInUsers(response, responseStatus) {
    console.log("Logged in users:");

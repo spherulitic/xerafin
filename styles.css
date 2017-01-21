@@ -134,7 +134,7 @@ background-image: background-repeat: repeat;
 box-shadow: -2px -2px 3px #444;
 }
 .quizAlphaContain {background: inherit;margin:0 auto;text-align:center;display:table;}
-.quizAlpha {background:inherit;text-align:center;padding-left:10px;padding-right:10px;display: table-cell;vertical-align:top;font-size:1em;padding-top:0.5em;padding-bottom:0.5em;}
+.quizAlpha {min-height:50px;min-width:70%;background:inherit;text-align:center;padding-left:10px;padding-right:10px;display: table-cell;vertical-align:top;font-size:1em;padding-top:0.5em;padding-bottom:0.5em;}
 .quizAlphaLeft, .quizAlphaRight {background:inherit;font-size:1.8em;line-height:1em;display: table-cell;vertical-align:middle;color:#222;font-variant:small-caps;}
 .quizAlphaLeft {text-align:right;padding-right:0px;}
 .quizAlphaRight {text-align:left;padding-left:0px;}

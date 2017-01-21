@@ -12,7 +12,6 @@ function startQuiz() {
     console.log("Starting Quiz");
     correctPercent = 0.0;
     lastAlphaState = 0;
-    tileSize=1.6;
     
     /** Game Div Defined and Cleared **/
     var gameArea = document.getElementById("gameArea");
@@ -84,6 +83,7 @@ function startQuiz() {
     markAsCorrect.className += ' quizButton quizButtonCorrect';
     markAsCorrect.title = "Mark as Correct";
     markAsCorrect.innerHTML = '&#10004;';
+    markAsCorrect.onclick='';
     nextQuestion.id = "nextQuestion";
     nextQuestion.className += ' quizButton quizButtonNext';
     nextQuestion.innerHTML = '&#10144;';
@@ -93,6 +93,7 @@ function startQuiz() {
     markAsIncorrect.title = "Mark as Incorrect";
     markAsIncorrect.className += ' quizButton quizButtonIncorrect';
     markAsIncorrect.innerHTML = '✘';
+    markAsIncorrect.onclick='';
     answerContainer.id = "answerContainer";
     answerContainer.className += " quizAnswerContain";
     answerBox.type = "text";
@@ -161,7 +162,8 @@ function startQuiz() {
         $('#correctPercent').html('0.00%');
     });
     $('#shuffleButton').click(function() {
-        if ((Number(localStorage.gAlphaDisplay))==0) {stringToTiles(alphaShuffle(alphagram), tileSize)}
+        if ((Number(localStorage.gAlphaDisplay))==0) {stringToTiles(alphaShuffle(alphagram), '#alphagram')
+       }
         else {$('#alphagram').html(alphaShuffle(alphagram));}       
     });
     $('#skipButton').click(skipQuestion);
@@ -188,6 +190,15 @@ function startQuiz() {
             }
         }
     });
+    window.addEventListener('resize', function(event){
+        if ( $( "#tileContainer" ).length ){
+            var subAlpha = '';
+            $.each($('#tileContainer').find('[id^=tile]'), function() {
+            subAlpha += $(this).text();
+            stringToTiles(subAlpha, '#alphagram');
+        })
+        }
+    })  
     $('#markAsCorrect').on('click', null , true, submitQuestion);
     /** AJaX call to get question **/
     /** newQuiz.py refreshes the quiz, ie, you start to get things
@@ -267,16 +278,27 @@ function displayQuestion(response, responseStatus) {
         $('#answerBox').val("Loading Question ...");
     } else {
         correctProgress = 0;
-        $('#rightHook').width(1);
-        $('#leftHook').width(1);
+        
         document.getElementById('shuffleButton').disabled = false;
         document.getElementById('skipButton').disabled = false;
         alphagram = Object.keys(question)[0];
         answers = eval("question." + alphagram);
         allAnswers = answers.slice();
+        hookWidth = 0;
+        for (i=0;i<allAnswers.length;i++){   
+            $('#leftHook').html(addLineBreaks(eval('wordData.'+allAnswers[i]+'[0]'), 7));
+            var x=$('#leftHook').width();
+            if (x>hookWidth){hookWidth=x;}
+            $('#leftHook').html(addLineBreaks(eval('wordData.'+allAnswers[i]+'[1]'), 7));
+            var x=$('#leftHook').width();
+            if (x>hookWidth){hookWidth=x;}
+        }       
+        $('#rightHook').width(hookWidth);
+        $('#leftHook').width(hookWidth);
+        $('#leftHook').html('');
         document.getElementById('nextQuestion').disabled = false;
         if ((Number(localStorage.gAlphaDisplay))==0) {
-            stringToTiles(alphaSortMethod(alphagram, Number(localStorage.gAlphaSortInput)), tileSize);
+            stringToTiles(alphaSortMethod(alphagram, Number(localStorage.gAlphaSortInput)), '#alphagram');
             $('#alphaSuper').css('background', '#5ab');
         }
         else {
@@ -385,6 +407,7 @@ function skipQuestion() {
              }});
 }
 
+
 function submitQuestion(correct) {
     document.getElementById('shuffleButton').disabled = true;
     document.getElementById('skipButton').disabled = true;
@@ -463,33 +486,35 @@ function submitQuestion(correct) {
     for (var x = 0; x < answers.length; x++) {
         displayAnswer(answers[x]);
     }
-    
     answers = [];
     var temp = getWordWithHook(Object.keys(wordData)[0])
-    var maxWidths = 0;
+    var maxWidths = hookWidth;
     var counter = 0;
-    temp[0] = addLineBreaks(temp[0], 8);
-    temp[2] = addLineBreaks(temp[2], 8);
-    if ((Number(localStorage.gAlphaDisplay))==0) {stringToTiles(temp[1], tileSize)}
+    $('#rightHook').width(hookWidth);
+    $('#leftHook').width(hookWidth);
+    temp[0] = addLineBreaks(temp[0], 7);
+    temp[2] = addLineBreaks(temp[2], 7);
+    if ((Number(localStorage.gAlphaDisplay))==0) {stringToTiles(temp[1], '#alphagram')}
     else {$('#alphagram').html(temp[1]);}
     $('#leftHook').html(temp[0]);
     $('#rightHook').html(temp[2]);
-    maxWidths = Math.max($('#rightHook').width(), $('#leftHook').width());
-    $('#rightHook').width(maxWidths);
-    $('#leftHook').width(maxWidths);
+    /**maxWidths = Math.max($('#rightHook').width(), $('#leftHook').width());**/
+   
+    console.log(hookWidth);
     if (typeof scrollTimer !== 'undefined' && scrollTimer !== null )
         clearInterval(scrollTimer);
         scrollTimer = setInterval(function() {
         var temp2 = getWordWithHook(allAnswers[counter % allAnswers.length]);
-        temp2[0] = addLineBreaks(temp2[0], 8);
-        temp2[2] = addLineBreaks(temp2[2], 8);
-        if ((Number(localStorage.gAlphaDisplay))==0) {stringToTiles(temp2[1], tileSize)}
+        temp2[0] = addLineBreaks(temp2[0], 7);
+        temp2[2] = addLineBreaks(temp2[2], 7);
+        $('#rightHook').width(hookWidth);
+        $('#leftHook').width(hookWidth);
+        if ((Number(localStorage.gAlphaDisplay))==0) {stringToTiles(temp2[1], '#alphagram')}
         else {$('#alphagram').html(temp2[1]);}
         $('#leftHook').html(temp2[0]);
         $('#rightHook').html(temp2[2]);
-        maxWidths = Math.max($('#rightHook').width(), $('#leftHook').width());
-        $('#rightHook').width(maxWidths);
-        $('#leftHook').width(maxWidths);
+        /**maxWidths = Math.max($('#rightHook').width(), $('#leftHook').width());**/
+       
         counter++;
     }, 2500);
     $('#nextQuestion').show();
@@ -600,38 +625,37 @@ function alphaShuffle(content) {
 function alphaSortMethod(content, type) {
     var output = content;
     switch (type) {
-    case 0:
-        output = content;
-        break;
-    case 1:
-        output = alphaSortVC(content, 0);
-        break;
-    case 2:
-        output = alphaSortVC(content, 1);
-        break;
-    case 3:
-        output = alphaShuffle(content);
-        break;
-    default:
-        output = content;
-        break;
+    case 0: output = content; break;
+    case 1: output = alphaSortVC(content, 0);break;
+    case 2: output = alphaSortVC(content, 1);break;
+    case 3: output = alphaShuffle(content);break;
+    default:output = content;break;
     }
     return output;
 }
-function stringToTiles(input, size) {
+function drawTile (input,size){
+    var tileValue = [1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10];
+}
+function stringToTiles(input, parent) {
     var tileLetter = input.split('');
     var tileValue = [1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10];
     var tiles = [];
-    document.getElementById('alphagram').innerHTML = "";
+    $(parent).html("");
+     $(parent).css('width',$('#alphaSuper').width()-$('#leftHook').width()-$('#rightHook').width());
     var tileContainer = document.createElement('div');
+
+
+    var x = getActiveUserDimensions ($(parent).width()-(tileLetter.length*4),40,tileLetter.length,1,1,1);
+    $(parent).width(tileLetter.length*x.picWidth+ (tileLetter.length*4));
     for (i = 0; i < tileLetter.length; i++) {      
         tiles[i] = document.createElement('div');
         tiles[i].className += ' xeraTiles';
         tiles[i].id = 'tile' + i;
-        tiles[i].style.width = (size -0.1) + 'em';
+        tiles[i].style.width = x.picWidth+'px';
         tiles[i].style.height = tiles[i].style.width;
-        tiles[i].style.fontSize = (size +0.1) + 'em';
-        tiles[i].style.lineHeight = (size)  + 'em';
+        tiles[i].style.fontSize = (x.picWidth*(2/3)) + 'px';
+        tiles[i].style.lineHeight = (x.picWidth)  + 'px';
+        tiles[i].style.verticalAlign = 'middle';
         tiles[i].innerHTML = tileLetter[i];
         tileContainer.appendChild(tiles[i]);
         
@@ -639,10 +663,8 @@ function stringToTiles(input, size) {
     }
    
     /**$("alphagram").empty("tileContainer");**/
-    document.getElementById('alphagram').appendChild(tileContainer);
+    $(parent).append(tileContainer);
     tileContainer.id = 'tileContainer';
-    document.getElementById('alphagram').style.paddingTop='1em';
-    document.getElementById('alphagram').style.paddingBottom='1em';
     tileContainer.style.verticalAlign = 'middle';
      $( function() {
         $( "#tileContainer" ).sortable(
@@ -650,4 +672,5 @@ function stringToTiles(input, size) {
         $( "#tileContainer" ).sortable( "option", "disabled", false );
         $( "#tileContainer" ).disableSelection();
        } );
+     window.addEventListener('resize', function(event){displayUserArray(usersArray)});
 }
