@@ -265,7 +265,7 @@ def wrong (alpha, userid) :
     cur.execute("update questions set cardbox = 0, next_scheduled = {0}, incorrect = incorrect + 1, streak = 0, difficulty=4 where question = '{1}'".format(getNext(0),alpha))
 
 def skipWord (alpha, userid) :
-  SKIP_DELAY = 3600*6 # six hour delay
+  SKIP_DELAY = 3600*12 # twelve hour delay
   now = int(time.time())
   with lite.connect(getDBFile(userid)) as con:
     cur = con.cursor()
