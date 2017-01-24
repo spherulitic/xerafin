@@ -242,7 +242,7 @@ def getNext (newCardbox = 0) :
 # List of lists 
 # cardbox x is rescheduled for a time [x,y] 
 # between x and x+y days in the future
-  r = [ [.5,1], [3,2], [5,4], [11,6], [16,10], [27,14], [50,20], [80,30], [130,40], [300,60], [430,100] ]
+  r = [ [.5,.8], [3,2], [5,4], [11,6], [16,10], [27,14], [50,20], [80,30], [130,40], [300,60], [430,100] ]
 	
   return int( now + (r[newCardbox][0]*day) + (r[newCardbox][1]*offset))
 

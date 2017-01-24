@@ -59,12 +59,10 @@ function startQuiz() {
     var answerAmount = document.createElement("div");
     var answerBox = document.createElement("input");
     var correctAnswers = document.createElement("table");
-    var wrongAnswers = document.createElement("div");
-    var buttonRow = document.createElement("div");
+    var wrongAnswers = document.createElement("div");  
     var counterReset = document.createElement("button");
-    var shuffleButton = document.createElement("button");
-    var skipButton = document.createElement("button");
-    
+    var advanced = document.createElement ("div");
+
     /** Styling & ID initialisation **/
     alphaSuper.id = "alphaSuper";
     alphaSuper.className += " quizAlphaSuper";
@@ -107,21 +105,30 @@ function startQuiz() {
     wrongAnswers.id = "wrongAnswers";
     wrongAnswers.className += " wordTableWrong"
     wrongAnswers.innerHTML = "";
-    buttonRow.id = "buttonRow";
-    buttonRow.style.display = 'inline-block';
-    buttonRow.style.width = '100%';
-    buttonRow.style.marginTop = '20px';
-    buttonRow.style.textAlign = 'center';
-    
+    advanced.id='advancedBox';
+    advanced.className += ' quizAdvancedBox';
     counterReset.id = "counterReset";
     counterReset.innerHTML = "Reset Counters";
-    counterReset.style.cssFloat = 'right';
-    shuffleButton.id = "shuffleButton";
-    shuffleButton.innerHTML = "Shuffle";
-    shuffleButton.style.cssFloat = 'left';
-    skipButton.innerHTML = 'Skip';
-    skipButton.id = 'skipButton';
-    
+    /** Sub Button Div Generation **/
+    var buttonRow = document.createElement("div");
+    buttonRow.id = "buttonRow";
+    buttonRow.className += ' quizButtonRow';
+    var subButton=[];
+    var subButtonBox=[];
+    var buttonContent=["&#8633;","<img id='imgSloth' src='sloth.png' style='width:30px;height:30px;margin:auto auto;'>","&#9658;","&#8801;"];
+    var buttonId=['shuffleButton','slothButton','skipButton','advancedButton'];
+    var buttonTitle=['Shuffle Tiles','Sloth This Word!','Skip Word','Advanced...'];
+    for (var i=0;i<4;i++){
+        subButton[i]=document.createElement('button');
+        subButton[i].id=buttonId[i];
+        subButton[i].innerHTML=buttonContent[i];
+        subButton[i].title=buttonTitle[i];
+        subButton[i].className += ' quizSubButton';
+        subButtonBox[i]=document.createElement('div');
+        subButtonBox[i].className += ' quizSubButtonBox';
+        subButtonBox[i].appendChild(subButton[i]);
+        buttonRow.appendChild(subButtonBox[i]);
+    }
     /** Quiz Screen Generation **/
     gameArea.appendChild(alphaSuper);
     alphaSuper.appendChild(alphaContainer);
@@ -133,15 +140,14 @@ function startQuiz() {
     markAs.appendChild(nextQuestion);
     markAs.appendChild(answerContainer);
     answerContainer.appendChild(answerBox);
-    answerContainer.appendChild(answerAmount);
+    answerContainer.appendChild(answerAmount);   
     markAs.appendChild(markAsIncorrect);
     gameArea.appendChild(sessionInfo);
+    gameArea.appendChild(buttonRow);  
+    advanced.appendChild(counterReset);
+    gameArea.appendChild(advanced);
     gameArea.appendChild(correctAnswers);
-    gameArea.appendChild(wrongAnswers);
-    gameArea.appendChild(buttonRow);
-    buttonRow.appendChild(shuffleButton);
-    buttonRow.appendChild(counterReset);
-    buttonRow.appendChild(skipButton);
+    gameArea.appendChild(wrongAnswers);   
     if ((Number(localStorage.gAlphaDisplay))==1) {
         alphagramLabel.style.fontSize='2.8em';
         alphagramLabel.style.lineHeight='0em';
@@ -167,9 +173,14 @@ function startQuiz() {
         else {$('#alphagram').html(alphaShuffle(alphagram));}       
     });
     $('#skipButton').click(skipQuestion);
+    $('#advancedButton').click(function(){
+        console.log('Clicked');
+        $('#advancedBox').toggle(400);
+    });
     markAsIncorrect.addEventListener("click", function(e) {
         submitQuestion(false)
     });
+
     answerBox.addEventListener("keypress", function(e) {
         if (e.which === 13) {
             //	re-enable this in getQuestion() so it happens after the 
@@ -178,6 +189,9 @@ function startQuiz() {
             submitAnswer();
         }
     });
+     $('#slothButton').click(function() {
+            initSloth(alphagram);
+        });
     $('#answerBox').keypress("m",function(e) {
         if(e.ctrlKey) 
         $(this).val("");
@@ -190,15 +204,6 @@ function startQuiz() {
             }
         }
     });
-    window.addEventListener('resize', function(event){
-        if ( $( "#tileContainer" ).length ){
-            var subAlpha = '';
-            $.each($('#tileContainer').find('[id^=tile]'), function() {
-            subAlpha += $(this).text();
-            stringToTiles(subAlpha, '#alphagram');
-        })
-        }
-    })  
     $('#markAsCorrect').on('click', null , true, submitQuestion);
     /** AJaX call to get question **/
     /** newQuiz.py refreshes the quiz, ie, you start to get things
@@ -282,9 +287,20 @@ function displayQuestion(response, responseStatus) {
         document.getElementById('shuffleButton').disabled = false;
         document.getElementById('skipButton').disabled = false;
         alphagram = Object.keys(question)[0];
+        if (alphagram.length>6){document.getElementById('slothButton').disabled = false;
+            $('#imgSloth').css('opacity', '1');
+            document.getElementById('slothButton').title = 'Sloth this word!';
+        }
+        else {document.getElementById('slothButton').disabled = true;
+            $('#imgSloth').css('opacity', '0.3');
+            document.getElementById('slothButton').title = 'Alphagram is too short for sloths!';
+        }
+        
         answers = eval("question." + alphagram);
         allAnswers = answers.slice();
         hookWidth = 0;
+        $('#rightHook').width(0);
+        $('#leftHook').width(0);
         for (i=0;i<allAnswers.length;i++){   
             $('#leftHook').html(addLineBreaks(eval('wordData.'+allAnswers[i]+'[0]'), 7));
             var x=$('#leftHook').width();
@@ -498,9 +514,6 @@ function submitQuestion(correct) {
     else {$('#alphagram').html(temp[1]);}
     $('#leftHook').html(temp[0]);
     $('#rightHook').html(temp[2]);
-    /**maxWidths = Math.max($('#rightHook').width(), $('#leftHook').width());**/
-   
-    console.log(hookWidth);
     if (typeof scrollTimer !== 'undefined' && scrollTimer !== null )
         clearInterval(scrollTimer);
         scrollTimer = setInterval(function() {
@@ -512,9 +525,7 @@ function submitQuestion(correct) {
         if ((Number(localStorage.gAlphaDisplay))==0) {stringToTiles(temp2[1], '#alphagram')}
         else {$('#alphagram').html(temp2[1]);}
         $('#leftHook').html(temp2[0]);
-        $('#rightHook').html(temp2[2]);
-        /**maxWidths = Math.max($('#rightHook').width(), $('#leftHook').width());**/
-       
+        $('#rightHook').html(temp2[2]);     
         counter++;
     }, 2500);
     $('#nextQuestion').show();
@@ -633,9 +644,6 @@ function alphaSortMethod(content, type) {
     }
     return output;
 }
-function drawTile (input,size){
-    var tileValue = [1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10];
-}
 function stringToTiles(input, parent) {
     var tileLetter = input.split('');
     var tileValue = [1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10];
@@ -643,8 +651,6 @@ function stringToTiles(input, parent) {
     $(parent).html("");
      $(parent).css('width',$('#alphaSuper').width()-$('#leftHook').width()-$('#rightHook').width());
     var tileContainer = document.createElement('div');
-
-
     var x = getActiveUserDimensions ($(parent).width()-(tileLetter.length*4),40,tileLetter.length,1,1,1);
     $(parent).width(tileLetter.length*x.picWidth+ (tileLetter.length*4));
     for (i = 0; i < tileLetter.length; i++) {      
@@ -657,12 +663,9 @@ function stringToTiles(input, parent) {
         tiles[i].style.lineHeight = (x.picWidth)  + 'px';
         tiles[i].style.verticalAlign = 'middle';
         tiles[i].innerHTML = tileLetter[i];
-        tileContainer.appendChild(tiles[i]);
-        
+        tileContainer.appendChild(tiles[i]);       
         /** div for tile values, right hand side, bottom relative (width of parent - width of div - 0.2em, value tileValue[String.fromCharCode(tileLetter[i])-64];**/
-    }
-   
-    /**$("alphagram").empty("tileContainer");**/
+    }   
     $(parent).append(tileContainer);
     tileContainer.id = 'tileContainer';
     tileContainer.style.verticalAlign = 'middle';

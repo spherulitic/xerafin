@@ -100,7 +100,6 @@ function showLeaderboardHeader () {
   headerRow2.appendChild(headerCell4);
   headerRow2.appendChild(headerCell5);
   headerCol.appendChild(headerRow2);
-
   lbTable.appendChild(headerCol);
   var tableBody = document.createElement('tbody');
   tableBody.id = 'lbTableBody';
@@ -153,43 +152,30 @@ function showLeaderboardData(data, myRank) {
     var row = document.createElement('tr'); 
     document.getElementById('lbTableBody').appendChild(row);
     if (x==0){row.style.fontWeight='bold';};
-    var col1 = document.createElement("td");
-    var col2 = document.createElement("td");
-    var col3 = document.createElement("td");
-    var col4 = document.createElement("td");
-    var col5 = document.createElement("td");
-    col2.style.borderRight = 'solid 0px';
-    col3.style.borderLeft = 'solid 0px';
-    col3.style.width = '50%';
-    col3.style.textAlign = 'left';
-    if (x<MAX_TOP_PLAYERS)
-      col1.innerHTML = (x+1)+"<sup>"+getOrdinal(x+1)+"</sup>";
-    else 
-      col1.innerHTML = (myRank)+"<sup>"+getOrdinal(myRank)+"</sup>";
-    col2.innerHTML = '<img src="'+data[x].photo+'" style="height:30px;" title="'+data[x].name+'">';
-    col3.innerHTML = data[x].name;
-    col4.innerHTML = data[x].answered;
-    col5.innerHTML = data[x].score;
-    row.appendChild(col1);
-    row.appendChild(col2);
-    row.appendChild(col3);
-    row.appendChild(col4);
-    row.appendChild(col5);
-    col1.className+=' lbTableRank';
+    var col=[];
+    var columnInfo = [(x+1)+"<sup>"+getOrdinal(x+1)+"</sup>",'<img src="'+data[x].photo+'" style="height:30px;" title="'+data[x].name+'">',data[x].name, data[x].answered, data[x].score];  
+    for (var y=1;y<6;y++){
+      col[y] = document.createElement("td");
+      col[y].innerHTML = columnInfo[y-1];
+      console.log (col[y].innerHTML);
+      row.appendChild(col[y]);
+    }
+    /** Exceptions to loop **/
+    col[1].className+=' lbTableRank';
+    col[2].style.borderRight = 'solid 0px';
+    col[3].style.borderLeft = 'solid 0px';
+    col[3].style.width = '45%';
+    col[3].style.textAlign = 'left'; 
+    if (x>MAX_TOP_PLAYERS){col[1].innerHTML = (myRank)+"<sup>"+getOrdinal(x+1)+"</sup>";}  
+    if (username==data[x].name){row.style.background="#5ab";} //*Cheap hack to highlight user.  Bug if 2 people with the same name are in the rankings *//   
   }
+  var footNote=[];
   var rowFoot = document.createElement("tr");
-  var footNote1 =document.createElement("td");
-  var footNote2 =document.createElement("td");
-  var footNote3 =document.createElement("td");
-  var footNote4 =document.createElement("td");
-  var footNote5 =document.createElement("td");
+  for (var y=1;y<6;y++){
+    footNote[y] = document.createElement("td");
+    rowFoot.appendChild(footNote[y]);
+  } 
   document.getElementById('lbTableBody').appendChild(rowFoot);
-  footNote1.innerHtml='&nbsp;';
-  rowFoot.appendChild(footNote1);
-  rowFoot.appendChild(footNote2);
-  rowFoot.appendChild(footNote3);
-  rowFoot.appendChild(footNote4);
-  rowFoot.appendChild(footNote5);
 }
 
 function sortByAnswered(a, b) {

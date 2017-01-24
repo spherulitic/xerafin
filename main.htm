@@ -35,6 +35,23 @@ function URLExists(url) {
    return http.status != 404;
 }
 $.ajaxSetup({cache: false});
+$(window).resize(function() {
+    clearTimeout(window.resizedFinished);
+    window.resizedFinished = setTimeout(function(){
+        onResize();
+    }, 100);
+});
+
+function onResize(){
+	if ( $( "#tileContainer" ).length ){
+            var subAlpha = '';
+            $.each($('#tileContainer').find('[id^=tile]'), function() {
+            	subAlpha += $(this).text();               
+        	})
+       		stringToTiles(subAlpha, '#alphagram'); 
+        }
+        if ( $( "#activeUserheading" ).length){displayUserArray(usersArray);}	
+}
 </script>
 </head>
 

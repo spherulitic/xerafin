@@ -28,7 +28,7 @@ function startChat () {
    chatDisplayBox.appendChild(chatDisplayTable);
 
 /**Event Listeners**/
-   window.addEventListener('resize', function(event){displayUserArray(usersArray)});
+   
    chatBox.addEventListener("keypress", function(e) {
         if (e.which === 13 && $(this).val().trim()) {
            submitChat($(this).val(), false);

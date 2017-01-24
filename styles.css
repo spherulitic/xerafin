@@ -64,11 +64,7 @@ margin:3px;display:inline-block;font-weight:lighter;
   background: radial-gradient(#6cf 15%,  #9cc, #ddd);
 }
 button:disabled {
-  background:#666;
-  background: -webkit-radial-gradient(#666 15%, #999, #aaa);
-  background: -o-radial-gradient(#666 15%, #999,#aaa); 
-  background: -moz-radial-gradient(#666 15%, #999,#aaa); 
-  background: radial-gradient(#666 15%,  #999, #aaa);
+  background:#bbb;
 }
 .quizButton:hover {box-shadow: 0px 0px 5px #222;}
 
@@ -90,7 +86,7 @@ button:disabled {
 .lbHeader {width: 100%;}
 
 .lbTable1st {font-weight:bolder;font-size:1.1em;}
-.lbTable {width: 100%;margin: auto;border:2px solid black;
+.lbTable {width: 100%;margin: auto;border:2px solid #333;
   -webkit-border-radius: 5px;
 -moz-border-radius: 5px;
 border-radius: 5px;
@@ -98,7 +94,7 @@ border-radius: 5px;
 
 
 .lbTable tr {font-size:1.1em;font-variant:small-caps;margin-top:0.4em;border:1px solid black;}
-.lbTableRank {font-size: 1.4em;min-width:12%;width:12%;margin-left:0.2em;margin-right:0.2em;font-variant:small-caps;}
+.lbTableRank {font-size: 1.3em;min-width:12%;width:12%;margin-left:0.2em;margin-right:0.2em;font-variant:small-caps;font-style:italic;}
 .lbTable tr:nth-child(2n+1) {background-color: hsla(0,0%,98%,0.8); background-image: url('b52.png');background-repeat: repeat;}
 .lbTable tr:nth-child(2n+2) {background-color: hsla(0,0%,92%,0.8); background-image: url('b42.png');background-repeat: repeat;}
 
@@ -110,7 +106,7 @@ border-radius: 5px;
 .lbTable tr th select {background-color:#404040;padding-left:0.4em;padding-right:0.4em;margin-left:1.5em;border:1px solid black;font-size:1.1em;width:40%;}
 .lbTable tr th:first-child {text-align:left;}
 .lbTable tr:last-child {background-color:hsla(0,0%,17%,0.8) !important;color:#ffffff !important;border: 0px solid;font-variant:small-caps;height:25px;min-height:25px;}
-.lbTable td {padding: 0.2em 0.4em 0.2em 0.4em;border: 0px solid;text-align: center;backgrund:none;color:#282828;}
+.lbTable td {padding: 0.1em 0.4em 0.1em 0.4em;border: 0px solid;text-align: center;backgrund:none;color:#282828;}
 .lbTable td img  {border:1px solid black;}
 
 
@@ -134,7 +130,7 @@ background-image: background-repeat: repeat;
 box-shadow: -2px -2px 3px #444;
 }
 .quizAlphaContain {background: inherit;margin:0 auto;text-align:center;display:table;}
-.quizAlpha {min-height:50px;min-width:70%;background:inherit;text-align:center;padding-left:10px;padding-right:10px;display: table-cell;vertical-align:top;font-size:1em;padding-top:0.5em;padding-bottom:0.5em;}
+.quizAlpha {min-height:50px;background:inherit;text-align:center;padding-left:4px;padding-right:4px;display: table-cell;vertical-align:top;font-size:1em;padding-top:0.5em;padding-bottom:0.5em;}
 .quizAlphaLeft, .quizAlphaRight {background:inherit;font-size:1.8em;line-height:1em;display: table-cell;vertical-align:middle;color:#222;font-variant:small-caps;}
 .quizAlphaLeft {text-align:right;padding-right:0px;}
 .quizAlphaRight {text-align:left;padding-left:0px;}
@@ -146,8 +142,12 @@ box-shadow: -2px -2px 3px #444;
 @media screen and (min-width: 300px) {.quizAnswerContain {width:130px;}}
 @media screen and (min-width: 600px) {.quizAnswerContain {width:35%;}}
 @media screen and (min-width: 800px) {.quizAnswerContain {width:40%;}}
+.quizSubButton {width:40px;height:40px;padding:0px;font-size:20px;margin:0px;vertical-align:middle;}  
+.quizSubButtonBox {width:25%;display:inline-block;}
+.quizButtonRow {display:inline-block;width:100%;margin:2px auto;text-align:center;background:#eee;border-bottom:1px solid #ccc;padding-top:0.3em;padding-bottom:0.3em;}
+.quizAdvancedBox {margin:0 auto;padding:15px;border-bottom:1px solid #ccc;display:none;width:100%;}
 
-.wordTable {width:100%;margin-top:1.5em;align:left;border-top:1px solid #ccc;}
+.wordTable {width:100%;margin-top:0px;align:left;}
 .wordTable tr {border-bottom: 1px solid #ccc;}
 .wordTableHighlight {background-color: hsla(0,0%,95%,0.7);background: url('b34.png') repeat;}
 .wordTableHighlightWrong {background-color: #CCCCCC;}
