@@ -35,14 +35,14 @@ function URLExists(url) {
    return http.status != 404;
 }
 $.ajaxSetup({cache: false});
-$(window).resize(function() {
-    clearTimeout(window.resizedFinished);
-    window.resizedFinished = setTimeout(function(){
-        onResize();
-    }, 100);
+$(window).resize(function() { 
+        onResize();   
 });
 
 function onResize(){
+	if ( $( "#alphaSuper").length){
+		resizeHookFontQuiz();
+	}
 	if ( $( "#tileContainer" ).length ){
             var subAlpha = '';
             $.each($('#tileContainer').find('[id^=tile]'), function() {

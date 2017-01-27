@@ -29,7 +29,7 @@ td.slothTD {padding: 2px;/**border: solid 1px;**/}
 .tableHeaderLight {background-color:hsla(0,0%,85%,0.8);color:#333;border:2px solid #847c6a;background-image: url('b42.png');background-repeat:repeat;} 
 
 .tableButtonLight, .tableButtonDark {-webkit-border-radius: 5px;-moz-border-radius: 5px;border-radius: 5px;border:2px solid black;font-size:1.5em;
-width:40px;height:40px;vertical-align:center;text-align:center;}
+width:40px;height:40px;vertical-align:middle;text-align:center;}
 .tableButtonDark {color:#ccc;background-color:#282828;background-image: url('b50.png');background-repeat:repeat;}
 .tableButtonLight {color:#333;background-color:#ddd;background-image: url('b27.png');background-repeat:repeat;}
 .tableButtonLight:hover {border:2px solid #111;color:#666;}
@@ -129,9 +129,9 @@ border-radius: 10px;
 background-image: background-repeat: repeat;
 box-shadow: -2px -2px 3px #444;
 }
-.quizAlphaContain {background: inherit;margin:0 auto;text-align:center;display:table;}
-.quizAlpha {min-height:50px;background:inherit;text-align:center;padding-left:4px;padding-right:4px;display: table-cell;vertical-align:top;font-size:1em;padding-top:0.5em;padding-bottom:0.5em;}
-.quizAlphaLeft, .quizAlphaRight {background:inherit;font-size:1.8em;line-height:1em;display: table-cell;vertical-align:middle;color:#222;font-variant:small-caps;}
+.quizAlphaContain {background: inherit;margin:0 auto;text-align:center;display:table;vertical-align:middle;}
+.quizAlpha {background:inherit;text-align:center;padding-left:4px;padding-right:4px;display: table-cell;vertical-align:top;font-size:2.8em;line-height:1.4em;padding-top:5px;padding-bottom:5px;}
+.quizAlphaLeft, .quizAlphaRight {background:inherit;display: table-cell;vertical-align:middle;color:#222;font-variant:small-caps;padding:0px;}
 .quizAlphaLeft {text-align:right;padding-right:0px;}
 .quizAlphaRight {text-align:left;padding-left:0px;}
 .quizPlaceholder {background-color: lightblue;display:inline-block;}
@@ -152,7 +152,7 @@ box-shadow: -2px -2px 3px #444;
 .wordTable tr {border-bottom: 1px solid #ccc;width:100%;}
 .wordTableHighlight {background-color: hsla(0,0%,95%,0.7);background: url('b34.png') repeat;}
 .wordTableHighlightWrong {background-color: #CCCCCC;}
-.wordTableLeftHook , .wordTableRightHook {font-size:1em;font-variant:small-caps;width:1px;}
+.wordTableLeftHook , .wordTableRightHook {font-size:1em;line-height:1em;font-variant:small-caps;width:1px;vertical-align:middle;}
 .wordTableLeftHook {padding-right:5px;text-align:right;}
 .wordTableRightHook {padding-left:5px;text-align:left;}
 .wordTableWord {font-weight:bold;padding:0px;text-align:center;margin:0px;width:5%;color:#404040;}
@@ -178,4 +178,4 @@ box-shadow: -2px -2px 3px #444;
 #answerField {background: url('b52.png') repeat;padding:8px;border: 1px solid #999;min-height:420px !important;}
 
 /*Tiles*/
-.xeraTiles {border:1px solid #1f1f1f;background:#1f1f1f;display:inline-block;textAlign:center;padding:0px;color:#e8e8e8;margin-right:2px;border-radius:4px;vertical-align:middle;box-shadow:2px 2px 1px #666;}
+.xeraTiles {border:1px solid #1f1f1f;background:#1f1f1f;display:inline-block;textAlign:center;padding:0px;color:#e8e8e8;margin:0 auto;margin-right:2px;border-radius:4px;vertical-align:middle;box-shadow:2px 2px 1px #666;font-weight:normal;}

@@ -154,7 +154,31 @@ function getQuestion() {
     });
     correctState = 0;   
 }
+function resizeHookFontQuiz () {
+    var hookFont = $('#alphaSuper').width()/15;
+    if (hookFont>30){hookFont=30;}
+    $('#leftHook').css({'font-size':hookFont+'px','line-Height':hookFont+'px'});
+    $('#rightHook').css({'font-size':hookFont+'px','line-Height':hookFont+'px'});
+}
+function resetHookWidthsQuiz () {
+    hookWidth = 0;
+        $('#rightHook').width(0);
+        $('#leftHook').width(0);
+        resizeHookFontQuiz();
+        for (i=0;i<allAnswers.length;i++){   
+            $('#leftHook').html(addLineBreaks(eval('wordData.'+allAnswers[i]+'[0]'), 7));
+            var x=$('#leftHook').width();
+            if (x>hookWidth){hookWidth=x;}
+            $('#leftHook').html(addLineBreaks(eval('wordData.'+allAnswers[i]+'[1]'), 7));
+            var x=$('#leftHook').width();
+            if (x>hookWidth){hookWidth=x;}
+        }       
+        $('#rightHook').width(hookWidth);
+        $('#leftHook').width(hookWidth);
+        $('#leftHook').html('');
+        $('#rightHook').html('');
 
+}
 function displayQuestion(response, responseStatus) {
     console.log("Question Response");
     if (typeof scrollTimer !== 'undefined' && scrollTimer !== null )
@@ -187,12 +211,14 @@ function displayQuestion(response, responseStatus) {
         // to submit, so we need to wait to get a fresh one
         $('#answerBox').val("Loading Question ...");
     } else {
+        alphagram = Object.keys(question)[0];
+        answers = eval("question." + alphagram);
+        allAnswers = answers.slice();
+        resetHookWidthsQuiz();
         correctProgress = 0;
         hintQuantity = 0;
-        
         document.getElementById('shuffleButton').disabled = false;
-        document.getElementById('skipButton').disabled = false;
-        alphagram = Object.keys(question)[0];
+        document.getElementById('skipButton').disabled = false;       
         if (hintQuantity+2>=alphagram.length){document.getElementById('addHint').disabled = true;}
         else {document.getElementById('addHint').disabled = false;}
         if (alphagram.length>6){document.getElementById('slothButton').disabled = false;
@@ -202,24 +228,7 @@ function displayQuestion(response, responseStatus) {
         else {document.getElementById('slothButton').disabled = true;
             $('#imgSloth').css('opacity', '0.3');
             document.getElementById('slothButton').title = 'Alphagram is too short for sloths!';
-        }
-        
-        answers = eval("question." + alphagram);
-        allAnswers = answers.slice();
-        hookWidth = 0;
-        $('#rightHook').width(0);
-        $('#leftHook').width(0);
-        for (i=0;i<allAnswers.length;i++){   
-            $('#leftHook').html(addLineBreaks(eval('wordData.'+allAnswers[i]+'[0]'), 7));
-            var x=$('#leftHook').width();
-            if (x>hookWidth){hookWidth=x;}
-            $('#leftHook').html(addLineBreaks(eval('wordData.'+allAnswers[i]+'[1]'), 7));
-            var x=$('#leftHook').width();
-            if (x>hookWidth){hookWidth=x;}
-        }       
-        $('#rightHook').width(hookWidth);
-        $('#leftHook').width(hookWidth);
-        $('#leftHook').html('');
+        }     
         document.getElementById('nextQuestion').disabled = false;
         if ((Number(localStorage.gAlphaDisplay))==0) {
             stringToTiles(alphaSortMethod(alphagram, Number(localStorage.gAlphaSortInput)), '#alphagram');
@@ -614,13 +623,15 @@ function stringToTiles(input, parent) {
         tiles[i].style.fontSize = (x.picWidth*(2/3)) + 'px';
         tiles[i].style.lineHeight = (x.picWidth)  + 'px';
         tiles[i].style.verticalAlign = 'middle';
+        tiles[i].style.margin = 'middle';
         tiles[i].innerHTML = tileLetter[i];
         tileContainer.appendChild(tiles[i]);       
         /** div for tile values, right hand side, bottom relative (width of parent - width of div - 0.2em, value tileValue[String.fromCharCode(tileLetter[i])-64];**/
     }   
     $(parent).append(tileContainer);
+    $(parent).css('font-size','1em');
     tileContainer.id = 'tileContainer';
-    tileContainer.style.verticalAlign = 'middle';
+    $ ("#tileContainer").css('vertical-align','middle');
      $( function() {
         $( "#tileContainer" ).sortable(
         {placeholder: 'quizPlaceholder', tolerance: 'touch'});

@@ -337,6 +337,7 @@ def dbClean (cur) :
 # Make sure that the database is in a good state. Things happen.
 
   cur.execute("delete from next_added where question in (select question from questions where next_scheduled is not null)")
+  cur.execute("update questions set difficulty = null where cardbox is null")
 
 		
 def closetSweep (cur, userid) :
@@ -437,7 +438,7 @@ def getQuestions (numNeeded, userid, questionLength=None) :
   quiz = {}
   with lite.connect(getDBFile(userid)) as qCon:
     cur = qCon.cursor()
-    getCardsQry = "select question from questions where difficulty = -1 order by cardbox, next_scheduled limit ?" 
+    getCardsQry = "select question from questions where difficulty = -1 and next_scheduled is not null order by cardbox, next_scheduled limit ?" 
     cur.execute(getCardsQry, (numNeeded,))
     result = cur.fetchall()
     while (len(result) < numNeeded):
