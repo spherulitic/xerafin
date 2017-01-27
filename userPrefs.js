@@ -28,13 +28,13 @@ function showUserPrefs(response, responseStatus) {
   var i1 = document.createElement("select");
       i1.id = "closetInput";
       i1.setAttribute("onchange", "prefsChangeCloset(this.value)");
-      for (var x=6;x<21;x++) {
+      for (var x=4;x<21;x++) {
         var o = document.createElement("option");
         o.text = x.toString();
-        o.value = x
+        o.value = x;
         i1.add(o);
         if (x == parseInt(prefs.closet))
-          i1.selectedIndex = x-6;
+          i1.selectedIndex = x-4;
       }      
   p2.appendChild(s21);
   p2.appendChild(i1);

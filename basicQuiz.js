@@ -1,213 +1,9 @@
 function startQuiz() {
-    
-    /** Initialisation Variables **/
-    
-    alphagram = "";
-    totalAnswers = 0;
-    textFocus = true;
-    incorrectAnswerFlag = false;
-    incrementQ = true;
-    correctProgress = 0;
-    correctState = 0;
-    console.log("Starting Quiz");
-    correctPercent = 0.0;
-    lastAlphaState = 0;
-    
-    /** Game Div Defined and Cleared **/
-    var gameArea = document.getElementById("gameArea");
-    gameArea.innerHTML = "";
-    
-    /** Quiz Regions Defined **/
-    
-    /** Session Region Generation **/
-    var sessionInfo = document.createElement("table");
-    sessionInfo.className += ' quizSessionTable';
-    var sessionScoreLabel = document.createElement("div");
-    var sessionHeader = document.createElement('thead');
-    var sessionContent = document.createElement('tr');
-    var sessionHeaderCell = [];
-    var sessionHeaderContent = ['questions', 'cardbox', 'due date', 'score', '% correct'];
-    var sessionHeaderClasses = ['', ' quizSessionTableHCardbox', ' quizSessionTableHDue', '', ' quizSessionTableHCorrect']
-    var sessionContentCell = [];
-    var sessionContentContent = ['<span id="questionsComplete">' + localStorage.qQCounter + '</span>', '<span id="cardboxNumber"></span>', 
-    '<span id="dueDate"></span>', '<span id="sessionScore">' + localStorage.qQAlpha + '</span>', '<span id="correctPercent">' + correctPercent.toFixed(2) + '%' + '</span>'];
-    for (var i = 0; i < 5; i++) {
-        sessionHeaderCell[i] = document.createElement('th');
-        sessionHeaderCell[i].innerHTML = sessionHeaderContent[i];
-        sessionHeaderCell[i].className += sessionHeaderClasses[i];
-        sessionContentCell[i] = document.createElement('td');
-        sessionContentCell[i].innerHTML = sessionContentContent[i];
-        sessionHeader.appendChild(sessionHeaderCell[i]);
-        sessionContent.appendChild(sessionContentCell[i]);
-    }
-    sessionHeaderCell[4].title = '% of questions answered correctly this session.';
-    sessionInfo.appendChild(sessionHeader);
-    sessionInfo.appendChild(sessionContent);
-    
-    /** Other Regions **/
-    
-    var alphaSuper = document.createElement("div");
-    var alphaContainer = document.createElement("div");
-    var alphagramLabel = document.createElement("div");
-    var leftHookLabel = document.createElement("div");
-    var rightHookLabel = document.createElement("div");
-    var markAs = document.createElement("div");
-    var markAsCorrect = document.createElement("button");
-    var markAsIncorrect = document.createElement("button");
-    var nextQuestion = document.createElement("button");
-    var answerContainer = document.createElement("div");
-    var answerAmount = document.createElement("div");
-    var answerBox = document.createElement("input");
-    var correctAnswers = document.createElement("table");
-    var wrongAnswers = document.createElement("div");  
-    var counterReset = document.createElement("button");
-    var advanced = document.createElement ("div");
-
-    /** Styling & ID initialisation **/
-    alphaSuper.id = "alphaSuper";
-    alphaSuper.className += " quizAlphaSuper";
-    alphaContainer.id = "alphaContainer";
-    alphaContainer.className += " quizAlphaContain";
-    alphagramLabel.id = "alphagram";
-    alphagramLabel.className += " quizAlpha";
-    leftHookLabel.id = "leftHook";
-    leftHookLabel.className += " quizAlphaLeft";
-    rightHookLabel.id = "rightHook";
-    rightHookLabel.className += " quizAlphaRight";
-    leftHookLabel.innerHTML = '&nbsp;&nbsp;'
-    rightHookLabel.innerHTML = '&nbsp;&nbsp;'
-    markAs.className += " quizAnswerRegion";
-    markAsCorrect.id = "markAsCorrect";
-    markAsCorrect.className += ' quizButton quizButtonCorrect';
-    markAsCorrect.title = "Mark as Correct";
-    markAsCorrect.innerHTML = '&#10004;';
-    markAsCorrect.onclick='';
-    nextQuestion.id = "nextQuestion";
-    nextQuestion.className += ' quizButton quizButtonNext';
-    nextQuestion.innerHTML = '&#10144;';
-    nextQuestion.style.display = 'none';
-    nextQuestion.title = "Next Question";
-    markAsIncorrect.id = 'markAsIncorrect';
-    markAsIncorrect.title = "Mark as Incorrect";
-    markAsIncorrect.className += ' quizButton quizButtonIncorrect';
-    markAsIncorrect.innerHTML = '✘';
-    markAsIncorrect.onclick='';
-    answerContainer.id = "answerContainer";
-    answerContainer.className += " quizAnswerContain";
-    answerBox.type = "text";
-    answerBox.id = "answerBox";
-    answerBox.maxLength = '15';
-    answerBox.className += " quizAnswerBox";
-    answerAmount.id = "answerAmount";
-    answerAmount.className += " quizAnswerNumber";
-    correctAnswers.id = "correctAnswers";
-    correctAnswers.className += " wordTable";
-    wrongAnswers.id = "wrongAnswers";
-    wrongAnswers.className += " wordTableWrong"
-    wrongAnswers.innerHTML = "";
-    advanced.id='advancedBox';
-    advanced.className += ' quizAdvancedBox';
-    counterReset.id = "counterReset";
-    counterReset.innerHTML = "Reset Counters";
-    /** Sub Button Div Generation **/
-    var buttonRow = document.createElement("div");
-    buttonRow.id = "buttonRow";
-    buttonRow.className += ' quizButtonRow';
-    var subButton=[];
-    var subButtonBox=[];
-    var buttonContent=["&#8633;","<img id='imgSloth' src='sloth.png' style='width:30px;height:30px;margin:auto auto;'>","&#9658;","&#8801;"];
-    var buttonId=['shuffleButton','slothButton','skipButton','advancedButton'];
-    var buttonTitle=['Shuffle Tiles','Sloth This Word!','Skip Word','Advanced...'];
-    for (var i=0;i<4;i++){
-        subButton[i]=document.createElement('button');
-        subButton[i].id=buttonId[i];
-        subButton[i].innerHTML=buttonContent[i];
-        subButton[i].title=buttonTitle[i];
-        subButton[i].className += ' quizSubButton';
-        subButtonBox[i]=document.createElement('div');
-        subButtonBox[i].className += ' quizSubButtonBox';
-        subButtonBox[i].appendChild(subButton[i]);
-        buttonRow.appendChild(subButtonBox[i]);
-    }
-    /** Quiz Screen Generation **/
-    gameArea.appendChild(alphaSuper);
-    alphaSuper.appendChild(alphaContainer);
-    alphaContainer.appendChild(leftHookLabel);
-    alphaContainer.appendChild(alphagramLabel);
-    alphaContainer.appendChild(rightHookLabel);
-    gameArea.appendChild(markAs);
-    markAs.appendChild(markAsCorrect);
-    markAs.appendChild(nextQuestion);
-    markAs.appendChild(answerContainer);
-    answerContainer.appendChild(answerBox);
-    answerContainer.appendChild(answerAmount);   
-    markAs.appendChild(markAsIncorrect);
-    gameArea.appendChild(sessionInfo);
-    gameArea.appendChild(buttonRow);  
-    advanced.appendChild(counterReset);
-    gameArea.appendChild(advanced);
-    gameArea.appendChild(correctAnswers);
-    gameArea.appendChild(wrongAnswers);   
-    if ((Number(localStorage.gAlphaDisplay))==1) {
-        alphagramLabel.style.fontSize='2.8em';
-        alphagramLabel.style.lineHeight='0em';
-        alphagramLabel.style.paddingTop='0.8em';
-        alphagramLabel.style.paddingBottom='0.8em';
-        }
-    /** Event Listeners **/
-    $('#nextQuestion').click(function() {
-        textFocus = false;
-        getQuestion();
-    });
-    $('#counterReset').click(function() {
-        localStorage.qQCounter = '0';
-        localStorage.qQCorrect = '0';
-        localStorage.qQAlpha = '0';
-        $('#questionsComplete').html(Number(localStorage.qQCounter));
-        $('#sessionScore').html(Number(localStorage.qQAlpha));
-        $('#correctPercent').html('0.00%');
-    });
-    $('#shuffleButton').click(function() {
-        if ((Number(localStorage.gAlphaDisplay))==0) {stringToTiles(alphaShuffle(alphagram), '#alphagram')
-       }
-        else {$('#alphagram').html(alphaShuffle(alphagram));}       
-    });
-    $('#skipButton').click(skipQuestion);
-    $('#advancedButton').click(function(){
-        console.log('Clicked');
-        $('#advancedBox').toggle(400);
-    });
-    markAsIncorrect.addEventListener("click", function(e) {
-        submitQuestion(false)
-    });
-
-    answerBox.addEventListener("keypress", function(e) {
-        if (e.which === 13) {
-            //	re-enable this in getQuestion() so it happens after the 
-            //	asynchronous call finishes
-            $(this).attr("disabled", "disabled");
-            submitAnswer();
-        }
-    });
-     $('#slothButton').click(function() {
-            initSloth(alphagram);
-        });
-    $('#answerBox').keypress("m",function(e) {
-        if(e.ctrlKey) 
-        $(this).val("");
-    });
-    $('#answerBox').keypress(function(e) {
-        if (e.which == 32) {
-           if (quizState !== "finished"){
-                $(this).attr("disabled", "disabled");
-                submitAnswer();
-            }
-        }
-    });
-    $('#markAsCorrect').on('click', null , true, submitQuestion);
-    /** AJaX call to get question **/
-    /** newQuiz.py refreshes the quiz, ie, you start to get things
- *  from the lowest cardbox again **/
+    initGlobalsQuiz();
+    initUIQuiz();   
+    initClickEventsQuiz();
+    initKeyEventsQuiz();    
+    /** AJaX call to get first question **/
     var d = {
         user: userid
     };
@@ -221,6 +17,116 @@ function startQuiz() {
             getQuestion();
         }
     });
+}
+
+function initGlobalsQuiz() {
+    alphagram = "";
+    totalAnswers = 0;
+    textFocus = true;
+    incorrectAnswerFlag = false;
+    incrementQ = true;
+    correctProgress = 0;
+    correctState = 0;
+    correctPercent = 0.0;
+    hintQuantity = 0;
+}
+
+function initUIQuiz() {
+    var gameArea = document.getElementById("gameArea");
+    gameArea.innerHTML = "";    
+    /** Generate ordered DOM for Quiz [localName, type, classes, id, parent, innerHTML] **/    
+    createElemArray([
+    /*0*/           ['a','div','quizAlphaSuper','alphaSuper','gameArea',''],
+                    ['a1','div','quizAlphaContain','alphaContainer','a',''],
+                    ['a1a','div','quizAlphaLeft','leftHook','a1',''],
+                    ['a1a','div','quizAlpha','alphagram','a1',''],
+                    ['a1a','div','quizAlphaRight','rightHook','a1',''],
+                    ['b','div','quizAnswerRegion','','gameArea',''],
+                    ['b1','button','quizButton quizButtonCorrect','markAsCorrect','b','&#10004;'],
+                    ['b2','button','quizButton quizButtonNext','nextQuestion','b','&#10144;'],
+                    ['b3','button','quizButton quizButtonIncorrect','markAsIncorrect','b','✘'],
+                    ['b4','div','quizAnswerContain','answerContainer','b',''],
+     /*10*/         ['b4a','div','quizAnswerNumber','answerAmount','b4',''],
+                    ['b4b','input','quizAnswerBox','answerBox','b4',''],
+                    ['c','table','quizSessionTable','sessionInfo','gameArea',''],
+                    ['c1','thead','','sessionHeader','c',''],
+                    ['c1a','th','','sessionHeaderCell1','c1','questions'],
+                    ['c1b','th','quizSessionTableHCardbox','sessionHeaderCell2','c1','cardbox'],
+                    ['c1c','th','quizSessionTableHDue','sessionHeaderCell3','c1','due date'],
+                    ['c1d','th','','sessionHeaderCell4','c1','score'],
+                    ['c1e','th','quizSessionTableHCorrect','sessionHeaderCell5','c1','correct'],
+                    ['c2','tr','','sessionContent','c',''],
+    /*20*/          ['c2a','td','','sessionContentCell1','c2','<span id="questionsComplete">' + localStorage.qQCounter + '</span>'],
+                    ['c2b','td','','sessionContentCell2','c2','<span id="cardboxNumber"></span>'],
+                    ['c2c','td','','sessionContentCell3','c2','<span id="dueDate"></span>'],
+                    ['c2d','td','','sessionContentCell4','c2','<span id="sessionScore">' + localStorage.qQAlpha + '</span>'],
+                    ['c2e','td','','sessionContentCell5','c2','<span id="correctPercent">' + correctPercent.toFixed(2) + '%' + '</span>'],
+                    ['d','div','quizButtonRow','buttonRow','gameArea',''],
+                    ['d1','div','quizSubButtonBox','','d',''],
+                    ['d1a','button','quizSubButton','shuffleButton','d1','&#8633;'],
+                    ['d2','div','quizSubButtonBox','','d',''],
+                    ['d2a','button','quizSubButton','slothButton','d2','<img id="imgSloth" src="sloth.png" style="width:30px;height:30px;margin:auto auto;">'],
+    /*30*/          ['d3','div','quizSubButtonBox','','d',''],
+                    ['d3a','button','quizSubButton','skipButton','d3',"&#9658;"],
+                    ['d4','div','quizSubButtonBox','','d',''],
+                    ['d4a','button','quizSubButton','advancedButton','d4',"&#8801;"],
+                    ['e','div','quizAdvancedBox','advancedBox','gameArea',''],
+                    ['e1','button','quizAdvancedButton','counterReset','e','Reset<br>Counters'],
+                    ['e2','button','quizAdvancedButton','addHint','e','Hint'],
+                    ['f','table','wordTable','correctAnswers','gameArea',''],
+                    ['g','div','wordTableWrong','wrongAnswers','gameArea','']
+                    ]);
+                   
+    /** Additional initialisation **/
+    document.getElementById('markAsCorrect').title= "Mark as Correct";
+    document.getElementById('markAsCorrect').onclick ='';
+    document.getElementById('nextQuestion').style.display = 'none';
+    document.getElementById('nextQuestion').title = "Next Question";
+    document.getElementById('markAsIncorrect').title = "Mark as Incorrect";
+    document.getElementById('markAsIncorrect').onclick='';
+    document.getElementById('answerBox').type = 'text';
+    document.getElementById('answerBox').maxLength = '15';
+    document.getElementById('sessionHeaderCell4').title = '% of questions answered correctly this session.';
+    var buttonId=['shuffleButton','slothButton','skipButton','advancedButton','counterReset','addHint'];
+    var buttonTitle=['Shuffle Tiles','Sloth This Word!','Skip Word','Advanced...','Clear Questions, Score and Correct % for this device.','See one more letter of solution(s).'];
+    for (var i=0;i<buttonTitle.length;i++){
+        document.getElementById(buttonId[i]).title=buttonTitle[i];
+    }   
+    if ((Number(localStorage.gAlphaDisplay))==1) {
+        $("alphagramLabel").css({'font-size':'2.8em','line-height':'0em','padding-top':'0.8em','padding-bottom':'0.8em;'});
+    }
+}
+
+function initClickEventsQuiz(){
+    $('#addHint').click(function() {
+        hintQuantity++;var data=[];
+        withHints(wordData, allAnswers, hintQuantity, document.getElementById('correctAnswers'),'');
+    });
+    $('#advancedButton').click(function(){$('#advancedBox').toggle(400);});
+    $('#counterReset').click(function() {
+        localStorage.qQCounter = '0';
+        localStorage.qQCorrect = '0';
+        localStorage.qQAlpha = '0';
+        $('#questionsComplete').html(Number(localStorage.qQCounter));
+        $('#sessionScore').html(Number(localStorage.qQAlpha));
+        $('#correctPercent').html('0.00%');
+    }); 
+    $('#markAsCorrect').on('click', null , true, submitQuestion);
+    $('#markAsIncorrect').click(function(){submitQuestion(false);});
+    $('#nextQuestion').click(function() {textFocus = false;getQuestion();});
+    
+    $('#shuffleButton').click(function() {
+        if ((Number(localStorage.gAlphaDisplay))==0) {stringToTiles(alphaShuffle(alphagram), '#alphagram')}
+        else {$('#alphagram').html(alphaShuffle(alphagram));}
+    });
+    $('#slothButton').click(function() {initSloth(alphagram);});
+    $('#skipButton').click(skipQuestion);   
+}
+
+function initKeyEventsQuiz(){
+    answerBox.addEventListener("keypress", function(e) {if (e.which === 13) {$(this).attr("disabled", "disabled");submitAnswer();}});
+    $('#answerBox').keypress("m",function(e) {if(e.ctrlKey) $(this).val("");});
+    $('#answerBox').keypress(function(e) {if (e.which == 32) {if (quizState !== "finished"){$(this).attr("disabled", "disabled");submitAnswer();}}});   
 }
 
 function getQuestion() {
@@ -246,8 +152,7 @@ function getQuestion() {
             });
         }
     });
-    correctState = 0;
-   
+    correctState = 0;   
 }
 
 function displayQuestion(response, responseStatus) {
@@ -283,10 +188,13 @@ function displayQuestion(response, responseStatus) {
         $('#answerBox').val("Loading Question ...");
     } else {
         correctProgress = 0;
+        hintQuantity = 0;
         
         document.getElementById('shuffleButton').disabled = false;
         document.getElementById('skipButton').disabled = false;
         alphagram = Object.keys(question)[0];
+        if (hintQuantity+2>=alphagram.length){document.getElementById('addHint').disabled = true;}
+        else {document.getElementById('addHint').disabled = false;}
         if (alphagram.length>6){document.getElementById('slothButton').disabled = false;
             $('#imgSloth').css('opacity', '1');
             document.getElementById('slothButton').title = 'Sloth this word!';
@@ -322,8 +230,8 @@ function displayQuestion(response, responseStatus) {
             $('#alphaSuper').css('background', 'url("b42.png") repeat');
         } 
         
-        $('#leftHook').html("&nbsp;");
-        $('#rightHook').html("&nbsp;");
+        $('#leftHook').html("");
+        $('#rightHook').html("");
         $('#correctAnswers').html("");
         $('#wrongAnswers').html("");
         $('#answerBox').val("");
@@ -343,7 +251,7 @@ function displayQuestion(response, responseStatus) {
             correctPercent = (localStorage.qQCorrect / localStorage.qQCounter) * 100;
         $('#correctPercent').html(correctPercent.toFixed(2) + '%');
         totalAnswers = Object.keys(wordData).length;
-        $('#answerAmount').html('<b>Answers:</b> ' + correctProgress + '  of ' + totalAnswers);
+        $('#answerAmount').html('<b>Answers&#58;</b> ' + correctProgress + '  / ' + totalAnswers);
         $('#nextQuestion').hide();
         $('#markAsCorrect').show();
         $('#markAsIncorrect').show();
@@ -370,8 +278,10 @@ function submitAnswer() {
                 answers.splice(idx, 1);
                 console.log("Correct Answer");
                 correctProgress++;
-                $('#answerAmount').html('<b>Answers</b> ' + correctProgress + ' of ' + totalAnswers);
-                displayAnswer(answer);
+                $('#answerAmount').html('<b>Answers&#58;</b> ' + correctProgress + ' / ' + totalAnswers);
+                var data = eval("wordData." + answer);
+                var cellContent = [data[0], (data[3][0] ? dot : ""), answer, (data[3][1] ? dot : ""), data[1], data[2]];
+                displayAnswer(answer, cellContent);
                 if (answers.length == 0)
                     submitQuestion(!incorrectAnswerFlag);
             } 
@@ -395,7 +305,7 @@ function submitAnswer() {
     }
 }
 function checkMilestones(answered) {
-    var ranges = [[50, 49, 301], [100, 301, 1001], [200, 1001, 50000]]
+    var ranges = [[50, 49, 301], [100, 301, 1001], [200, 1001, 50000]];
     for (var i = 0; i < ranges.length; i++) {
         if ((answered % (ranges[i][0]) == 0) && (answered > ranges[i][1]) && (answered < ranges[i][2])) {
             submitChat(username + " has completed <b>" + answered + "</b> alphagrams today!", true);
@@ -422,7 +332,6 @@ function skipQuestion() {
             console.log("Error: question " + alphagram + " could not be updated. " + errorThrown + " " + textStatus);
              }});
 }
-
 
 function submitQuestion(correct) {
     document.getElementById('shuffleButton').disabled = true;
@@ -498,9 +407,13 @@ function submitQuestion(correct) {
     $('#correctPercent').html(correctPercent.toFixed(2) + '%');
     $('#questionsComplete').html(localStorage.qQCounter);
     $('#sessionScore').html(localStorage.qQAlpha);
-    
+    document.getElementById('addHint').disabled = true;
+     
+                
     for (var x = 0; x < answers.length; x++) {
-        displayAnswer(answers[x]);
+        var data = eval("wordData." + answers[x]);
+        var cellContent = [data[0], (data[3][0] ? dot : ""), answers[x], (data[3][1] ? dot : ""), data[1], data[2]];
+        displayAnswer(answers[x], cellContent);
     }
     answers = [];
     var temp = getWordWithHook(Object.keys(wordData)[0])
@@ -531,62 +444,86 @@ function submitQuestion(correct) {
     $('#nextQuestion').show();
 }
 
-function displayAnswer(answer) {
-    var x = document.getElementById("correctAnswers");
-    var dot = "&#183;";
-    /** Find row number to insert new answer into **/
-    if (document.getElementById("correctAnswers").rows.length > 0) {
-        for (var z = 0; z < x.rows.length; z++) {
-            if (answer.toUpperCase() < x.rows[z].cells[2].innerHTML) {
-                y = z;break;
-            } 
-            else {y = -1;}
+function findPosInTable(el,answer,sortCol){
+    if (el.rows.length > 0) {
+        for (var z = 0; z < el.rows.length; z++) {     
+            if (answer.toUpperCase() < el.rows[z].cells[sortCol].innerHTML) {return z}  
+         }
+    } return -1
+}
+
+function getHints(a, h){var x = a.length;var z = [];for (var i=0;i<x;i++){z[i]= a[i].substr(0, h);for (var j=h;j<a[i].length;j++){z[i]+='_';}} return z;}
+
+function withHints (data,a,h,obj,ans){
+    if (hintQuantity+2>=alphagram.length){document.getElementById('addHint').disabled = true;}
+    var hints = getHints(a,h);
+    var objContent = [];
+    var tableLines =[];
+    for (var i=0;i<a.length;i++){
+        tableLines[i]=['','',hints[i],'',"",''];
+    }   
+    
+    for (var i=0;i<obj.rows.length;i++){
+        objContent[i]=obj.rows[i].cells[2].innerHTML;
+        if (obj.rows[i].classList.contains('wordTableHighlight')) 
+            {obj.rows[i].classList.remove('wordTableHighlight');}
         }
+    if (ans!=="") {objContent.push(ans);}
+    for (var i=0;i<a.length;i++){
+        var x= $.inArray(a[i],objContent);
+        if (x!==-1) {   
+            var content = eval('data.'+a[i]);
+            tableLines[i]= [content[0], (content[3][0] ? dot : ""), a[i], (content[3][1] ? dot : ""), content[1], content[2]];
+
+        }
+    }
+    obj.innerHTML="";
+    for (var i=0;i<tableLines.length;i++){
+        if (ans==tableLines[i][2]) {displayAnswerRow(a[i],tableLines[i],true)}
+        else {displayAnswerRow(a[i],tableLines[i], false);}  
     } 
-    else {y = -1;}
-    /** create row **/
-    var row = x.insertRow(y);
+}
+
+function displayAnswerRow(answer, data, highlight) { 
+    var highlight = highlight || false; 
+    console.log(highlight);
     var cells = [];
-    for (var i = 0; i < 6; i++) {
-        cells[i] = row.insertCell(i);
-    }
-    /** clear previously highlighted word and highlight new answer **/
+    var numCols = 6;       
+    var x = document.getElementById('correctAnswers');
+    if (hintQuantity>0){var row = x.insertRow(-1);}
+    else {row = x.insertRow(findPosInTable(x,answer,2));}
+    if (hintQuantity==0){
     for (var i = 0; i < x.rows.length; i++) {
-        if (document.getElementById("correctAnswers").rows[i].classList.contains('wordTableHighlight')) 
-        {document.getElementById("correctAnswers").rows[i].classList.remove('wordTableHighlight');}
+        if (x.rows[i].classList.contains('wordTableHighlight')) 
+        {x.rows[i].classList.remove('wordTableHighlight');}
     }
-    if (quizState !== "finished") {row.className += ' wordTableHighlight';} 
-    else {row.className += ' wordTableHighlightWrong';}
-    /**Insert Data**/
-    data = eval("wordData." + answer);
-    var cellClass = [" wordTableLeftHook", " wordTableInnerLeft", " wordTableWord", " wordTableInnerRight", " wordTableRightHook", " wordTableDefinition"];
-    var cellContent = [data[0], (data[3][0] ? dot : ""), answer, (data[3][1] ? dot : ""), data[1], data[2]];
-    for (var i = 0; i < 6; i++) {
+    }
+    if ((quizState !== "finished") && (hintQuantity===0)) {row.className += ' wordTableHighlight';}
+    if (quizState == 'finished') {row.className += ' wordTableHighlightWrong';} 
+    if (highlight) {row.className += ' wordTableHighlight';}
+    var cellClass = [" wordTableLeftHook", " wordTableInnerLeft", " wordTableWord", " wordTableInnerRight", " wordTableRightHook", " wordTableDefinition"];    
+    for (var i = 0; i < numCols; i++) {
+        cells[i] = row.insertCell(i);
         cells[i].className += cellClass[i];
-        cells[i].innerHTML = cellContent[i];
+        cells[i].innerHTML = data[i];
     }
 }
 
-function toAlpha(word) {
-    return word.split('').sort().join('');
+function displayAnswer (answer, data){   
+    if (hintQuantity===0){displayAnswerRow(answer,data)}
+    else { withHints(wordData, allAnswers,hintQuantity,document.getElementById('correctAnswers'),answer)}
 }
+
+function toAlpha(word) {return word.split('').sort().join('');}
 
 function getWordWithHook(word) {
-    var result = [eval("wordData." + word)[0], word, eval("wordData." + word)[1]];
-    if (result[0] == "") {
-        result[0] == "&nbsp;"
-    }
-    if (result[2] == "") {
-        result[2] == "&nbsp;"
-    }
+    var result = [eval("wordData." + word)[0], word, eval("wordData." + word)[1]];    
     return result;
-
 }
 
 function formatDateForDisplay(d) {
     var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    return d.getDate() + " " + months[d.getMonth()] + " " + d.getFullYear() + " " + d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes();
-
+    return d.getDate() + " " + months[d.getMonth()] + " '" + d.getFullYear().toString().substr(2,2) + " " + d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes();
 }
 
 function isSubAlpha(a1, a2) {
@@ -618,6 +555,7 @@ function addLineBreaks(item, divideBy) {
     }
     return item;
 }
+
 function alphaSortVC(content, type) {
     var consonants = content.replace(/[aeiou]/ig, '');
     var vowels = content.replace(/[bcdfghjklmnpqrstvwxyz]/ig, '');
@@ -628,11 +566,13 @@ function alphaSortVC(content, type) {
         return consonants + vowels;
     }
 }
+
 function alphaShuffle(content) {
     return content.split('').sort(function() {
         return 0.5 - Math.random()
     }).join('');
 }
+
 function alphaSortMethod(content, type) {
     var output = content;
     switch (type) {
@@ -644,6 +584,18 @@ function alphaSortMethod(content, type) {
     }
     return output;
 }
+
+function createElemArray(par){
+    
+    for (var x=0;x<par.length;x++){        
+        eval("var "+par[x][0]+"= document.createElement('"+par[x][1]+"')");
+        eval(par[x][0]+".className = ' '+par[x][2]");
+        eval(par[x][0]+".id = '"+par[x][3]+"'");
+        eval(par[x][0]+".innerHTML= '"+par[x][5]+"'");
+        eval(par[x][4]+".appendChild("+par[x][0]+")");
+    }
+}
+
 function stringToTiles(input, parent) {
     var tileLetter = input.split('');
     var tileValue = [1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10];

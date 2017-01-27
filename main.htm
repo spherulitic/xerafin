@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" manifest="xerafin.appcache">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1"> 
   <title>Xerafin Word Study System</title>
 <!-- JQuery code -->
 <link rel="icon" type="image/png" href="http://cross-tables.com/xerafin/xerafin.png">
@@ -57,6 +57,9 @@ function onResize(){
 
 <body>
 <script>
+/**Independent Global Variables**/
+	dot = "&#183;";
+/**localStorage Variable Initialization**/
   if (!localStorage.qQCounter) {localStorage.qQCounter = 0;}
   if (!localStorage.qQCorrect) {localStorage.qQCorrect = 0;}
   if (!localStorage.qQAlpha) {localStorage.qQAlpha = 0;}

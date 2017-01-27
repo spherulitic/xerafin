@@ -115,13 +115,13 @@ border-radius: 5px;
 .quizSessionTable {width:100%;margin-bottom:0px;}
 .quizSessionTable Table {min-width:99.5%;width:99.5%;margin:auto;text-align:center;padding:0px;}
 .quizSessionTable th {text-align:center;font-size:0.9em;font-variant:small-caps;border-top:1px solid #ccc;border-bottom:1px solid #ccc;background-image: url('b42.png');/**background: #67c8ff**/; background-repeat: repeat;}
-.quizSessionTable tr:last-child {background-color:#f0f0f0;background: url('b34.png') repeat;text-align:center;font-size:1.1em;border-bottom:1px solid #ccc;color:#000;font-variant:small-caps;}
+.quizSessionTable tr:last-child {background-color:#f0f0f0;background: url('b42.png') repeat;text-align:center;font-size:1.1em;border-bottom:1px solid #ccc;color:#000;font-variant:small-caps;}
 .quizSessionTableHCardbox {width:14%;}
 .quizSessionTableHDue {width:36%;text-align:left;}
 .quizSessionTableHQuestion {width:14%;}
 .quizSessionTableHCorrect {width:18%;}
 .quizSessionTableHScore {width:18%;}
-.quizAlphaSuper {width:100%;text-align:center;margin-top:1em;margin-bottom:2.5em;display:inline-block;border-bottom:1px solid #ccc;border-top:1px solid #ccc;
+.quizAlphaSuper {width:100%;text-align:center;margin-top:1em;margin-bottom:1.8em;display:inline-block;border-bottom:1px solid #ccc;border-top:1px solid #ccc;
   border:1px solid #999;
   -webkit-border-radius: 10px;
 -moz-border-radius: 10px;
@@ -135,28 +135,29 @@ box-shadow: -2px -2px 3px #444;
 .quizAlphaLeft {text-align:right;padding-right:0px;}
 .quizAlphaRight {text-align:left;padding-left:0px;}
 .quizPlaceholder {background-color: lightblue;display:inline-block;}
-.quizAnswerRegion {padding-bottom:5px;width:100%;vertical-align:middle;overflow:auto;text-align:center;display:inline-block;margin:5px auto;margin-bottom:1.2em;}
-.quizAnswerContain {width:50%;display:inline-block;vertical-align:middle;padding:0px;}
-.quizAnswerNumber {width:100%;text-align:center;margin-top:5px;font-variant:small-caps;display:inline-block;font-size:1.2em}
-.quizAnswerBox {text-align:center;width:100%;margin:auto;text-transform:uppercase;font-size:1.1em;display:inline-block;margin-top:10px;}
+.quizAnswerRegion {width:100%;vertical-align:middle;overflow:auto;text-align:center;display:inline-block;margin:auto auto;padding-bottom:1em;}
+.quizAnswerContain {width:50%;display:inline-block;vertical-align:middle;padding:0px;margin:auto auto;}
+.quizAnswerNumber {width:100%;text-align:center;margin-top:0.3em;margin-bottom:0.3em;font-variant:small-caps;display:inline-block;font-size:1.2em;background:#eee;}
+.quizAnswerBox {text-align:center;width:100%;margin:auto;text-transform:uppercase;font-size:1.1em;display:inline-block;}
 @media screen and (min-width: 300px) {.quizAnswerContain {width:130px;}}
 @media screen and (min-width: 600px) {.quizAnswerContain {width:35%;}}
 @media screen and (min-width: 800px) {.quizAnswerContain {width:40%;}}
-.quizSubButton {width:40px;height:40px;padding:0px;font-size:20px;margin:0px;vertical-align:middle;}  
+.quizSubButton {width:40px;height:40px;padding:0px;font-size:20px;margin:0px;vertical-align:middle;-webkit-border-radius:0px;}  
 .quizSubButtonBox {width:25%;display:inline-block;}
 .quizButtonRow {display:inline-block;width:100%;margin:2px auto;text-align:center;background:#eee;border-bottom:1px solid #ccc;padding-top:0.3em;padding-bottom:0.3em;}
-.quizAdvancedBox {margin:0 auto;padding:15px;border-bottom:1px solid #ccc;display:none;width:100%;}
+.quizAdvancedBox {margin:0 auto;border-bottom:1px solid #ccc;display:none;width:100%;padding-top:10px;padding-bottom:10px;}
+.quizAdvancedButton {width:25%;height:45px;display:inline-block;margin-left:0.5%;margin-right:0.5%;margin-top:0px;-webkit-border-radius:0px;vertical-align:top;}
 
-.wordTable {width:100%;margin-top:0px;align:left;}
-.wordTable tr {border-bottom: 1px solid #ccc;}
+.wordTable {width:100%;margin-top:0px;text-align:left;}
+.wordTable tr {border-bottom: 1px solid #ccc;width:100%;}
 .wordTableHighlight {background-color: hsla(0,0%,95%,0.7);background: url('b34.png') repeat;}
 .wordTableHighlightWrong {background-color: #CCCCCC;}
-.wordTableLeftHook , .wordTableRightHook {font-size:1em;font-variant:small-caps;}
+.wordTableLeftHook , .wordTableRightHook {font-size:1em;font-variant:small-caps;width:1px;}
 .wordTableLeftHook {padding-right:5px;text-align:right;}
 .wordTableRightHook {padding-left:5px;text-align:left;}
 .wordTableWord {font-weight:bold;padding:0px;text-align:center;margin:0px;width:5%;color:#404040;}
-.wordTableInnerLeft {padding-right:0px;font-weight:bold;text-align:right;}
-.wordTableInnerRight {padding-left:0px;font-weight:bold;text-align:left;}
+.wordTableInnerLeft {padding-right:0px;font-weight:bold;text-align:right;width:1px;}
+.wordTableInnerRight {padding-left:0px;font-weight:bold;text-align:left;width:1px;}
 .wordTableDefinition {padding-left:10px;}
 .wordTableWrong {color:red;font-weight:bold;width:100%;text-align:right;}
    

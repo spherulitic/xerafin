@@ -121,8 +121,6 @@ function showLeaderboard () {
    }
 
 function displayLeaderboardStats (response, responseStatus) {
-  console.log("Leaderboard Stats:");
-  console.log(response);
   leaderboardData = response[0];
   if (leaderboardPanel == "today") 
     showLeaderboardData(leaderboardData.today.sort(sortByAnswered), 
@@ -157,7 +155,6 @@ function showLeaderboardData(data, myRank) {
     for (var y=1;y<6;y++){
       col[y] = document.createElement("td");
       col[y].innerHTML = columnInfo[y-1];
-      console.log (col[y].innerHTML);
       row.appendChild(col[y]);
     }
     /** Exceptions to loop **/
@@ -166,7 +163,7 @@ function showLeaderboardData(data, myRank) {
     col[3].style.borderLeft = 'solid 0px';
     col[3].style.width = '45%';
     col[3].style.textAlign = 'left'; 
-    if (x>MAX_TOP_PLAYERS){col[1].innerHTML = (myRank)+"<sup>"+getOrdinal(x+1)+"</sup>";}  
+    if (x>=MAX_TOP_PLAYERS){col[1].innerHTML = (myRank)+"<sup>"+getOrdinal(x+1)+"</sup>";}  
     if (username==data[x].name){row.style.background="#5ab";} //*Cheap hack to highlight user.  Bug if 2 people with the same name are in the rankings *//   
   }
   var footNote=[];
