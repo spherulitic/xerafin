@@ -278,9 +278,14 @@ def addWord (alpha, cur) :
   Add one word to cardbox zero
   '''
   now = int(time.time())	
-  command = "insert into questions (question, correct, incorrect, streak, last_correct, difficulty, cardbox, next_scheduled) values (?, 0, 0, 0, 0, -1, 0, ?)"
-  cur.execute("delete from questions where next_scheduled is null and question = ?", (alpha,))
-  cur.execute(command, (alpha, now))
+  cur.execute("select count(*) from questions where question = ?", (alpha,))
+  qCount = cur.fetchone()[0]
+  if qCount == 0:
+    command = "insert into questions (question, correct, incorrect, streak, last_correct, difficulty, cardbox, next_scheduled) values (?, 0, 0, 0, 0, -1, 0, ?)"
+    cur.execute(command, (alpha, now))
+  else:
+    command = "update questions set cardbox = 0, next_Scheduled = ?, difficulty = -1 where question = ?"
+    cur.execute(command, (now, alpha))
   dbClean(cur)
 
 def addWords (numWords, userid, cur) :
@@ -289,16 +294,19 @@ def addWords (numWords, userid, cur) :
 	
 # We assume everything in next_added and study_order is valid 
 
+  dbClean(cur)
   cur.execute("select count(*) from next_added")
   nextAddedCount = cur.fetchone()[0]
-  cur.execute("delete from questions where next_scheduled is null and question in (select question from next_added limit %s)" % numWords)
-  cur.execute("insert into questions (question, correct, incorrect, streak, last_correct, difficulty, cardbox, next_scheduled) select question, 0, 0, 0, 0, 0, 0, {0} from next_added limit {1}".format(now, numWords))
-  dbClean(cur)
-  command = "insert into questions (question, correct, incorrect, streak, last_correct, difficulty, cardbox, next_scheduled) values (?, 0, 0, 0, 0, -1, 0, ?)"
-  if numWords > nextAddedCount :
+  cur.execute("select question from next_added limit ?", (numWords,))
+  result = cur.fetchall()
+  if result is not None:
+    wordsToAdd = [x[0] for x in result]
+    for word in wordsToAdd:
+      addWord(word, cur)
+  if numWords > nextAddedCount:
     x = getFromStudyOrder(numWords-nextAddedCount, userid, cur)
     for alpha in x:
-      cur.execute(command, (alpha, now))
+      addWord(alpha, cur)
 
 def getNextAddedCount(userid):
   with lite.connect(getDBFile(userid)) as con:
@@ -395,6 +403,7 @@ def newQuiz (userid):
   checkCardboxDatabase(userid)
   with lite.connect(getDBFile(userid)) as con:
     cur = con.cursor()
+    dbClean(cur)
     cur.execute("select * from cleared_until")
     clearedUntil = cur.fetchone()[0]
     closetSweep(cur, userid)
