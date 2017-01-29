@@ -9,8 +9,8 @@ import xerafinSetup as xs
 error = {"status": "success"}
 result = [ ]
 params = json.load(sys.stdin)
-userid = params["userid"]
-message = params["chatText"]
+userid = unicode(params["userid"])
+message = unicode(params["chatText"])
 chatTime = int(params["chatTime"])  # Epoch * 1000 -- in milliseconds
 now = int(time.time())
 if int(userid) > 10:
@@ -19,19 +19,20 @@ AUTOLOGOFF = .1 # in hours
 logoffTime = now - (3600*AUTOLOGOFF)
 
 try:
-  with xs.getMysqlCon() as con:
+  with xs.getMysqlCon(useUnicode=True) as con:
     if con is None:
       result["status"] = "Chat Database Connection Failed"
     else:
       try:
-         command = "insert into chat (userid, timeStamp, message) values (%s, %s, %s)"
-         con.execute(command, (userid, chatTime, message))
+         command = 'insert into chat (userid, timeStamp, message) values (%s, %s, %s)'
+         con.execute(command, (userid.encode('utf8'), chatTime, message.encode('utf8')))
          command = "select userid from login where last_active > %s"
          con.execute(command, logoffTime)
          for row in con.fetchall():
            filename = os.path.join('chats', row[0] + '.chat')
            with open(filename, 'a') as f:
-             f.write(str(userid)+','+str(chatTime)+','+message+'\n')
+             msg = userid+u','+unicode(chatTime)+u','+message+u'\n'
+             f.write(msg.encode('utf8'))
       except mysql.Error, e:
          result["status"] = "MySQL error %d %s " % (e.args[0], e.args[1])
       except:

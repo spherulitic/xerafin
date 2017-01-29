@@ -9,7 +9,9 @@ function startChat () {
    var chatBox = document.createElement("input");
    var chatDisplayBox = document.createElement("div");
    chatDisplayTable = document.createElement("table");
-   usersLabel.className += ' tableHeaderLight'
+   chatDisplayTable.id = 'chatTable';
+   chatDisplayTable.classname += ' chatTable';
+   usersLabel.className += ' tableHeaderLight';
    usersLabel.innerHTML = "User Chat"; 
    userDisplayArea.id = "userDisplayArea";
    /*userDisplayArea.className+= " chatActiveUsers"; */
@@ -26,12 +28,15 @@ function startChat () {
    chatArea.appendChild(chatBox);
    chatArea.appendChild(chatDisplayBox);
    chatDisplayBox.appendChild(chatDisplayTable);
+   chatDisplayBox.style.maxWidth='100%';
 
 /**Event Listeners**/
    
    chatBox.addEventListener("keypress", function(e) {
         if (e.which === 13 && $(this).val().trim()) {
-           submitChat($(this).val(), false);
+           var chatContent = parseEmoji($(this).val());
+           console.log(chatContent);
+           submitChat(chatContent, false);
            $(this).val("");
         } });
 	$('#chatBox').keypress("m",function(e) {
@@ -66,7 +71,7 @@ function getActiveUserDimensions (pRW,pW,uLL,aRows,mRows,mPW){
 }
 
 function displayUserArray (userList) {
-         $('#userDisplayArea').html("");
+   $('#userDisplayArea').html("");
    var activeUserContainer = document.createElement('div');
    var activeUserHeading = document.createElement('div');
    var userDisplayTable = document.createElement("table");
@@ -202,15 +207,20 @@ function displayChats (response, responseStatus) {
      chatPicNode.style.width = '10%';
      chatPicNode.style.textAlign = 'center';
      chatText.style.verticalAlign = 'middle';
+     chatText.style.width = '80%';
+     chatText.style.maxWidth = '80%';
      chatDateNode.style.verticalAlign = 'middle';
      chatDateNode.style.paddingLeft = '0.3em';     
-     chatText.innerHTML = chatQueue[x].chatText;
+     chatText.innerHTML = chatQueue[x].chatText; 
+     chatText.id='chatText';
      chatText.style.textAlign = 'left';
+     chatText.className += ' chatText';
      chatNode.appendChild(chatDateNode);
      chatNode.appendChild(chatPicNode);
-     chatNode.appendChild(chatText);
+     chatNode.appendChild(chatText); 
      chatDisplayTable.appendChild(chatNode);
-   }
+      
+   }  
    updateChats();
 } 
 

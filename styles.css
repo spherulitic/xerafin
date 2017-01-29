@@ -169,13 +169,23 @@ box-shadow: -2px -2px 3px #444;
 .activePic {height:40px;margin:0px;}
 .activeUserHeading {width:100%;background-image: url('b42.png');background-repeat: repeat;font-variant:small-caps;font-size:0.9em;padding-left:2px;margin:0px;padding:3px;font-weight:bolder;border-top:1px solid #999;border-bottom:1px solid #999;text-align:center;}
 .chatInput {display:block;width:100%;margin-top:5px;margin-bottom:5px;}
-.xeraBroadcast {background-image: url('b42.png');background-repeat: repeat;border:1px solid #333;margin.top:0.3em;padding-right:0.5em;}
+.xeraBroadcast {background-image: url('b42.png');background-repeat: repeat;border:1px solid #333;margin.top:0.3em;padding-right:0.5em;width:100%}
 .xeraBroadcastBorderFix {border-top:1px solid #333 !important;font-size:0.85em;}
 .xeraBroadcastImageAlign {vertical-align:middle;padding:1px;}
+.chatTable {width:100% !important;table-layout: fixed;}
+.chatText {width:80%;word-wrap: break-word;   
+    overflow-wrap: break-word;
+    word-break: break-word;}
  
 /*-------------Bootstrap Override-----------------*/
-#chatDisplayBox {background: url('b34.png') repeat;padding:8px;border: 1px solid #999;}
+#chatDisplayBox {background: url('b34.png') repeat;padding:8px;border: 1px solid #999;overflow-x: hidden;}
 #answerField {background: url('b52.png') repeat;padding:8px;border: 1px solid #999;min-height:420px !important;}
 
 /*Tiles*/
 .xeraTiles {border:1px solid #1f1f1f;background:#1f1f1f;display:inline-block;textAlign:center;padding:0px;color:#e8e8e8;margin:0 auto;margin-right:2px;border-radius:4px;vertical-align:middle;box-shadow:2px 2px 1px #666;font-weight:normal;}
+
+.emoji {
+   height: 1em; /*edit for height*/
+   margin: 0 .05em 0 .1em;
+   vertical-align: middle;
+}
