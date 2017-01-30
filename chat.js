@@ -155,10 +155,14 @@ function displayChats (response, responseStatus) {
    console.log("Get Chat Response");
    console.log(response);
    chatDisplayTable.innerHTML="";
+   var expiredChats = [ ];
    
    chatDisplayBox.style.border = '1px solid #999';
    for (var x=0; x<newChats.length;x++) {
-     chatQueue.push(newChats[x]);
+     if (newChats[x].expire)
+       expiredChats.push(newChats[x]);
+     else 
+       chatQueue.push(newChats[x]);
      // the DB query orders these ascending by time stamp
      mostRecent = newChats[x].chatDate;
    }
@@ -166,7 +170,17 @@ function displayChats (response, responseStatus) {
    for (var x=CHAT_QUEUE_MAX_LENGTH;x<y;x++)  
      chatQueue.shift();
 
+   chatQueueLoop:
    for (x=chatQueue.length-1;x>=0;x--) {
+     // has this been expired?
+     for(var i=0;i<expiredChats.length;i++) {
+       if (chatQueue[x].chatDate == expiredChats[i].chatDate &&
+           chatQueue[x].chatUser == expiredChats[i].chatUser) {
+              delete chatQueue[x];
+              continue chatQueueLoop;
+       }
+     }
+
      var chatNode = document.createElement("tr");
      chatNode.style.backgroundImage = 'b27.png';
      chatNode.style.backgroundRepeat = 'repeat';
@@ -221,6 +235,8 @@ function displayChats (response, responseStatus) {
      chatDisplayTable.appendChild(chatNode);
       
    }  
+   
+   chatQueue = chatQueue.filter(function (e){return e}); // remove deleted values from the array
    updateChats();
 } 
 
@@ -229,6 +245,22 @@ function submitChat(message, isSystemGenerated, systemUserid = 0) {
    if (isSystemGenerated) d.userid = systemUserid;
    console.log ("sending chat:");
    console.log(d);
+   if (d.userid==0) { // system generated chat sent by Xerafin user
+     $.ajax({type: "POST",
+              url: "expireLastMilestoneChat.py",
+            data: JSON.stringify({userid: userid}),
+         success: function(response, responseStatus) {
+              console.log("Last milestone chat expired " + response);
+              submitChat2(d);
+              },
+          error: function(jqXHR, textStatus, errorThrown) {
+              console.log("Error: milestone chat could not be expired."); 
+              submitChat2(d)} });
+   }
+   else submitChat2(d);
+    }   
+
+function submitChat2(d) {
    $.ajax({type: "POST", 
             url: "submitChat.py",
            data: JSON.stringify(d),
@@ -236,4 +268,4 @@ function submitChat(message, isSystemGenerated, systemUserid = 0) {
            console.log(response); },
           error: function(jqXHR, textStatus, errorThrown) {
            console.log("Error: chat could not be submitted"); } });
-    }   
+ } 

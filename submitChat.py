@@ -12,6 +12,11 @@ params = json.load(sys.stdin)
 userid = unicode(params["userid"])
 message = unicode(params["chatText"])
 chatTime = int(params["chatTime"])  # Epoch * 1000 -- in milliseconds
+try:
+  expire = params["expire"]
+except:
+  expire = False
+
 now = int(time.time())
 if int(userid) > 10:
   ua.updateActive(userid)
@@ -24,14 +29,21 @@ try:
       result["status"] = "Chat Database Connection Failed"
     else:
       try:
-         command = 'insert into chat (userid, timeStamp, message) values (%s, %s, %s)'
-         con.execute(command, (userid.encode('utf8'), chatTime, message.encode('utf8')))
+         if expire:
+           command = "delete from chat where userid = %s and timeStamp = %s"
+           con.execute(command, (userid, chatTime))
+         else:
+           command = 'insert into chat (userid, timeStamp, message) values (%s, %s, %s)'
+           con.execute(command, (userid.encode('utf8'), chatTime, message.encode('utf8')))
          command = "select userid from login where last_active > %s"
          con.execute(command, logoffTime)
          for row in con.fetchall():
            filename = os.path.join('chats', row[0] + '.chat')
            with open(filename, 'a') as f:
-             msg = userid+u','+unicode(chatTime)+u','+message+u'\n'
+             if expire:
+               msg = userid+u','+unicode(chatTime)+u','+u'\n'
+             else:               
+               msg = userid+u','+unicode(chatTime)+u','+message+u'\n'
              f.write(msg.encode('utf8'))
       except mysql.Error, e:
          result["status"] = "MySQL error %d %s " % (e.args[0], e.args[1])

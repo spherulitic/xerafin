@@ -11,7 +11,8 @@ def appendChatToResult(line):
   temp = line.split(',')
   userid = temp[0]
   timeStamp = temp[1]
-  message = ','.join(temp[2:])
+  message = ','.join(temp[2:]).strip()
+  expire = not message
 
 
   with xs.getMysqlCon() as con:
@@ -20,7 +21,7 @@ def appendChatToResult(line):
     else:
       con.execute("select photo, name from login where userid = %s", userid)
       row = con.fetchone()
-      return {"chatDate": int(timeStamp), "photo": row[0], "name": row[1], "chatText": message, "chatUser": userid }
+      return {"chatDate": int(timeStamp), "photo": row[0], "name": row[1], "chatText": message, "chatUser": userid, "expire": expire}
 
 params = json.load(sys.stdin);
 userid = params["userid"]

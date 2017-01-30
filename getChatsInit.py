@@ -23,7 +23,7 @@ with xs.getMysqlCon() as con:
       try:
         con.execute(command, now)
         for row in con.fetchall():
-          result.append({"chatDate": row[2], "photo": row[1], "name": row[0], "chatText": row[3], "chatUser": row[4] })
+          result.append({"chatDate": row[2], "photo": row[1], "name": row[0], "chatText": row[3], "chatUser": row[4], "expire": False })
       except mysql.Error, e:
         error["status"] = "MySQL error %d %s " % (e.args[0], e.args[1])
       except:
