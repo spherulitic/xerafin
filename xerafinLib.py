@@ -377,6 +377,13 @@ def makeWordsAvailable (userid, cur) :
   reschedHrs = getPrefs("reschedHrs", userid)
   cb0max = getPrefs("cb0max", userid)
 
+  cur.execute("select max(cardbox) from questions")
+  try: 
+    maxCardbox = cur.fetchone()[0]
+  except:
+    maxCardbox = 0
+  maxReadAhead = now + (maxCardbox*3600*24) 
+
   cur.execute("select * from cleared_until")
   clearedUntil = max([cur.fetchone()[0], now])
   cur.execute("select * from new_words_at")
@@ -395,8 +402,8 @@ def makeWordsAvailable (userid, cur) :
     futureSweep(cur)
     cur.execute("update questions set difficulty = -1 where question in (select question from questions where difficulty = 2 order by cardbox, next_scheduled limit 10)")
   cur.execute("update questions set difficulty = -1 where difficulty = 0 and next_scheduled < %s" % clearedUntil)
-  cur.execute("update new_words_at set timeStamp = {0}".format(newWordsAt))
-  cur.execute("update cleared_until set timeStamp = {0}".format(clearedUntil))
+  cur.execute("update new_words_at set timeStamp = {0}".format(min(newWordsAt,maxReadAhead)))
+  cur.execute("update cleared_until set timeStamp = {0}".format(min(clearedUntil, maxReadAhead+1)))
 
 def newQuiz (userid):
   now = int(time.time())
