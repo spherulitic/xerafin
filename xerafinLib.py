@@ -372,7 +372,6 @@ def makeWordsAvailable (userid, cur) :
   Sets words with difficulty = -1 to be used by getQuestions
   Used by getQuestions 
   """
-
   now = int(time.time())
   reschedHrs = getPrefs("reschedHrs", userid)
   cb0max = getPrefs("cb0max", userid)
@@ -380,14 +379,16 @@ def makeWordsAvailable (userid, cur) :
   cur.execute("select max(cardbox) from questions")
   try: 
     maxCardbox = cur.fetchone()[0]
+    if maxCardbox is None:
+      maxCardbox = 0
   except:
     maxCardbox = 0
-  maxReadAhead = now + (maxCardbox*3600*24) 
-
+  soonestNewWordsAt = now + (3600*reschedHrs)
+  maxReadAhead = max(now + (maxCardbox*3600*24), soonestNewWordsAt+60) 
   cur.execute("select * from cleared_until")
   clearedUntil = max([cur.fetchone()[0], now])
   cur.execute("select * from new_words_at")
-  newWordsAt = max([cur.fetchone()[0], now + (3600 * reschedHrs)])
+  newWordsAt = max([cur.fetchone()[0], soonestNewWordsAt])
   if clearedUntil < newWordsAt:
     clearedUntil = clearedUntil + 3600
   else: 
@@ -616,14 +617,23 @@ def checkCardboxDatabase (userid):
         cur.execute("create table questions (question varchar(16), correct integer, incorrect integer, streak integer, last_correct integer, difficulty integer, cardbox integer, next_scheduled integer)")
       if u'cleared_until' not in tables:
         cur.execute("create table cleared_until (timeStamp integer)")
-        cur.execute("insert into cleared_until values (%s)" % now)
       if u'new_words_at' not in tables:
         cur.execute("create table new_words_at (timeStamp integer)")
-        cur.execute("insert into new_words_at values (%s)" % now)
       if u'next_Added' not in tables:
         cur.execute("create table next_Added (question varchar(16))")
       cur.execute("create unique index if not exists question_index on questions(question)")
       cur.execute("create unique index if not exists next_added_question_idx on next_added(question)")
+
+      cur.execute("select * from cleared_until")
+      row = cur.fetchone()
+      if row is None:
+        cur.execute("insert into cleared_until values (%s)" % now)
+
+      cur.execute("select * from new_words_at")
+      row = cur.fetchone()
+      if row is None:
+        cur.execute("insert into new_words_at values (%s)" % (now+1))
+
   except:
     return False
   return True
