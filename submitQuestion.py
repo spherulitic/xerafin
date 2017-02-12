@@ -36,6 +36,7 @@ try:
   else:
     xl.wrong(alpha, userid)
 
+  result["aux"] = xl.getAuxInfo(alpha, userid)
   result["score"] = xl.getCardboxScore(userid)
 except:
   error["status"] = "Cardbox DB Failure"

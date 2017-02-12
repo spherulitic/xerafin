@@ -563,47 +563,31 @@ def getSubanagrams (alpha):
       result.append(x)
   return result
 
-##def getValidBlanagrams (alpha) :
-##
-### Takes an alphagram. Returns a list with all alphagrams that make 
-### valid words with the input plus a blank
-##
-##  alphaDawg = dawg.CompletionDAWG()
-##  alphaDawg.load(DAWG_PATH)
-##  result = []
-##  for char in string.uppercase:
-##    x = u''.join(sorted(alpha + char))
-##    if x in alphaDawg:
-##      result.append(x)
-##
-##  return result
-##
-##def getBlanagramQuestion (alpha) :
-##	
-### Takes an alphagram, picks a letter at random, replaces it with a blank
-### Returns a dict with three quiz structures {alpha: [answer, answer, answer]}
-### { "Due": { ... } , "Not Due": { ... }, "Not In": { ... } 
-##
-##  validQuestions = getValidBlanagrams(alpha)
-##  due = {}
-##  notdue = {}
-##  notin = {}
-##  now = int(time.time())
-##
-##  with lite.connect(getDBFile(userid)) as con:
-##    cur = con.cursor()
-##    for question in validQuestions:
-##      answers = getAnagrams(question)
-##      cur.execute("select next_scheduled from questions where question = '{0}'".format(question))
-##      row = cur.fetchall()
-##      if len(row) == 0:
-##        notin[question] = answers
-##      elif int(row[0][0]) <= now:
-##        due[question] = answers
-##      elif int(row[0][0]) > now:
-##        notdue[question] = answers
-##
-##  return { "Due": due, "Not Due": notdue, "Not In": notin }
+def getValidBlanagrams (alpha) :
+
+# Takes an alphagram. Returns a list with all alphagrams that make 
+# valid words with the input plus a blank
+
+  alphaDawg = dawg.CompletionDAWG().load('alpha.dawg')
+  result = []
+  for char in string.uppercase:
+    x = u''.join(sorted(alpha + char))
+    if x in alphaDawg:
+      result.append(x)
+
+  return result
+
+def getBlanagramQuestion (alpha, userid) :
+	
+# Takes an alphagram
+# Returns a list of valid questions with that alphagram plus blank
+# [ alpha: xxx, words: [ word, word, word ], auxInfo: { ... } ]
+
+  result = [ ]
+
+  for question in getValidBlanagrams(alpha):
+    result.append({ "alpha": question, "words": getAnagrams(question), "auxInfo": getAuxInfo(question, userid)})
+  return result
 
 def checkCardboxDatabase (userid):
 
