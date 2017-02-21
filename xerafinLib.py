@@ -537,7 +537,7 @@ def getAuxInfo (alpha, userid):
   '''
   with lite.connect(getDBFile(userid)) as con:
     cur = con.cursor()
-    cur.execute("select cardbox, next_scheduled, correct, incorrect, difficulty from questions where question = '{0}'".format(alpha))
+    cur.execute("select cardbox, next_scheduled, correct, incorrect, difficulty from questions where question = '{0}' and next_scheduled is not null".format(alpha))
     result = cur.fetchall()
     if len(result) > 0:
       return {"cardbox": result[0][0], "nextScheduled": result[0][1], "correct": result[0][2], "incorrect": result[0][3], "difficulty": result[0][4] }

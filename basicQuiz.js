@@ -21,6 +21,7 @@ function startQuiz() {
 
 function initGlobalsQuiz() {
     alphagram = "";
+    fullAlpha = "";
     totalAnswers = 0;
     textFocus = true;
     incorrectAnswerFlag = false;
@@ -73,6 +74,9 @@ function initUIQuiz() {
                     ['e','div','quizAdvancedBox','advancedBox','gameArea',''],
                     ['e1','button','quizAdvancedButton','counterReset','e','Reset<br>Counters'],
                     ['e2','button','quizAdvancedButton','addHint','e','Hint'],
+                    ['e3', 'div', 'quizBlankCheckbox', 'blankQuizBox', 'e', ''],
+                    ['e3a', 'input', '', 'blankQuizCheck', 'e3', ''],
+                    ['e3b', 'label', '', 'blankQuizLabel', 'e3', '?'],
                     ['f','table','wordTable','correctAnswers','gameArea',''],
                     ['g','div','wordTableWrong','wrongAnswers','gameArea','']
                     ]);
@@ -87,6 +91,11 @@ function initUIQuiz() {
     document.getElementById('answerBox').type = 'text';
     document.getElementById('answerBox').maxLength = '15';
     document.getElementById('sessionHeaderCell4').title = '% of questions answered correctly this session.';
+    document.getElementById('blankQuizBox').title = 'Blank Quiz';
+    document.getElementById('blankQuizCheck').type = 'checkbox';
+    document.getElementById('blankQuizCheck').value = '1';
+    document.getElementById('blankQuizLabel').htmlFor = 'blankQuizCheck';
+    $('#blankQuizCheck').change(function() {getQuestion()});
     var buttonId=['shuffleButton','slothButton','skipButton','advancedButton','counterReset','addHint'];
     var buttonTitle=['Shuffle Tiles','Sloth This Word!','Skip Word','Advanced...','Clear Questions, Score and Correct % for this device.','See one more letter of solution(s).'];
     for (var i=0;i<buttonTitle.length;i++){
@@ -130,16 +139,26 @@ function initKeyEventsQuiz(){
 }
 
 function getQuestion() {
+    var url;
+    var callback;
     $('#nextQuestion').off("click");
     var d = {
         numQuestions: 1,
         user: userid
     };
+    if (document.getElementById('blankQuizCheck').checked) {
+       url = "getBlankQuestion.py";
+       callback = initBlankQuestion;
+       }
+    else {
+       url = "getQuestion.py";
+       callback = initQuestionData;
+       }
     $.ajax({
         type: "POST",
-        url: "getQuestion.py",
+        url: url,
         data: JSON.stringify(d),
-        success: displayQuestion,
+        success: callback,
         error: function(jqXHR, textStatus, errorThrown) {
             console.log("Error, status = " + textStatus + " error: " + errorThrown)
             if (typeof scrollTimer !== 'undefined' && scrollTimer !== null )
@@ -151,9 +170,10 @@ function getQuestion() {
                 getQuestion();
             });
         }
-    });
+    }); 
     correctState = 0;   
 }
+
 function resizeHookFontQuiz () {
     var hookFont = $('#alphaSuper').width()/15;
     if (hookFont>30){hookFont=30;}
@@ -179,12 +199,48 @@ function resetHookWidthsQuiz () {
         $('#rightHook').html('');
 
 }
-function displayQuestion(response, responseStatus) {
-    console.log("Question Response");
-    if (typeof scrollTimer !== 'undefined' && scrollTimer !== null )
-        clearInterval(scrollTimer);
+
+function initBlankQuestion(response, responseStatus) {
+    console.log(response);
     var r = response[0];
-    console.log(r);
+    // if we finished the previous question and the new alpha is the same as the old
+    // we have a lag problem -- need to wait and get question again
+    if (r.fullAlpha == fullAlpha && quizState == "finished") {
+        setTimeout(getQuestion, 700)
+        // the previous question took too long
+        // to submit, so we need to wait to get a fresh one
+        $('#answerBox').val("Loading Question ...");
+    } else { 
+        wordData = r.words;
+        answers = Object.keys(wordData);
+        allAnswers = Object.keys(wordData);
+        alphagram = r.question + "?";
+        fullAlpha = r.fullAlpha;
+        aux = r.answers;
+        if (r.getFromStudyOrder) {
+            d = {
+                userid: userid
+            };
+            $.ajax({
+                type: "POST",
+                url: "prepareNewWords.py",
+                data: JSON.stringify(d),
+                success: function(response, responseStatus) {
+                    console.log("Next Added table prepared.");
+                    console.log(response);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.log("Error preparing Next Added");
+                }
+            });
+        }
+// check here to see if there's some lag and the question is a duplicate
+        displayQuestion();
+    }
+}
+
+function initQuestionData(response, responseStatus) {
+    var r = response[0];
     var question = r.questions;
     wordData = r.words;
     aux = r.aux[0];
@@ -214,72 +270,101 @@ function displayQuestion(response, responseStatus) {
         alphagram = Object.keys(question)[0];
         answers = eval("question." + alphagram);
         allAnswers = answers.slice();
-        resetHookWidthsQuiz();
-        correctProgress = 0;
-        hintQuantity = 0;
-        document.getElementById('shuffleButton').disabled = false;
-        document.getElementById('skipButton').disabled = false;       
-        if (hintQuantity+2>=alphagram.length){document.getElementById('addHint').disabled = true;}
-        else {document.getElementById('addHint').disabled = false;}
-        if (alphagram.length>6){document.getElementById('slothButton').disabled = false;
-            $('#imgSloth').css('opacity', '1');
-            document.getElementById('slothButton').title = 'Sloth this word!';
-        }
-        else {document.getElementById('slothButton').disabled = true;
-            $('#imgSloth').css('opacity', '0.3');
-            document.getElementById('slothButton').title = 'Alphagram is too short for sloths!';
-        }     
-        document.getElementById('nextQuestion').disabled = false;
-        if ((Number(localStorage.gAlphaDisplay))==0) {
-            stringToTiles(alphaSortMethod(alphagram, Number(localStorage.gAlphaSortInput)), '#alphagram');
-            $('#alphaSuper').css('background', '#5ab');
-        }
-        else {
-            $('#alphagram').html(alphaSortMethod(alphagram, Number(localStorage.gAlphaSortInput)));
-            $('#alphaSuper').css('background', 'url("b42.png") repeat');
-        } 
-        
-        $('#leftHook').html("");
-        $('#rightHook').html("");
-        $('#correctAnswers').html("");
-        $('#wrongAnswers').html("");
-        $('#answerBox').val("");
-        $('#answerBox').removeAttr("disabled", "disabled");
-        $('#nextQuestion').click(function() {
-            textFocus = false;
-            document.getElementById('nextQuestion').disabled = true;
-            getQuestion();
-        });
-        if (textFocus)
-            $('#answerBox').focus();
-        textFocus = true;
-        var dueDate = new Date(aux.nextScheduled * 1000);
-        $('#dueDate').html(formatDateForDisplay(dueDate));
-        $('#cardboxNumber').html(aux.cardbox);
-        if (localStorage.qQCounter > 0)
-            correctPercent = (localStorage.qQCorrect / localStorage.qQCounter) * 100;
-        $('#correctPercent').html(correctPercent.toFixed(2) + '%');
-        totalAnswers = Object.keys(wordData).length;
-        $('#answerAmount').html('<b>Answers&#58;</b> ' + correctProgress + '  / ' + totalAnswers);
-        $('#nextQuestion').hide();
-        $('#markAsCorrect').show();
-        $('#markAsIncorrect').show();
-        quizState = "started";
-        incorrectAnswerFlag = false;
-        incrementQ = true;
+        displayQuestion();
     }
+}
+
+function displayQuestion() {
+  // Requires globals to be set up:
+  // alphagram
+  // answers - list of answers
+  // allAnswers - list of answers
+  // aux - list of aux data dicts
+  // for blank quiz aux contains list: [ alpha: ABCDE, auxInfo: {aux stuff}, words: [ words ] ]
+  // wordData - { word: <hook data>, word: <hook data> }
+   if (typeof scrollTimer !== 'undefined' && scrollTimer !== null ) {
+       clearInterval(scrollTimer); }
+   resetHookWidthsQuiz();
+   correctProgress = 0;
+   hintQuantity = 0;
+   document.getElementById('shuffleButton').disabled = false;
+   document.getElementById('skipButton').disabled = false;       
+   if (hintQuantity+2>=alphagram.length){document.getElementById('addHint').disabled = true;}
+   else {document.getElementById('addHint').disabled = false;}
+   if (alphagram.length>6 && !document.getElementById('blankQuizCheck').checked){
+       document.getElementById('slothButton').disabled = false;
+       $('#imgSloth').css('opacity', '1');
+       document.getElementById('slothButton').title = 'Sloth this word!';
+   }
+   else {document.getElementById('slothButton').disabled = true;
+         $('#imgSloth').css('opacity', '0.3');
+         if(document.getElementById('blankQuizCheck').checked) {
+            document.getElementById('slothButton').title = 'Sloths cannot handle blanks.'; }
+         else {
+            document.getElementById('slothButton').title = 'Alphagram is too short for sloths!'; }
+        }     
+   document.getElementById('nextQuestion').disabled = false;
+   if ((Number(localStorage.gAlphaDisplay))==0) {
+      stringToTiles(alphaSortMethod(alphagram, Number(localStorage.gAlphaSortInput)), '#alphagram');
+      $('#alphaSuper').css('background', '#5ab');
+   } else {
+      $('#alphagram').html(alphaSortMethod(alphagram, Number(localStorage.gAlphaSortInput)));
+      $('#alphaSuper').css('background', 'url("b42.png") repeat');
+   } 
+        
+   $('#leftHook').html("");
+   $('#rightHook').html("");
+   $('#correctAnswers').html("");
+   $('#wrongAnswers').html("");
+   $('#answerBox').val("");
+   $('#answerBox').removeAttr("disabled", "disabled");
+   $('#nextQuestion').click(function() {
+       textFocus = false;
+       document.getElementById('nextQuestion').disabled = true;
+       getQuestion();
+   });
+   if (textFocus)
+       $('#answerBox').focus();
+   textFocus = true;
+   if (document.getElementById('blankQuizCheck').checked) {
+     $('#dueDate').html(""); 
+     $('#cardboxNumber').html("");
+   } else {
+     var dueDate = new Date(aux.nextScheduled * 1000);
+     $('#dueDate').html(formatDateForDisplay(dueDate));  
+     $('#cardboxNumber').html(aux.cardbox); }
+   if (localStorage.qQCounter > 0)
+       correctPercent = (localStorage.qQCorrect / localStorage.qQCounter) * 100;
+   $('#correctPercent').html(correctPercent.toFixed(2) + '%');
+   totalAnswers = Object.keys(wordData).length;
+   $('#answerAmount').html('<b>Answers&#58;</b> ' + correctProgress + '  / ' + totalAnswers);
+   $('#nextQuestion').hide();
+   $('#markAsCorrect').show();
+   $('#markAsIncorrect').show();
+   if (document.getElementById('blankQuizCheck').checked) {
+     $('#markAsCorrect').prop("disabled", true);
+     $('#markAsIncorrect').prop("disabled", true); 
+   } else {
+     $('#markAsCorrect').prop("disabled", false);
+     $('#markAsIncorrect').prop("disabled", false);  }
+   quizState = "started";
+   incorrectAnswerFlag = false;
+   incrementQ = true;
 }
 
 function submitAnswer() {
     
     if (quizState == "finished") {
+        document.getElementById('nextQuestion').disabled = true;
         getQuestion();
     } 
     else {
         answer = $.trim($('#answerBox').val().toUpperCase());
         if (answer == "") {
-            // on blank answer, submit question
-            submitQuestion(false);
+           if (document.getElementById('blankQuizCheck').checked) {
+              submitBlankQuestion(); }
+           else  {
+              submitQuestion(false); }
         } 
         else {
             idx = $.inArray(answer, answers);
@@ -291,8 +376,11 @@ function submitAnswer() {
                 var data = eval("wordData." + answer);
                 var cellContent = [data[0], (data[3][0] ? dot : ""), answer, (data[3][1] ? dot : ""), data[1], data[2]];
                 displayAnswer(answer, cellContent);
-                if (answers.length == 0)
-                    submitQuestion(!incorrectAnswerFlag);
+                if (answers.length == 0) {
+                   if(document.getElementById('blankQuizCheck').checked ) {
+                      submitBlankQuestion(); 
+                   } else {
+                    submitQuestion(!incorrectAnswerFlag);} }
             } 
             else {
                 console.log("Incorrect Answer");
@@ -341,6 +429,90 @@ function skipQuestion() {
             console.log("Error: question " + alphagram + " could not be updated. " + errorThrown + " " + textStatus);
              }});
 }
+
+function submitBlankQuestion() {
+
+   quizState = "finished";
+   unhighlightAnswerTable();
+   startScrollTimer();
+   // global answers has list of unanswered words
+   var wrongAlphas = [];
+   for(var x=0;x<answers.length;x++) {
+     var a = toAlpha(answers[x]);
+     if (wrongAlphas.indexOf(a) == -1) // eliminate duplicate alphagrams
+        wrongAlphas.push(a);
+   } 
+   var allAlphas = [];
+   for(x=0;x<aux.length;x++) {
+      a = aux[x].alpha;
+      var notInCardbox = $.isEmptyObject(aux[x].auxInfo);
+      var correct = (wrongAlphas.indexOf(a) == -1);
+      if (!notInCardbox) {
+         var currentCardbox = aux[x].auxInfo.cardbox;
+         var dueNow = (aux[x].auxInfo.difficulty < 2); }
+      
+      for(var i=0;i<aux[x].words.length;i++) {
+         var word = aux[x].words[i];
+         var data = getTableLineData(word, eval("wordData." + word));
+         if (!getRowFromWord(word))
+            displayAnswerRow(word, data, false); 
+         var row = getRowFromWord(word);
+         if (notInCardbox) {
+            row.className += " wordTableHighlightNotInCardbox"; 
+            row.title = "Click to add to cardbox";
+            row.onclick = function() { addToCardboxFromQuiz(getWordFromRow(this)); };
+         } else if (!correct) {
+            row.className += " wordTableHighlightWrong2"; 
+            row.title = "Incorrect - Moved to Cardbox 0";
+            row.onclick = function() { 
+                var alpha = toAlpha(getWordFromRow(this));
+                markAsCorrectFromQuiz(alpha); };
+         } else if (dueNow) {
+            row.className += " wordTableHighlightCorrect"; 
+            row.title = "Correct - Moved to Cardbox " + (currentCardbox+1);
+            row.onclick = function() { 
+                var alpha = toAlpha(getWordFromRow(this));
+                markAsIncorrectFromQuiz(alpha); };
+         } else {
+            row.className += " wordTableHighlightNotDue"; 
+            row.title = "Not Due";
+            row.onclick = function() { 
+                var alpha = toAlpha(getWordFromRow(this));
+                markAsIncorrectFromQuiz(alpha); };
+         }
+      }         
+      if (notInCardbox) 
+         continue; 
+      if (wrongAlphas.indexOf(a) > -1) {
+         d = { user: userid,
+              question: a,
+              correct: false,
+              cardbox: currentCardbox,
+              incrementQ: true };
+         slothSubmitQuestion(d);
+         localStorage.qQCounter++;
+         localStorage.qQAlpha -= currentCardbox;
+      } else {
+         if (dueNow) {
+            var d = { user: userid,
+                  question: a,
+                   correct: true,
+                   cardbox: currentCardbox,
+                incrementQ: true };
+             slothSubmitQuestion(d);
+             localStorage.qQCorrect++;
+             localStorage.qQCounter++;
+             localStorage.qQAlpha++;
+
+         }
+       }
+    }
+    correctPercent = (localStorage.qQCorrect / localStorage.qQCounter) * 100;
+    $('#correctPercent').html(correctPercent.toFixed(2) + '%');
+    $('#questionsComplete').html(localStorage.qQCounter);
+    $('#sessionScore').html(localStorage.qQAlpha);
+}               
+
 
 function submitQuestion(correct) {
     document.getElementById('shuffleButton').disabled = true;
@@ -417,17 +589,15 @@ function submitQuestion(correct) {
     $('#questionsComplete').html(localStorage.qQCounter);
     $('#sessionScore').html(localStorage.qQAlpha);
     document.getElementById('addHint').disabled = true;
-     
                 
     for (var x = 0; x < answers.length; x++) {
         var data = eval("wordData." + answers[x]);
-        var cellContent = [data[0], (data[3][0] ? dot : ""), answers[x], (data[3][1] ? dot : ""), data[1], data[2]];
+        var cellContent = getTableLineData(answers[x], data);
         displayAnswer(answers[x], cellContent);
     }
     answers = [];
     var temp = getWordWithHook(Object.keys(wordData)[0])
     var maxWidths = hookWidth;
-    var counter = 0;
     $('#rightHook').width(hookWidth);
     $('#leftHook').width(hookWidth);
     temp[0] = addLineBreaks(temp[0], 7);
@@ -436,20 +606,7 @@ function submitQuestion(correct) {
     else {$('#alphagram').html(temp[1]);}
     $('#leftHook').html(temp[0]);
     $('#rightHook').html(temp[2]);
-    if (typeof scrollTimer !== 'undefined' && scrollTimer !== null )
-        clearInterval(scrollTimer);
-        scrollTimer = setInterval(function() {
-        var temp2 = getWordWithHook(allAnswers[counter % allAnswers.length]);
-        temp2[0] = addLineBreaks(temp2[0], 7);
-        temp2[2] = addLineBreaks(temp2[2], 7);
-        $('#rightHook').width(hookWidth);
-        $('#leftHook').width(hookWidth);
-        if ((Number(localStorage.gAlphaDisplay))==0) {stringToTiles(temp2[1], '#alphagram')}
-        else {$('#alphagram').html(temp2[1]);}
-        $('#leftHook').html(temp2[0]);
-        $('#rightHook').html(temp2[2]);     
-        counter++;
-    }, 2500);
+    startScrollTimer();
     $('#nextQuestion').show();
 }
 
@@ -459,6 +616,31 @@ function findPosInTable(el,answer,sortCol){
             if (answer.toUpperCase() < el.rows[z].cells[sortCol].innerHTML) {return z}  
          }
     } return -1
+}
+
+function getRowFromWord(word) {
+    var ANSWER_COLUMN = 2;
+    var ANSWER_TABLE = document.getElementById('correctAnswers');
+    if (ANSWER_TABLE.rows.length > 0) {
+        for (var z = 0; z < ANSWER_TABLE.rows.length; z++) {
+            if (word == ANSWER_TABLE.rows[z].cells[ANSWER_COLUMN].innerHTML) {return ANSWER_TABLE.rows[z];}
+        }
+    }
+    return null;
+}
+
+function getWordFromRow(row) {
+   var ANSWER_COLUMN = 2;
+   return row.cells[ANSWER_COLUMN].innerHTML;
+}
+
+function unhighlightAnswerTable() {
+   var ANSWER_TABLE = document.getElementById('correctAnswers');
+   for(var x=0; x<ANSWER_TABLE.rows.length; x++) {
+      var r = ANSWER_TABLE.rows[x];
+      if (r.classList.contains('wordTableHighlight')) 
+         {r.classList.remove('wordTableHighlight');}
+   }
 }
 
 function getHints(a, h){var x = a.length;var z = [];for (var i=0;i<x;i++){z[i]= a[i].substr(0, h);for (var j=h;j<a[i].length;j++){z[i]+='_';}} return z;}
@@ -482,7 +664,7 @@ function withHints (data,a,h,obj,ans){
         var x= $.inArray(a[i],objContent);
         if (x!==-1) {   
             var content = eval('data.'+a[i]);
-            tableLines[i]= [content[0], (content[3][0] ? dot : ""), a[i], (content[3][1] ? dot : ""), content[1], content[2]];
+            tableLines[i]= getTableLineData(a[i], content);
 
         }
     }
@@ -495,7 +677,7 @@ function withHints (data,a,h,obj,ans){
 
 function displayAnswerRow(answer, data, highlight) { 
     var highlight = highlight || false; 
-    console.log(highlight);
+    //console.log(highlight);
     var cells = [];
     var numCols = 6;       
     var x = document.getElementById('correctAnswers');
@@ -640,3 +822,147 @@ function stringToTiles(input, parent) {
        } );
      window.addEventListener('resize', function(event){displayUserArray(usersArray)});
 }
+
+function getTableLineData(word, auxWordData) {
+// wordDataRpw is the list [ front hooks, back hooks, definition, [frontDot, backDot] ]
+   return [auxWordData[0], (auxWordData[3][0] ? dot : ""), word, (auxWordData[3][1] ? dot : ""), auxWordData[1], auxWordData[2]];
+}
+function startScrollTimer() {
+// scrollTimer is a global
+    var counter = 0;
+    scrollTimerInstance(counter);
+    counter++;
+    if (typeof scrollTimer !== 'undefined' && scrollTimer !== null )
+        clearInterval(scrollTimer);
+    scrollTimer = setInterval(function() {
+       scrollTimerInstance(counter);
+       counter++;
+    }, 2500);
+}
+
+function scrollTimerInstance(counter) {
+    var temp2 = getWordWithHook(allAnswers[counter % allAnswers.length]);
+    temp2[0] = addLineBreaks(temp2[0], 7);
+    temp2[2] = addLineBreaks(temp2[2], 7);
+    $('#rightHook').width(hookWidth);
+    $('#leftHook').width(hookWidth);
+    if ((Number(localStorage.gAlphaDisplay))==0) {stringToTiles(temp2[1], '#alphagram')}
+    else {$('#alphagram').html(temp2[1]);}
+    $('#leftHook').html(temp2[0]);
+    $('#rightHook').html(temp2[2]);     
+}
+ 
+function addToCardboxFromQuiz(word) {
+    
+   var alpha = toAlpha(word);
+   if (confirm("Click OK to add " + alpha + " to your Cardbox.")) {
+      var d = {user: userid, question: alpha};
+      $.ajax({type: "POST", 
+              data: JSON.stringify(d),
+               url: "addQuestionToCardbox.py",
+           success: addedToCardboxFromQuiz,
+             error:  function(jqXHR, textStatus, errorThrown) {
+              console.log("Error adding " + alpha + ", status = " + textStatus + " error: " + errorThrown); 
+              }} );
+       }
+}
+
+function addedToCardboxFromQuiz(response, responseStatus) {
+   if (response[1].status == "success") {
+      var alphaAdded = response[0].question;
+      for (var x=0;x<aux.length;x++) {
+         if (aux[x].alpha == alphaAdded) {
+            for (var y=0;y<aux[x].words.length;y++) {
+               var r = getRowFromWord(aux[x].words[y]);
+               r.onclick = null;
+               r.title = "Added to Cardbox";
+               r.classList.remove('wordTableHighlightNotInCardbox');
+               r.classList.add('wordTableHighlightAdded'); }
+         break;
+         } 
+       }
+    } else { alert("Error adding " + alpha + " to your Cardbox. Please try again."); }
+}
+
+function markAsCorrectFromQuiz(alpha) {
+   var correctClass;
+   if (confirm("Mark " + alpha + " as correct?")) {
+      var d = { user: userid,
+          question: alpha,
+          correct: true,
+          cardbox: getCardboxFromAlpha(alpha),
+       incrementQ: false };
+       slothSubmitQuestion(d);
+       for(var x=0;x<aux.length;x++) {
+          if (aux[x].alpha == alpha) {
+             if (aux[x].auxInfo.difficulty < 2) {
+                localStorage.qQCorrect++;
+                correctClass = "wordTableHighlightCorrect"; 
+             } else { correctClass = "wordTableHighlightNotDue"; 
+                      localStorage.qQCounter--;}
+             localStorage.qQAlpha = parseInt(localStorage.qQAlpha) + getCardboxFromAlpha(alpha) + 1;
+             for(var y=0;y<aux[x].words.length;y++) {
+                r = getRowFromWord(aux[x].words[y]);
+                r.title = "Correct - Moved to Cardbox " + (getCardboxFromAlpha(alpha)+1);
+                r.classList.remove("wordTableHighlightWrong2");
+                r.classList.add(correctClass);
+                r.onclick = function() { var alpha = toAlpha(getWordFromRow(this)); 
+                                         markAsIncorrectFromQuiz(alpha); };
+             } // end for
+             break;
+          } // end if
+        } // end for 
+       if (localStorage.qQCorrect > 0) {
+           correctPercent = (localStorage.qQCorrect / localStorage.qQCounter) * 100;
+           $('#correctPercent').html(correctPercent.toFixed(2) + '%');
+           $('#questionsComplete').html(localStorage.qQCounter);
+           $('#sessionScore').html(localStorage.qQAlpha); }
+     } // end if (confirm...)
+                    
+}
+
+function markAsIncorrectFromQuiz(alpha) {
+   if (confirm("Mark " + alpha + " as incorrect?")) {
+      d = { user: userid,
+          question: alpha,
+          correct: false,
+          cardbox: getCardboxFromAlpha(alpha),
+       incrementQ: false };
+       slothSubmitQuestion(d);
+       for(var x=0;x<aux.length;x++) {
+          if (aux[x].alpha == alpha) {
+             if (aux[x].auxInfo.difficulty < 2) {localStorage.qQCorrect--;}
+             else {localStorage.qQCounter++;}
+             localStorage.qQAlpha -= (getCardboxFromAlpha(alpha)+1);
+             for(var y=0;y<aux[x].words.length;y++) {
+                r = getRowFromWord(aux[x].words[y]);
+                r.title = "Incorrect - moved to Cardbox 0"
+                r.classList.remove("wordTableHighlightCorrect");
+                r.classList.remove("wordTableHighlightNotDue");
+                r.classList.add("wordTableHighlightWrong2");
+                r.onclick = function() { var alpha = toAlpha(getWordFromRow(this)); 
+                                         markAsCorrectFromQuiz(alpha); };
+             } // end for
+          break;
+          } // end if
+        } // end for 
+       if (localStorage.qQCounter > 0) {
+           correctPercent = (localStorage.qQCorrect / localStorage.qQCounter) * 100;
+           $('#correctPercent').html(correctPercent.toFixed(2) + '%');
+           $('#questionsComplete').html(localStorage.qQCounter);
+           $('#sessionScore').html(localStorage.qQAlpha); }
+     } // end if (confirm...)
+                    
+}
+
+function getCardboxFromAlpha(alpha) {
+  for (var x=0; x<aux.length; x++) {
+     if (aux[x].alpha == alpha) {
+        if (aux[x].auxInfo.difficulty < 2) // if it's not due, need to mark correct into 
+           return aux[x].auxInfo.cardbox; // current cardbox, not promote to the next
+        else return aux[x].auxInfo.cardbox-1; // Not Due = Difficulty 4
+     } 
+  }
+  return null;
+}
+        

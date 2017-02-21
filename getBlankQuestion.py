@@ -3,6 +3,7 @@
 import xerafinLib as xl
 import json, sys
 import time
+import random
 
 #userid = "10157462952395078"
 params = json.load(sys.stdin)
@@ -23,13 +24,14 @@ try:
   nextQuestion = xl.getQuestions(numQuestions, userid)
   nextAlphagram = nextQuestion.keys()[0] # assume there's only one question we are getting
   # these days time is so random
-  now = int(time.time())
-  rand = now % length(nextAlphagram)
+  random.seed()
+  rand = random.randrange(0, len(nextAlphagram))
   subAlpha = nextAlphagram[:rand] + nextAlphagram[rand+1:]
   # getBlanagramData returns a list of dicts
   # [ alpha: xxx, words: [ word, word, word], auxInfo: { ... } ]
-  result["answers"] = xl.getBlanagramData(subAlpha)
+  result["answers"] = xl.getBlanagramQuestion(subAlpha, userid)
   result["question"] = subAlpha
+  result["fullAlpha"] = nextAlphagram
 
   allWords = [ word for subList in [ x["words"] for x in result["answers"]] for word in subList]
 

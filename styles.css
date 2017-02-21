@@ -147,11 +147,20 @@ box-shadow: -2px -2px 3px #444;
 .quizButtonRow {display:inline-block;width:100%;margin:2px auto;text-align:center;background:#eee;border-bottom:1px solid #ccc;padding-top:0.3em;padding-bottom:0.3em;}
 .quizAdvancedBox {margin:0 auto;border-bottom:1px solid #ccc;display:none;width:100%;padding-top:10px;padding-bottom:10px;}
 .quizAdvancedButton {width:25%;height:45px;display:inline-block;margin-left:0.5%;margin-right:0.5%;margin-top:0px;-webkit-border-radius:0px;vertical-align:top;}
+.quizBlankCheckbox {width:45px;height:45px;display:inline-block;margin-left:0.5%;margin-right:0.5%;margin-top:0px;border-radius:100%;position:relative;box-shadow:0px 1px 3px rgba(0,0,0,0.5);background:#666;}
+.quizBlankCheckbox label {display:block;width:35px;height:35px;border-radius:100px;transition: all .5s ease;cursor:pointer;position:absolute;top:5px;left:5px;z-index:1;background:#333;box-shadow:inset 0px 1px 3px rgba(0,0,0,0.5);font-size:20px;vertical-align:middle;text-align:center;color:#999999}
+.quizBlankCheckbox input[type=checkbox]:checked + label {background:#26ca28;color:#000000}
+.quizBlankCheckbox input[type=checkbox] {visibility: hidden;}
 
 .wordTable {width:100%;margin-top:0px;text-align:left;}
 .wordTable tr {border-bottom: 1px solid #ccc;width:100%;}
 .wordTableHighlight {background-color: hsla(0,0%,95%,0.7);background: url('b34.png') repeat;}
 .wordTableHighlightWrong {background-color: #CCCCCC;}
+.wordTableHighlightWrong2 {background-color: hsla(3,45%,65%,0.7);}
+.wordTableHighlightCorrect {background-color: hsla(74,55%,45%,0.7);}
+.wordTableHighlightNotDue {background-color: hsla(127,85%,65%,0.7);}
+.wordTableHighlightNotInCardbox {background-color: hsla(183,55%,35%,0.7);}
+.wordTableHighlightAdded {background-color: hsla(27,85%,35%,0.7);}
 .wordTableLeftHook , .wordTableRightHook {font-size:1em;line-height:1em;font-variant:small-caps;width:1px;vertical-align:middle;}
 .wordTableLeftHook {padding-right:5px;text-align:right;}
 .wordTableRightHook {padding-left:5px;text-align:left;}
