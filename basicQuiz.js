@@ -531,6 +531,11 @@ function submitQuestion(correct) {
         data: JSON.stringify(d),
         success: function(response, responseStatus) {
             console.log("Question " + alphagram + " updated in cardbox.");
+            if (quizState == "finished") {
+                var aux = response[0].aux;
+                var dueDate = new Date(aux.nextScheduled * 1000);
+                $('#dueDate').html(formatDateForDisplay(dueDate));  
+                $('#cardboxNumber').html(aux.cardbox); }
             if ((response[0].qAnswered !== null ) ) {
                 if (incrementQ) {
                     checkMilestones(response[0].qAnswered);
