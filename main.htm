@@ -7,6 +7,7 @@
 <!-- JQuery code -->
 <link rel="icon" type="image/png" href="http://cross-tables.com/xerafin/xerafin.png">
 <link href="styles.css" rel="stylesheet" type="text/css" /> 
+<script src="alphaStats.js"></script>
 <script src="basicQuiz.js"></script>
 <script src="chat.js"></script>
 <script src="cardboxStats.js"></script>
@@ -166,6 +167,7 @@ function loginCallback(response, responseStatus) {
       <li><a href="#" onClick="startQuiz()">Basic Quiz</a></li>
       <li><a href="#" onClick="initSloth()">Subword Sloth!</a></li>
       <li><a href="#" onClick="showCardboxStats()">Cardbox Info</a></li>
+      <li><a href="#" onClick="showAlphaStats(toAlpha(prompt('Enter a word or alphagram to display').toUpperCase()))">Alphagram Info</a></li>
       <li><a href="#" onClick="showLeaderboard()">Leaderboard</a></li>
       <li><a href="#" onClick="showManageCardbox()">Manage Cardbox</a></li>
       <li><a href="#" onClick="initUserPrefs()">User Prefs</a></li>

@@ -74,9 +74,10 @@ function initUIQuiz() {
                     ['e','div','quizAdvancedBox','advancedBox','gameArea',''],
                     ['e1','button','quizAdvancedButton','counterReset','e','Reset<br>Counters'],
                     ['e2','button','quizAdvancedButton','addHint','e','Hint'],
-                    ['e3', 'div', 'quizBlankCheckbox', 'blankQuizBox', 'e', ''],
-                    ['e3a', 'input', '', 'blankQuizCheck', 'e3', ''],
-                    ['e3b', 'label', '', 'blankQuizLabel', 'e3', '?'],
+                    ['e3','button','quizAdvancedButton','showQuestionStats','e','Stats'],
+                    ['e4', 'div', 'quizBlankCheckbox', 'blankQuizBox', 'e', ''],
+                    ['e4a', 'input', '', 'blankQuizCheck', 'e4', ''],
+                    ['e4b', 'label', '', 'blankQuizLabel', 'e4', '?'],
                     ['f','table','wordTable','correctAnswers','gameArea',''],
                     ['g','div','wordTableWrong','wrongAnswers','gameArea','']
                     ]);
@@ -96,8 +97,8 @@ function initUIQuiz() {
     document.getElementById('blankQuizCheck').value = '1';
     document.getElementById('blankQuizLabel').htmlFor = 'blankQuizCheck';
     $('#blankQuizCheck').change(function() {getQuestion()});
-    var buttonId=['shuffleButton','slothButton','skipButton','advancedButton','counterReset','addHint'];
-    var buttonTitle=['Shuffle Tiles','Sloth This Word!','Skip Word','Advanced...','Clear Questions, Score and Correct % for this device.','See one more letter of solution(s).'];
+    var buttonId=['shuffleButton','slothButton','skipButton','advancedButton','counterReset','addHint', 'showQuestionStats'];
+    var buttonTitle=['Shuffle Tiles','Sloth This Word!','Skip Word','Advanced...','Clear Questions, Score and Correct % for this device.','See one more letter of solution(s).', 'Show stats and change cardbox for this question'];
     for (var i=0;i<buttonTitle.length;i++){
         document.getElementById(buttonId[i]).title=buttonTitle[i];
     }   
@@ -123,7 +124,7 @@ function initClickEventsQuiz(){
     $('#markAsCorrect').on('click', null , true, submitQuestion);
     $('#markAsIncorrect').click(function(){submitQuestion(false);});
     $('#nextQuestion').click(function() {textFocus = false;getQuestion();});
-    
+    $('#showQuestionStats').click(function() {showAlphaStats(alphagram);}); 
     $('#shuffleButton').click(function() {
         if ((Number(localStorage.gAlphaDisplay))==0) {stringToTiles(alphaShuffle(alphagram), '#alphagram')}
         else {$('#alphagram').html(alphaShuffle(alphagram));}
