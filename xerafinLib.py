@@ -365,7 +365,10 @@ def futureSweep(cur) :
   """
   now = int(time.time())
   cur.execute("update questions set difficulty = 0 where difficulty in (4, 50)")
-  cur.execute("update questions set difficulty = 4 where next_scheduled > ?+(cardbox*3600*24) and difficulty in (0, -1)", (now,))
+  # Anything in cardbox 10 or higher we can see 30 days ahead of schedule
+  cur.execute("update questions set difficulty = 4 where cardbox >= 10 and next_scheduled > ?+(3600*24*30) and difficulty in (0, -1)", (now,))
+  # Anything in cardbox N; 1 <= N <= 9; we can see N days ahead of schedule
+  cur.execute("update questions set difficulty = 4 where cardbox < 10 and next_scheduled > ?+(cardbox*3600*24) and difficulty in (0, -1)", (now,))
 
 def makeWordsAvailable (userid, cur) :
   """
@@ -381,6 +384,8 @@ def makeWordsAvailable (userid, cur) :
     maxCardbox = cur.fetchone()[0]
     if maxCardbox is None:
       maxCardbox = 0
+    if maxCardbox >= 10:
+      maxCardbox = 30
   except:
     maxCardbox = 0
   soonestNewWordsAt = now + (3600*reschedHrs)
@@ -396,7 +401,13 @@ def makeWordsAvailable (userid, cur) :
     cb0cnt = cur.fetchone()[0]
     cur.execute("select count(*) from questions where difficulty != 4 and next_Scheduled is not null")
     readycnt = cur.fetchone()[0]
-    if cb0cnt < cb0max or readycnt == 0:
+    # if readycnt = 0, there are no words available to repeat so we must add new
+    #   even overriding newWordsAtOnce = 0 or cb0max
+    if readycnt == 0:
+#      addWords(max(getPrefs("newWordsAtOnce", userid),1), userid, cur)
+# reintroduced this bug by request. fix it once there's a "quiz from CB 0" bit
+      addWords(getPrefs("newWordsAtOnce", userid), userid, cur)
+    elif cb0cnt < cb0max:
       addWords(getPrefs("newWordsAtOnce", userid), userid, cur)
     newWordsAt = newWordsAt + 3600
   if clearedUntil > now:

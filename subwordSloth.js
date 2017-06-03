@@ -30,10 +30,30 @@ function initSloth2() {
   var gameArea = document.getElementById("gameArea");
   $('#gameArea').empty();
 
-  var alphagramLabel = document.createElement("H1");
+  var alphagramArea = document.createElement("div");
+  alphagramArea.className = "quizAlphaSuper";
+  alphagramArea.id = "alphaSuper";
+  alphagramArea.style = "background: rgb(85, 170, 187);";
+
+  var alphagramContainer = document.createElement("div");
+  alphagramContainer.className = "quizAlphaContain";
+  alphagramContainer.id = "slothAlphagramContainer";
+
+  var alphagramLabel = document.createElement("div");
   alphagramLabel.id = "slothAlphagram";
-  alphagramLabel.style.width = "100%";
-  alphagramLabel.style.textAlign = "center";
+  alphagramLabel.className = "quizAlpha";
+  
+  // empty elements created to allow tile display to calculate width properly
+  // code is shared with basic quiz
+  var slothLeftHook = document.createElement("div");
+  slothLeftHook.id = "leftHook";
+  var slothRightHook = document.createElement("div");
+  slothRightHook.id = "rightHook";
+
+  alphagramArea.appendChild(alphagramContainer);
+  alphagramContainer.appendChild(slothLeftHook);
+  alphagramContainer.appendChild(alphagramLabel);
+  alphagramContainer.appendChild(slothRightHook);
 
   var startButton = document.createElement("button");
   startButton.id = "startButton";
@@ -97,12 +117,22 @@ function initSloth2() {
   answerField.style.width = "100%";
   answerField.paddingBottom = "10px";
 		
-  gameArea.appendChild(alphagramLabel);
+  gameArea.appendChild(alphagramArea);
   gameArea.appendChild(timerLabel);
   gameArea.appendChild(progressBar);
   gameArea.appendChild(answerBox);
   gameArea.appendChild(answerField);
+
   $('#startButton').on("click", startSloth);
+  if ((Number(localStorage.gAlphaDisplay))==0) {
+      stringToTiles(Array(slothQuestion.length+1).join(" "), '#slothAlphagram');
+      $('#alphaSuper').css('background', '#5ab');
+   } else {
+      $('#slothAlphagram').css('visibility', 'hidden');
+      $('#slothAlphagram').html(alphaSortMethod(slothQuestion, Number(localStorage.gAlphaSortInput)));
+      $('#alphaSuper').css('background', 'url("b42.png") repeat');
+   }      
+
 
   var d = { user: userid, alpha: slothQuestion };
   $.ajax({type: "POST",
@@ -195,7 +225,13 @@ function startSloth () {
 //  console.log("start sloth");
   document.getElementById("startButton").style.display = 'none';
   $('#timerText').css('display', 'initial');
-  $('#slothAlphagram').html(alphaSortMethod (slothQuestion, Number(localStorage.gAlphaSortInput)));
+  if ((Number(localStorage.gAlphaDisplay))==0) {
+      stringToTiles(alphaSortMethod(slothQuestion, Number(localStorage.gAlphaSortInput)), '#slothAlphagram');
+   } else {
+      $('#slothAlphagram').css('visibility', 'visible');
+   }      
+
+//  $('#slothAlphagram').html(alphaSortMethod (slothQuestion, Number(localStorage.gAlphaSortInput)));
   document.getElementById('answerBox').disabled = false;
   $('#answerBox').focus();
   slothTimer = setInterval(updateSlothTimer, 1000);
