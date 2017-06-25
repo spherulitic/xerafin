@@ -348,6 +348,8 @@ function displayQuestion() {
    } else {
      $('#markAsCorrect').prop("disabled", false);
      $('#markAsIncorrect').prop("disabled", false);  }
+   if(document.getElementById("currentAlpha")) { // if the Alphagram Stats is up
+     showAlphaStats(alphagram); }
    quizState = "started";
    incorrectAnswerFlag = false;
    incrementQ = true;
@@ -371,11 +373,10 @@ function submitAnswer() {
             idx = $.inArray(answer, answers);
             if (idx > -1) {
                 answers.splice(idx, 1);
-                console.log("Correct Answer");
                 correctProgress++;
                 $('#answerAmount').html('<b>Answers&#58;</b> ' + correctProgress + ' / ' + totalAnswers);
                 var data = eval("wordData." + answer);
-                var cellContent = [data[0], (data[3][0] ? dot : ""), answer, (data[3][1] ? dot : ""), data[1], data[2]];
+                var cellContent = getTableLineData(answer, data);
                 displayAnswer(answer, cellContent);
                 if (answers.length == 0) {
                    if(document.getElementById('blankQuizCheck').checked ) {
@@ -629,10 +630,14 @@ function getRowFromWord(word) {
     var ANSWER_TABLE = document.getElementById('correctAnswers');
     if (ANSWER_TABLE.rows.length > 0) {
         for (var z = 0; z < ANSWER_TABLE.rows.length; z++) {
-            if (word == ANSWER_TABLE.rows[z].cells[ANSWER_COLUMN].innerHTML) {return ANSWER_TABLE.rows[z];}
+            if (word == stripHTML(ANSWER_TABLE.rows[z].cells[ANSWER_COLUMN].innerHTML)) {return ANSWER_TABLE.rows[z];}
         }
     }
     return null;
+}
+
+function stripHTML (str) {
+   return str.replace(/<[^>]*>/g, '');
 }
 
 function getWordFromRow(row) {
@@ -831,6 +836,15 @@ function stringToTiles(input, parent) {
 
 function getTableLineData(word, auxWordData) {
 // wordDataRpw is the list [ front hooks, back hooks, definition, [frontDot, backDot] ]
+   if(document.getElementById('blankQuizCheck').checked ) {
+      var givenAlpha = alphagram.replace('?', '');
+      var blankLetter = word;
+      var i = givenAlpha.length;
+      while(i--) {
+         blankLetter = blankLetter.replace(givenAlpha.charAt(i), "");
+      }
+      word = word.replace(blankLetter, "<span style='color: red'>" + blankLetter + "</span>");
+   }
    return [auxWordData[0], (auxWordData[3][0] ? dot : ""), word, (auxWordData[3][1] ? dot : ""), auxWordData[1], auxWordData[2]];
 }
 function startScrollTimer() {

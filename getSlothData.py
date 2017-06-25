@@ -16,6 +16,7 @@ try:
   with lite.connect(xl.getDBFile(userid)) as con:
     cur = con.cursor()
     xl.futureSweep(cur)
+#  for subalpha in [x for x in xl.getSubanagrams(alpha) if len(x) >= len(alpha)-3 ]:
   for subalpha in xl.getSubanagrams(alpha):
     words = xl.getAnagrams(subalpha)
     auxInfo = xl.getAuxInfo(subalpha, userid)
