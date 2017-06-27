@@ -642,7 +642,7 @@ function stripHTML (str) {
 
 function getWordFromRow(row) {
    var ANSWER_COLUMN = 2;
-   return row.cells[ANSWER_COLUMN].innerHTML;
+   return stripHTML(row.cells[ANSWER_COLUMN].innerHTML);
 }
 
 function unhighlightAnswerTable() {
