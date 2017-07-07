@@ -120,6 +120,25 @@ function showUserPrefs(response, responseStatus) {
       i7.onchange = function () {localStorage.gAlphaDisplay = i7.value;}
   p7.appendChild(s71);
   p7.appendChild(i7);
+ 
+  var p8 = document.createElement("p");
+  var s81 = document.createElement ("span");
+  s81.innerHTML = "In Sloth, quiz on ";
+
+  var i8 = document.createElement("select");
+  var i8Options = ['All Subanagrams' ,'Some Subanagrams'];
+      i8.id = "slothSetup";
+      for (var x=0;x<i8Options.length;x++) {
+        var op = document.createElement("option");
+        op.text = i8Options[x];
+        op.value = x;
+        i8.add(op);
+      }      
+      i8.value = Number(localStorage.gSlothPref);
+      i8.onchange = function () {localStorage.gSlothPref = i8.value;}
+  p8.appendChild(s81);
+  p8.appendChild(i8);
+ 
   i5 = document.createElement("button");
   i5.innerHTML = "Save";
   i5.setAttribute("onclick", "setPrefs()");
@@ -131,8 +150,8 @@ function showUserPrefs(response, responseStatus) {
   document.getElementById('gameArea').appendChild(p4);
   document.getElementById('gameArea').appendChild(document.createElement("br"));
   document.getElementById('gameArea').appendChild(p6);
-  document.getElementById('gameArea').appendChild(document.createElement("br"));
   document.getElementById('gameArea').appendChild(p7);
+  document.getElementById('gameArea').appendChild(p8);
   document.getElementById('gameArea').appendChild(document.createElement("br"));
   document.getElementById('gameArea').appendChild(i5);
   }

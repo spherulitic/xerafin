@@ -134,7 +134,7 @@ function initSloth2() {
    }      
 
 
-  var d = { user: userid, alpha: slothQuestion };
+  var d = { user: userid, alpha: slothQuestion, getAllWords: localStorage.gSlothPref };
   $.ajax({type: "POST",
          data: JSON.stringify(d),
          url: "getSlothData.py",
