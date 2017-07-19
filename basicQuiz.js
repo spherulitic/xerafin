@@ -162,8 +162,7 @@ function getQuestion() {
         success: callback,
         error: function(jqXHR, textStatus, errorThrown) {
             console.log("Error, status = " + textStatus + " error: " + errorThrown)
-            if (typeof scrollTimer !== 'undefined' && scrollTimer !== null )
-                clearInterval(scrollTimer);
+            stopScrollTimer();
             $('#alphagram').html('Connection Error');
             $('#answerBox').removeAttr("disabled", "disabled");
             $('#nextQuestion').click(function() {
@@ -283,8 +282,7 @@ function displayQuestion() {
   // aux - list of aux data dicts
   // for blank quiz aux contains list: [ alpha: ABCDE, auxInfo: {aux stuff}, words: [ words ] ]
   // wordData - { word: <hook data>, word: <hook data> }
-   if (typeof scrollTimer !== 'undefined' && scrollTimer !== null ) {
-       clearInterval(scrollTimer); }
+   stopScrollTimer();
    resetHookWidthsQuiz();
    correctProgress = 0;
    hintQuantity = 0;
@@ -852,12 +850,17 @@ function startScrollTimer() {
     var counter = 0;
     scrollTimerInstance(counter);
     counter++;
-    if (typeof scrollTimer !== 'undefined' && scrollTimer !== null )
-        clearInterval(scrollTimer);
+    stopScrollTimer();
     scrollTimer = setInterval(function() {
        scrollTimerInstance(counter);
        counter++;
     }, 2500);
+}
+
+function stopScrollTimer() {
+// scrollTimer is a global
+    if (typeof scrollTimer !== 'undefined' && scrollTimer !== null )
+        clearInterval(scrollTimer);
 }
 
 function scrollTimerInstance(counter) {

@@ -27,6 +27,10 @@ function populateSlothQuestion(response, responseStatus) {
 function initSloth2() { 
 
   console.log("Starting Sloth for " + slothQuestion);
+
+  stopScrollTimer();
+  resetHookWidthsQuiz();
+
   var gameArea = document.getElementById("gameArea");
   $('#gameArea').empty();
 
