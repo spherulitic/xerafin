@@ -106,12 +106,15 @@ function initSloth2() {
   var answerBox = document.createElement("input");
   answerBox.type = "text";
   answerBox.id = "answerBox";
-  answerBox.style.display = "block";
-  answerBox.style.width = "60%"
-  answerBox.style.margin = "auto";
   answerBox.disabled = true;
+  answerBox.className += "quizAnswerBox";
+  answerBox.style.width = "50%"; // overriding the class for now
+  answerBox.style.textAlign = "center";
   answerBox.addEventListener("keypress", function(e) {
 	if (e.which === 13) { submitSlothAnswer(); }  });
+  var answerBoxField = document.createElement("div");
+  answerBoxField.style.textAlign = "center";
+  answerBoxField.appendChild(answerBox);
 
   var answerField = document.createElement("div");
   var answerFieldBody = document.createElement("div");
@@ -124,7 +127,7 @@ function initSloth2() {
   gameArea.appendChild(alphagramArea);
   gameArea.appendChild(timerLabel);
   gameArea.appendChild(progressBar);
-  gameArea.appendChild(answerBox);
+  gameArea.appendChild(answerBoxField);
   gameArea.appendChild(answerField);
 
   $('#startButton').on("click", startSloth);
