@@ -33,8 +33,11 @@ DAWG_PATH = "alpha.dawg"
 
 def getDBFile(userid):
 
-  DBFile = os.path.join(sys.path[0], cardboxDBPath, userid + ".db")
-  return DBFile
+  try:
+    DBFile = os.path.join(sys.path[0], cardboxDBPath, userid + ".db")
+    return DBFile
+  except:
+    return None
 
 def getDBCur(userid):
   return lite.connect(getDBFile(userid)).cursor()
@@ -297,7 +300,7 @@ def addWords (numWords, userid, cur) :
   dbClean(cur)
   cur.execute("select count(*) from next_added")
   nextAddedCount = cur.fetchone()[0]
-  cur.execute("select question from next_added limit ?", (numWords,))
+  cur.execute("select question from next_added order by timeStamp limit ?", (numWords,))
   result = cur.fetchall()
   if result is not None:
     wordsToAdd = [x[0] for x in result]
@@ -321,11 +324,12 @@ def insertIntoNextAdded(alphagrams, cur):
   Checks to make sure it's a valid alphagram
   '''
     
-  command = "insert into next_added (question) values (?)"
+  now = int(time.time())
+  command = "insert into next_added (question, timeStamp) values (?, ?)"
   for alpha in alphagrams:
     if isAlphagramValid(alpha):
       try:
-        cur.execute(command, (alpha,))
+        cur.execute(command, (alpha, now))
       except:
         pass
   dbClean(cur)
@@ -440,7 +444,7 @@ def getBingoFromCardbox (userid):
     result = cur.fetchone()
     if result is not None: 
       return result[0]
-    cur.execute("select question from next_added where length(question) >= 7 limit 1")
+    cur.execute("select question from next_added where length(question) >= 7 order by timeStamp limit 1")
     result = cur.fetchone()
     if result is not None:
       addWord(result[0], cur)
@@ -615,7 +619,7 @@ def checkCardboxDatabase (userid):
       if u'new_words_at' not in tables:
         cur.execute("create table new_words_at (timeStamp integer)")
       if u'next_Added' not in tables:
-        cur.execute("create table next_Added (question varchar(16))")
+        cur.execute("create table next_Added (question varchar(16), timeStamp integer)")
       cur.execute("create unique index if not exists question_index on questions(question)")
       cur.execute("create unique index if not exists next_added_question_idx on next_added(question)")
 
