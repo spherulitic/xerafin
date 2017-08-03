@@ -11,6 +11,7 @@
 <script src="basicQuiz.js"></script>
 <script src="chat.js"></script>
 <script src="cardboxStats.js"></script>
+<script src="invaders.js"></script>
 <script src="leaderboard.js"></script>
 <script src="manageCardbox.js"></script>
 <script src="subwordSloth.js"></script>
@@ -148,6 +149,12 @@ function loginCallback(response, responseStatus) {
 	console.log("Login script status is " + response.status);
         startQuiz();
         startChat();
+     // adding a menu option for Chris only
+     if (userid == "10157462952395078") {
+     var x = document.createElement("li");
+     x.innerHTML = "<a href='#' onClick='initInvaders()'>Cardbox Invaders</a>";
+     document.getElementById("menuList").appendChild(x);
+}
 }
 
 </script>
@@ -163,12 +170,12 @@ function loginCallback(response, responseStatus) {
       <a class="navbar-brand">Xerafin</a>
     </div>
     <div class="collapse navbar-collapse" id="myNavbar">
-    <ul class="nav navbar-nav">
+    <ul class="nav navbar-nav" id="menuList">
 <!--      <li class="active"><a href="#">Home</a></li> -->
       <li><a href="#" onClick="startQuiz()">Basic Quiz</a></li>
       <li><a href="#" onClick="initSloth()">Subword Sloth!</a></li>
       <li><a href="#" onClick="showCardboxStats()">Cardbox Info</a></li>
-      <li><a href="#" onClick="showAlphaStats(toAlpha(prompt('Enter a word or alphagram to display').toUpperCase()))">Alphagram Info</a></li>
+      <li><a href="#" onClick="showAlphaStats(toAlpha($.trim(prompt('Enter a word or alphagram to display').toUpperCase())))">Alphagram Info</a></li>
       <li><a href="#" onClick="showLeaderboard()">Leaderboard</a></li>
       <li><a href="#" onClick="showManageCardbox()">Manage Cardbox</a></li>
       <li><a href="#" onClick="initUserPrefs()">User Prefs</a></li>
@@ -193,6 +200,5 @@ function loginCallback(response, responseStatus) {
      <div class="well" id="chatArea" style="width: 100%"> </div>
   </div>
 </div>
-
 </body>
 </html>
