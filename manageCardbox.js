@@ -8,7 +8,7 @@ function URLExists(url) {
 function showManageCardbox() {
   var upForm = "<h3>Upload Custom Word List</h3>";
   upForm += "<p>Upload a .txt file with one alphagram or word per line.</p>";
-  upForm += "<p>These words will be added to you cardbox ahead of the default study list.</p>";
+  upForm += "<p>These words will be added to your cardbox ahead of the default study list.</p>";
   upForm += "<input type=file id='wlistFile' accept='.txt'>";
   upForm += "<input type=button value='Submit' id='listUploadButton' onclick='uploadNewWordList()'>";
   upForm += "<hr>";
