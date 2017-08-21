@@ -256,6 +256,16 @@ function submitChat(message, isSystemGenerated, systemUserid = 0) {
           error: function(jqXHR, textStatus, errorThrown) {
               console.log("Error: milestone chat could not be expired."); 
               submitChat2(d)} });
+   } else if (d.userid==2) {
+     $.ajax({type: "POST",
+              url: "expireLastInvaderChat.py",
+         success: function(response, responseStatus) {
+              console.log("Last invader chat expired " + response);
+              submitChat2(d);
+              },
+          error: function(jqXHR, textStatus, errorThrown) {
+              console.log("Error: invader chat could not be expired."); 
+              submitChat2(d)} });
    }
    else submitChat2(d);
     }   

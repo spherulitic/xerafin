@@ -200,6 +200,23 @@ function resetHookWidthsQuiz () {
 
 }
 
+function prepareNewWords() {
+            d = { userid: userid };
+            $.ajax({
+                type: "POST",
+                url: "prepareNewWords.py",
+                data: JSON.stringify(d),
+                success: function(response, responseStatus) {
+                    console.log("Next Added table prepared.");
+                    console.log(response);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.log("Error preparing Next Added");
+                }
+            });
+
+}
+
 function initBlankQuestion(response, responseStatus) {
     console.log(response);
     var r = response[0];
@@ -218,21 +235,7 @@ function initBlankQuestion(response, responseStatus) {
         fullAlpha = r.fullAlpha;
         aux = r.answers;
         if (r.getFromStudyOrder) {
-            d = {
-                userid: userid
-            };
-            $.ajax({
-                type: "POST",
-                url: "prepareNewWords.py",
-                data: JSON.stringify(d),
-                success: function(response, responseStatus) {
-                    console.log("Next Added table prepared.");
-                    console.log(response);
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    console.log("Error preparing Next Added");
-                }
-            });
+           prepareNewWords();
         }
 // check here to see if there's some lag and the question is a duplicate
         displayQuestion();
@@ -834,7 +837,7 @@ function stringToTiles(input, parent) {
 
 function getTableLineData(word, auxWordData) {
 // wordDataRpw is the list [ front hooks, back hooks, definition, [frontDot, backDot] ]
-   if(document.getElementById('blankQuizCheck').checked ) {
+   if(document.getElementById('blankQuizCheck') && document.getElementById('blankQuizCheck').checked ) {
       var givenAlpha = alphagram.replace('?', '');
       var blankLetter = word;
       var i = givenAlpha.length;

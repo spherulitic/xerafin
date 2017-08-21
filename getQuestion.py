@@ -10,6 +10,10 @@ numQuestions = params["numQuestions"]
 result = {"getFromStudyOrder": False }
 words = { }
 error = {"status": "success"}
+try:
+  lock = params["lock"]
+except:
+  lock = False
 
 try:
   # { "ALPHAGRAM": [WORD, WORD, WORD] }
@@ -23,6 +27,8 @@ try:
        defn = unicode(xl.getDef(word), 'latin1').encode('ascii', 'xmlcharrefreplace')
        innerHooks = xl.getDots(word)
        words[word] = [ h[0], h[2], defn, innerHooks ]
+    if lock:
+       xl.checkOut(key, userid, True)
   result["words"] = words  
   result["aux"] = auxInfoList
   if xl.getNextAddedCount(userid) < xl.getPrefs("newWordsAtOnce", userid):

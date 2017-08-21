@@ -150,10 +150,8 @@ function loginCallback(response, responseStatus) {
         startQuiz();
         startChat();
      // adding a menu option for Chris only
-     if (userid == "10157462952395078") {
-     var x = document.createElement("li");
-     x.innerHTML = "<a href='#' onClick='initInvaders()'>Cardbox Invaders</a>";
-     document.getElementById("menuList").appendChild(x);
+     if (userid == "10157462952395078" || userid == "825060375517") {
+
 }
 }
 
@@ -174,9 +172,10 @@ function loginCallback(response, responseStatus) {
 <!--      <li class="active"><a href="#">Home</a></li> -->
       <li><a href="#" onClick="startQuiz()">Basic Quiz</a></li>
       <li><a href="#" onClick="initSloth()">Subword Sloth!</a></li>
+      <li><a href="#" onClick="initInvaders()">Cardbox Invaders</a></li>
       <li><a href="#" onClick="showCardboxStats()">Cardbox Info</a></li>
-      <li><a href="#" onClick="showAlphaStats(toAlpha($.trim(prompt('Enter a word or alphagram to display').toUpperCase())))">Alphagram Info</a></li>
       <li><a href="#" onClick="showLeaderboard()">Leaderboard</a></li>
+      <li><a href="#" onClick="showAlphaStats(toAlpha($.trim(prompt('Enter a word or alphagram to display').toUpperCase())))">Alphagram Info</a></li>
       <li><a href="#" onClick="showManageCardbox()">Manage Cardbox</a></li>
       <li><a href="#" onClick="initUserPrefs()">User Prefs</a></li>
     </ul>
@@ -191,7 +190,7 @@ function loginCallback(response, responseStatus) {
 <div class="container-fluid">
 <div class="row">
   <div class="col-sm-4" style="padding-left: 0px; padding-right: 0px;">
-     <div class="well" id="gameArea" style="width: 100%"> </div>
+     <div class="well" id="gameArea" style="width: 100%; text-align: center;"> </div>
   </div>
   <div class="col-sm-4">
     <div class="well" id="middleArea" style="width:100%; display:none"></div>

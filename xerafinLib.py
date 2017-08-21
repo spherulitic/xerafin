@@ -651,42 +651,19 @@ def getDots (word) :
       numBack = con.fetchone()[0]
   return [numFront > 0, numBack > 0]
 
+def checkOut (alpha, userid, lock) :
+   """
+   if LOCK is true, set difficulty = 3 (locked)
+   if LOCK is false, set difficulty = 0
+   locks are cleared by closetSweep() and newQuiz()
+   """
+   if lock:
+     difficulty = 3
+   else:
+     difficulty = 0
+
+   with lite.connect(getDBFile(userid)) as con:
+     cur = con.cursor()
+     cur.execute("update questions set difficulty = ? where question = ?", (difficulty, alpha))
 
   
-
-#1### Inititalization Stuff
-#1### Run on import
-#1##
-#1##if getattr(sys, 'frozen', False):
-#1##	dataDir = sys._MEIPASS
-#1##else:
-#1##	dataDir = os.getcwd()
-#1##
-#1### prefs.pkl will be stored in $HOME/.xerafin/
-#1### Create this if it doesn't exist
-#1##XERAFIN_DIR = os.path.join(os.path.expanduser('~'), '.xerafin')
-#1##if os.path.exists(XERAFIN_DIR):
-#1##	pass
-#1##else:
-#1##	os.mkdir(XERAFIN_DIR)
-#1##
-#1##PREFS_PATH = os.path.join(XERAFIN_DIR, "prefs.pkl")
-#1##
-#1##try:
-#1##	with open(PREFS_PATH, "rb") as f:
-#1##		prefs = pickle.load(f)
-#1##except IOError:
-#1##	prefs = {}
-#1##	prefs["studyOrderIndex"] = 0
-#1##	prefs["closet"] = 20
-#1##	prefs["newWordsAtOnce"] = 4
-#1##	prefs["reschedHrs"] = 8
-#1##	prefs["showNumSolutions"] = True
-#1##	if os.path.isfile(os.path.join(os.path.expanduser('~'), 'xerafin/xerafin.db')):
-#1##		getDBFile(userid) = os.path.join(os.path.expanduser('~'), 'xerafin/xerafin.db')
-#1##	else:
-#1##		getDBFile(userid) = None
-#1##	setPrefs()
-#1##		
-#1##
-#1##
