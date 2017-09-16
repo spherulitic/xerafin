@@ -14,6 +14,7 @@
 <script src="invaders.js"></script>
 <script src="leaderboard.js"></script>
 <script src="manageCardbox.js"></script>
+<script src="shameList.js"></script>
 <script src="subwordSloth.js"></script>
 <script src="userPrefs.js"></script>
 <script src="emojiParse.js"></script>
@@ -173,10 +174,17 @@ function loginCallback(response, responseStatus) {
       <li><a href="#" onClick="startQuiz()">Basic Quiz</a></li>
       <li><a href="#" onClick="initSloth()">Subword Sloth!</a></li>
       <li><a href="#" onClick="initInvaders()">Cardbox Invaders</a></li>
-      <li><a href="#" onClick="showCardboxStats()">Cardbox Info</a></li>
+      <li class="dropdown">
+         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Manage Cardbox<b class="caret"></b></a>
+         <ul class="dropdown-menu">
+             <li><a href="#" onClick="showCardboxStats()">Cardbox Info</a>
+             <li><a href="#" onClick="showManageCardbox()">Cardbox Database File</a></li>
+             <li><a href="#">Manage Words to Add</a></li>
+             <li><a href="#" onClick="showShameList()">List of Shame</a></li>
+         </ul>
+      </li>
       <li><a href="#" onClick="showLeaderboard()">Leaderboard</a></li>
       <li><a href="#" onClick="showAlphaStats(toAlpha($.trim(prompt('Enter a word or alphagram to display').toUpperCase())))">Alphagram Info</a></li>
-      <li><a href="#" onClick="showManageCardbox()">Manage Cardbox</a></li>
       <li><a href="#" onClick="initUserPrefs()">User Prefs</a></li>
     </ul>
     <ul class="nav navbar-nav navbar-right">

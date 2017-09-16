@@ -666,4 +666,11 @@ def checkOut (alpha, userid, lock) :
      cur = con.cursor()
      cur.execute("update questions set difficulty = ? where question = ?", (difficulty, alpha))
 
-  
+def isInCardbox(alpha, userid) :
+
+   with lite.connect(getDBFile(userid)) as con:
+     cur = con.cursor()
+     cur.execute("select count(*) from questions where question = ? and next_scheduled is not null", (alpha,))
+     c = cur.fetchone()[0]
+   return c==1
+
