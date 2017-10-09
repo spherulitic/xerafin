@@ -25,8 +25,8 @@ with xs.getMysqlCon() as con:
       command = "select name from login where userid = %s"
       con.execute(command, userid)
       name = con.fetchone()[0]
-      command = "select max(timeStamp) from chat where userid = " + str(SYSTEM_USERID) + " and message like '" + name + " has completed %'"
-      con.execute(command)
+      command = "select max(timeStamp) from chat where userid = %s and message like %s"
+      con.execute(command, (SYSTEM_USERID, name + " has completed %"))
       chatTime = con.fetchone()[0]
       command = "delete from chat where userid = %s and timeStamp = %s"
       con.execute(command, (SYSTEM_USERID, chatTime))

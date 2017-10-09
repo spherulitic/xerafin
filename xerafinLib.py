@@ -334,6 +334,47 @@ def insertIntoNextAdded(alphagrams, cur):
         pass
   dbClean(cur)
 
+def getAllNextAdded(userid):
+
+  result = [ ]
+  with lite.connect(getDBFile(userid)) as con:
+    cur = con.cursor()
+    cur.execute("select question, timeStamp from next_added order by timestamp")
+    for row in cur.fetchone():
+      result.append({"alpha": row[0], "timestamp": row[1]})
+  return result
+
+def deleteNextAdded(alphas, cur):
+ '''
+ Takes a list of alphagrams to delete from next_added
+ '''
+ placeholder = ', '.join('?'*len(alphas)) 
+ sql = "delete from next_added where question in ({})".format(placeholder)
+ cur.execute(sql, alphas)
+ return cur.rowcount
+  
+def nextAddedMoveToFront(alphas, cur):
+ ''' 
+ Takes a list of alphagrams to move to the front of the queue
+ '''
+ cur.execute("select min(timestamp) from next_added")
+ minT = cur.fetchone()[0]
+ placeholder = ', '.join('?'*len(alphas)) 
+ sql = "update next_added set timeStamp = ? where question in ({})".format(placeholder)
+ cur.execute(sql, [minT-1].extend(alphas))
+ return cur.rowcount
+
+def nextAddedMoveToBack(alphas, cur):
+ ''' 
+ Takes a list of alphagrams to move to the back of the queue
+ '''
+ cur.execute("select max(timestamp) from next_added")
+ maxT = cur.fetchone()[0]
+ placeholder = ', '.join('?'*len(alphas)) 
+ sql = "update next_added set timeStamp = ? where question in ({})".format(placeholder)
+ cur.execute(sql, [maxT+1].extend(alphas))
+ return cur.rowcount
+
 def isAlphagramValid(alpha):
   chCommand = "select count(*) from words where alphagram = %s"
   with xs.getMysqlCon() as con:
