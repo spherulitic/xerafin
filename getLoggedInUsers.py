@@ -21,7 +21,7 @@ with xs.getMysqlCon() as con:
     error["status"] = "DB connection failure"
   else:
     try:
-      command = "select name, photo, last_active from login where last_active > %s"
+      command = "select name, photo, last_active from login where last_active > %s order by name"
 #      command = "select name, photo, last_active from login"
       con.execute(command, logoffTime)
       for row in con.fetchall():

@@ -27,6 +27,7 @@ function initInvaders2() {
   dailyHighScore = 0;
   invaderStatus = 'finished';
   invadersAlphas = [ ];
+  explosions = [ ];
   nextAlphaTimer_inv = -1;
   clearAnswersTimer_inv = -1;
   gettingWord_inv = false;
@@ -73,6 +74,8 @@ function initInvaders2() {
          }
        };
   ctx = canvas.getContext('2d');
+  explosionImg = new Image();
+  explosionImg.src = "explosion_sprite.png";
   invaderBgImg = new Image();
   invaderBgImg.onload = function() { ctx.drawImage(invaderBgImg, 0, 0); 
 	  ctx.textAlign = 'center';
@@ -306,11 +309,24 @@ function animateAlphas_inv(previousTime, currentTime, lastWordTime) {
     for (var i=0;i<invadersAlphas.length;i++) {
        if (invadersAlphas[i].answers.length == 0) {
          markAsCorrect_inv(invadersAlphas[i]);
+         // the explosion image is centered in a 64x64 square
+         // so we want the center of the animation frame to be the alpha X,Y
+         var newExplosion = explosion_inv({x: invadersAlphas[i].x-32, y: invadersAlphas[i].y-60});
+         explosions.push(newExplosion);
          delete invadersAlphas[i]; } }
     invadersAlphas = invadersAlphas.filter(Boolean);
 
     // clear the screen
     ctx.drawImage(invaderBgImg, 0, 0);
+
+    // display the explosions
+      for(i=0;i<explosions.length;i++) {
+         explosions[i].render(currentTime-previousTime);
+         if (explosions[i].done)
+            delete explosions[i]
+         }
+      explosions = explosions.filter(Boolean); 
+        
   
     // display the alphagrams
        ctx.font = "20px courier";
@@ -428,3 +444,37 @@ for(var i=0;i<6;i++) {
   clearAnswersTimer_inv = setTimeout(function () { t = document.getElementById("showWordsInv");
                                                    while(t.rows[0]) t.deleteRow(0);}, 5000);
 }
+
+function explosion_inv (options) {
+
+  var that = {};
+  // ctx is the Invaders canvas
+  // The image we have is 8x8 frames, 512x512 pixels
+  // Whole animation will last ~2 seconds; 30ms per frame
+  console.log("Explosion created");
+  that.context = ctx;
+  that.frame = 0;
+  that.timeElapsed = 0;
+  that.width = 64;
+  that.height = 64;
+  that.x = options.x;
+  that.y = options.y;
+  that.numberOfFrames = 64;
+  that.done = false;
+  that.image = explosionImg;
+  that.render = function(tick) { 
+                  that.done = (that.frame >= that.numberOfFrames);
+                  if (!that.done) {
+                  that.context.drawImage( that.image, 
+                                          (that.frame%8)*64, Math.trunc(that.frame/8)*64,  // source X, Y
+                                          that.width, that.height,  // source width, height
+                                          that.x, that.y, //canvas x, y
+                                          that.width, that.height); // canvas width, height
+                  that.timeElapsed += tick;
+                  that.frame = Math.trunc(that.timeElapsed/30);
+                 }
+                 return 0;
+                 };
+  return that;
+}
+
