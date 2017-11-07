@@ -31,6 +31,7 @@ function initInvaders2() {
   nextAlphaTimer_inv = -1;
   clearAnswersTimer_inv = -1;
   gettingWord_inv = false;
+  explosion_sound = new Audio('explosion_sm.wav');
 
   // run newQuiz before everything starts to unlock stuff
 
@@ -51,6 +52,18 @@ function initInvaders2() {
   resetHookWidthsQuiz();
   var gameArea = document.getElementById("gameArea");
   $('#gameArea').empty();
+ 
+  var bgMusic = document.createElement("audio");
+  bgMusic.src = "invadersMusic.ogg";
+  bgMusic.autoplay = false;
+  bgMusic.loop = true;
+  bgMusic.controls = false;
+  bgMusic.id = "invadersMusic";
+
+  gameArea.appendChild(bgMusic);
+  // NOTE: localStorage can only store strings, not booleans!
+  if (localStorage.musicEnabled == "true") {
+      bgMusic.play(); }
 
   var canvas = document.createElement("canvas");
   canvas.id = "invadersCanvas";
@@ -63,6 +76,20 @@ function initInvaders2() {
   canvas.style = "border: 1px;";
   canvas.onclick = function (e) {
          pos = getPosition_inv(e);
+         // toggle through music+sound, sound only, all muted
+         if (e.x > 340 && e.y > 340) {
+            if (localStorage.musicEnabled == "true") {
+                localStorage.musicEnabled = "false";
+                document.getElementById("invadersMusic").pause();
+                localStorage.soundEnabled = "true";
+            } else if (localStorage.soundEnabled == "true") {
+                        localStorage.soundEnabled = "false"; 
+                   } else { localStorage.musicEnabled = "true";
+                          localStorage.soundEnabled = "true";
+                          document.getElementById("invadersMusic").play();
+                   }
+              drawSoundIcon_inv();
+            }
          for(var i=0;i<invadersAlphas.length;i++) {
             if(invadersAlphas[i].leftx<=pos.x && pos.x <= invadersAlphas[i].leftx+invadersAlphas[i].width &&
                invadersAlphas[i].y-invadersAlphas[i].height<=pos.y && pos.y <= invadersAlphas[i].y) {
@@ -90,6 +117,7 @@ function initInvaders2() {
           ctx.fillText('Click an alphagram to', 180, 240);
           ctx.fillText('mark wrong and see answers', 180, 260);
 	  ctx.fillText('Press Enter to Begin', 180, 300);
+          drawSoundIcon_inv();
           var invaderIcon = new Image();
           invaderIcon.onload = function () { ctx.drawImage(invaderIcon, 240, 50, 40, 40); }
           invaderIcon.src = "cardboxInvaders2.png";
@@ -162,6 +190,8 @@ var showWordsTable = document.createElement("table");
   gameArea.appendChild(canvas);
   gameArea.appendChild(answerBoxRow);
   gameArea.appendChild(showWordsRow);
+
+  answerBox.focus();
  
   $('#answerBox').on("keypress", function(e) {if(e.ctrlKey) {$(this).val("");
                                    } else if (e.which === 13 || e.which == 32) {
@@ -313,6 +343,8 @@ function animateAlphas_inv(previousTime, currentTime, lastWordTime) {
          // so we want the center of the animation frame to be the alpha X,Y
          var newExplosion = explosion_inv({x: invadersAlphas[i].x-32, y: invadersAlphas[i].y-60});
          explosions.push(newExplosion);
+         if (localStorage.soundEnabled == "true") 
+            explosion_sound.play();
          delete invadersAlphas[i]; } }
     invadersAlphas = invadersAlphas.filter(Boolean);
 
@@ -348,8 +380,9 @@ function animateAlphas_inv(previousTime, currentTime, lastWordTime) {
        ctx.font = "14px courier";
        ctx.textAlign = "left";
        ctx.fillText("Score: " + currentScore, 1, INVH-2);
-       ctx.fillText("High: " + personalHighScore, 111, INVH-2);
-       ctx.fillText("Daily High: " + dailyHighScore, 211, INVH-2);
+       ctx.fillText("High: " + personalHighScore, 101, INVH-2);
+       ctx.fillText("Daily High: " + dailyHighScore, 201, INVH-2);
+       drawSoundIcon_inv();
     // check for collisions, update positions
     for (i=invadersAlphas.length-1;i>=0;i--) {
        var clear = true;
@@ -478,3 +511,19 @@ function explosion_inv (options) {
   return that;
 }
 
+function drawSoundIcon_inv () {
+
+          var soundIcon;
+          if (localStorage.musicEnabled == "true")
+             soundIcon = "🎵";
+          else if (localStorage.soundEnabled == "true")
+             soundIcon = "🔈";
+          else soundIcon = "🔇";
+     
+          ctx.beginPath();
+          ctx.rect(INVW-30, INVH-25, 30, 25);
+          ctx.fillStyle = "black";
+          ctx.fill();
+          ctx.fillStyle = "white";
+          ctx.fillText(soundIcon, INVW-20, INVH-2); 
+}

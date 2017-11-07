@@ -73,6 +73,8 @@ function onResize(){
   if (!localStorage.gAlphaSortInput) {localStorage.gAlphaSortInput = 0;}
   if (!localStorage.gAlphaDisplay) {localStorage.gAlphaDisplay = 0;}
   if (!localStorage.gSlothPref) {localStorage.gSlothPref = 0;}
+  if (!localStorage.soundEnabled) {localStorage.soundEnabled = true;}
+  if (!localStorage.musicEnabled) {localStorage.musicEnabled = true;}
  
   function statusChangeCallback(response) {
      console.log("Login Status is " + response.status);
