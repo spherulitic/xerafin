@@ -74,6 +74,10 @@ function createCardboxStatsTable() {
   periodOption3.text = "Next 7 Days";
   periodOption3.value = 3;
   periodList.add(periodOption3);
+  var periodOption4 = document.createElement("option");
+  periodOption4.text = "Overdue";
+  periodOption4.value = 4;
+  periodList.add(periodOption4);
 
   /** Finds previous list box value and creates default if no value present **/
  
@@ -81,6 +85,7 @@ function createCardboxStatsTable() {
     case "dueNow": periodList.value=1;break;
     case "dueToday": periodList.value=2;break;
     case "dueThisWeek": periodList.value=3;break;
+    case "overdue": periodList.value=4;break;
     default: cardboxStatsPanel="dueNow";periodList.value=1;break;
   }
 
@@ -90,6 +95,7 @@ function createCardboxStatsTable() {
       case '1': cardboxStatsPanel= "dueNow";break;
       case '2': cardboxStatsPanel= "dueToday";break;
       case '3': cardboxStatsPanel= "dueThisWeek";break;
+      case '4': cardboxStatsPanel= "overdue";break;
       default: cardboxStatsPanel= "dueNow";break;
     }
     showCardboxStats();

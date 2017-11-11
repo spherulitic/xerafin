@@ -16,9 +16,10 @@ DAY = 3600 * 24 # length of a day in seconds
 try:
   result["score"] = xl.getCardboxScore(userid)
   dueNow = xl.getCurrentDue(userid)
+  overdue = xl.getDueInRange(userid, 0, now)
   dueToday = xl.getDueInRange(userid, now, now+DAY)
   dueThisWeek = xl.getDueInRange(userid, now, now+(DAY*7))
-  dueByCardbox = {"dueNow": dueNow, "dueToday": dueToday, "dueThisWeek": dueThisWeek}
+  dueByCardbox = {"dueNow": dueNow, "overdue": overdue, "dueToday": dueToday, "dueThisWeek": dueThisWeek}
   totalCards = xl.getTotalByCardbox(userid)
   result["totalDue"] = sum(dueNow.values())
   result["dueByCardbox"] = dueByCardbox

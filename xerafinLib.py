@@ -175,7 +175,11 @@ def getCurrentDue (userid):
   try:
     with lite.connect(getDBFile(userid)) as con :
       cur = con.cursor()
-      cur.execute("select cardbox, count(*) from questions where next_scheduled < %d and cardbox is not null group by cardbox" % now)
+  # What's due excludes difficulty 4 so let's make that accurate
+      futureSweep(cur)
+      cur.execute("select * from cleared_until")
+      clearedUntil = max(cur.fetchone()[0], now)
+      cur.execute("select cardbox, count(*) from questions where next_scheduled < %d and cardbox is not null and difficulty != 4 group by cardbox" % clearedUntil)
       for row in cur.fetchall():
         result[row[0]] = row[1]
       return result			
