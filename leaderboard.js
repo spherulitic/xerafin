@@ -1,5 +1,6 @@
 function showLeaderboardHeader () {
 
+  localStorage.middleDefault = 2;
   $('#middleArea').html("");
   document.getElementById('middleArea').style.display = 'inherit';
 
@@ -134,6 +135,7 @@ function displayLeaderboardStats (response, responseStatus) {
 }
 
 function hideLeaderboard() {
+  localStorage.middleDefault = 0;
   document.getElementById('middleArea').style.display = 'none';
   $('#middleArea').html("");
 }

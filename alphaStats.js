@@ -1,5 +1,6 @@
 function showAlphaStats (alpha) {
 
+  localStorage.middleDefault = 3;
   d = { userid: userid, alpha: alpha };
   $.ajax({type: "POST",
           url: "getAuxInfo.py",
@@ -170,6 +171,7 @@ function displayAlphaStats (response, responseStatus) {
 }
 
 function hideAlphaStats() {
+  localStorage.middleDefault = 0;
   document.getElementById('middleArea').style.display = 'none';
   $('#middleArea').html("");
 }

@@ -1,5 +1,6 @@
 function showCardboxStats () {
 
+  localStorage.middleDefault = 1;
   d = { userid: userid };
   $.ajax({type: "POST",
           url: "getCardboxStats.py",
@@ -169,6 +170,7 @@ function displayCardboxStats (response, responseStatus) {
 }
 
 function hideCardboxStats() {
+  localStorage.middleDefault = 0;
   document.getElementById('middleArea').style.display = 'none';
   $('#middleArea').html("");
 }

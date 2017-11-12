@@ -75,6 +75,7 @@ function onResize(){
   if (!localStorage.gSlothPref) {localStorage.gSlothPref = 0;}
   if (!localStorage.soundEnabled) {localStorage.soundEnabled = true;}
   if (!localStorage.musicEnabled) {localStorage.musicEnabled = true;}
+  if (!localStorage.middleDefault) {localStorage.middleDefault = 0;}
  
   function statusChangeCallback(response) {
      console.log("Login Status is " + response.status);
@@ -153,6 +154,18 @@ function onResize(){
 function loginCallback(response, responseStatus) {
 	console.log("Login script status is " + response.status);
         startQuiz();
+        switch(localStorage.middleDefault) {
+           case "1":
+              showCardboxStats();
+              break;
+           case "2":
+              showLeaderboard();
+              break;
+           case "3":
+              showAlphaStatus("");
+              break;
+           default: ;
+         }                  
         startChat();
      // adding a menu option for Chris only
      if (userid == "10157462952395078" || userid == "825060375517") {
