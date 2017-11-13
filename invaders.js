@@ -102,7 +102,7 @@ function initInvaders2() {
        };
   ctx = canvas.getContext('2d');
   explosionImg = new Image();
-  explosionImg.src = "explosion_sprite.png";
+  explosionImg.src = "images/explosion_sprite.png";
   invaderBgImg = new Image();
   invaderBgImg.onload = function() { ctx.drawImage(invaderBgImg, 0, 0); 
 	  ctx.textAlign = 'center';
@@ -120,9 +120,9 @@ function initInvaders2() {
           drawSoundIcon_inv();
           var invaderIcon = new Image();
           invaderIcon.onload = function () { ctx.drawImage(invaderIcon, 240, 50, 40, 40); }
-          invaderIcon.src = "cardboxInvaders2.png";
+          invaderIcon.src = "images/cardboxInvaders2.png";
 };
-  invaderBgImg.src = "nightsky.png";
+  invaderBgImg.src = "images/nightsky.png";
 
   
 
@@ -246,7 +246,7 @@ function submitInvadersAnswer() {
       if (found) {
        $('#answerBox').css('background', 'lightgreen'); 
       } else { $('#answerBox').css('background', 'yellow'); }
-      setTimeout(function() { $('#answerBox').css('background', 'url("b34.png") repeat');}, 200);
+      setTimeout(function() { $('#answerBox').css('background', 'url("images/b34.png") repeat');}, 200);
     }
 }
     
@@ -441,15 +441,17 @@ function endGame_inv (restart, pause) {
          success: function(response, responseStatus) {
                       result = response[0];
                       personalHighScore = result.personal;
-                      dailyHighScore = result.daily.score; },
+                      dailyHighScore = result.daily.score; 
+
+                      if (currentScore >= dailyHighScore && !pause) {
+                            submitChat(username + " has set a new high score of " + currentScore + " for today in Cardbox Invaders!", true, 2);
+                      }
+                  },
 	 error: function(jqXHR, textStatus, errorThrown) {
 	      console.log("Error, status = " + textStatus + " error: " + errorThrown); 
               }} );
    }
 
-   if (currentScore >= dailyHighScore && !pause) {
-     submitChat(username + " has set a new high score of " + currentScore + " for today in Cardbox Invaders!", true, 2);
-   }
          
    if (restart) 
      initInvaders();

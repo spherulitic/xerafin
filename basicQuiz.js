@@ -395,7 +395,7 @@ function submitAnswer() {
                     document.getElementById("wrongAnswers").innerHTML += answer + " ";
                 }
                 setTimeout(function() {
-                    $('#answerBox').css('background', 'url("b34.png") repeat');
+                    $('#answerBox').css('background', 'url("images/b34.png") repeat');
                 }, 200);
             }
             document.getElementById("answerBox").value = "";
