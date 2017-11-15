@@ -846,7 +846,18 @@ function getTableLineData(word, auxWordData) {
       }
       word = word.replace(blankLetter, "<span style='color: red'>" + blankLetter + "</span>");
    }
-   return [auxWordData[0], (auxWordData[3][0] ? dot : ""), word, (auxWordData[3][1] ? dot : ""), auxWordData[1], auxWordData[2]];
+
+   // make definitions clickable
+   var definition = " " + auxWordData[2]; // hack so my regexp works
+   var inlineWordsExp = new RegExp('[A-Z]{4,}', 'g');
+   var inlineWords = auxWordData[2].match(inlineWordsExp);
+   if (inlineWords) 
+   for (var i=0;i<inlineWords.length;i++) {
+       var r = new RegExp('([^A-Z])(' + inlineWords[i] + ')([^A-Z])');
+       definition = definition.replace(r, '$1<span onclick="showAlphaStats(\''+toAlpha(inlineWords[i])+'\')">$2</span>$3');
+   }
+       
+   return [auxWordData[0], (auxWordData[3][0] ? dot : ""), word, (auxWordData[3][1] ? dot : ""), auxWordData[1], definition];
 }
 function startScrollTimer() {
 // scrollTimer is a global

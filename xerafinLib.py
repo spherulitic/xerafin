@@ -44,7 +44,7 @@ def getDBCur(userid):
   
 def getAllPrefs(userid):
   with xs.getMysqlCon() as con:
-    command = "select studyOrderIndex, closet, newWordsAtOnce, reschedHrs, showNumSolutions, cb0max, showHints from user_prefs where userid = %s"
+    command = "select studyOrderIndex, closet, newWordsAtOnce, reschedHrs, showNumSolutions, cb0max, showHints, schedVersion from user_prefs where userid = %s"
     con.execute(command, userid)
     row = con.fetchone()
     result = {}
@@ -55,6 +55,7 @@ def getAllPrefs(userid):
     result["showNumSolutions"] = row[4]
     result["cb0max"] = row[5]
     result["showHints"] = row[6]
+    result["schedVersion"] = row[7]
   return result
 
 def getPrefs (prefName, userid):
@@ -231,7 +232,7 @@ def getTotalByCardbox(userid):
 #      return "non-sql error " + str(e)
       return {0: -2}
   
-def getNext (newCardbox = 0) :
+def getNext (newCardbox = 0, schedVersion = 0) :
 
   '''
   If you are putting a word in cardbox newCardbox now,
@@ -249,13 +250,17 @@ def getNext (newCardbox = 0) :
 # List of lists 
 # cardbox x is rescheduled for a time [x,y] 
 # between x and x+y days in the future
-  r = [ [.5,.8], [3,2], [5,4], [11,6], [16,10], [27,14], [50,20], [80,30], [130,40], [300,60], [430,100] ]
+  if schedVersion == 1:
+    r = [ [.2, .3], [1, 1], [3, 3], [7, 7], [14, 14], [30,30], [60,45], [120, 90], [240, 120], [430, 100], [430,100] ]
+  else:
+    r = [ [.5,.8], [3,2], [5,4], [11,6], [16,10], [27,14], [50,20], [80,30], [130,40], [300,60], [430,100] ]
 	
   return int( now + (r[newCardbox][0]*day) + (r[newCardbox][1]*offset))
 
 def correct (alpha, userid, nextCardbox=None) :
 
   now = int(time.time())
+  schedVersion = getPrefs("schedVersion", userid)
   with lite.connect(getDBFile(userid)) as con :
 
     cur = con.cursor()
@@ -263,13 +268,24 @@ def correct (alpha, userid, nextCardbox=None) :
       cur.execute("select cardbox from questions where question='{0}'".format(alpha))
       currentCardbox = cur.fetchone()[0]
       nextCardbox = currentCardbox + 1
-    cur.execute("update questions set cardbox = {0}, next_scheduled = {1}, correct=correct+1, streak=streak+1, last_correct = {2}, difficulty=4 where question = '{3}'".format(nextCardbox, getNext(nextCardbox), now, alpha))
+    cur.execute("update questions set cardbox = {0}, next_scheduled = {1}, correct=correct+1, streak=streak+1, last_correct = {2}, difficulty=4 where question = '{3}'".format(nextCardbox, getNext(nextCardbox, schedVersion), now, alpha))
 		
 def wrong (alpha, userid) :
 
+  schedVersion = getPrefs("schedVersion", userid)
   with lite.connect(getDBFile(userid)) as con:
     cur = con.cursor()
-    cur.execute("update questions set cardbox = 0, next_scheduled = {0}, incorrect = incorrect + 1, streak = 0, difficulty=4 where question = '{1}'".format(getNext(0),alpha))
+    if schedVersion == 1:
+      cur.execute("select cardbox from questions where question='{0}'".format(alpha))
+      currentCardbox = cur.fetchone()[0]
+    else: 
+      currentCardbox = -1
+    stmt = "update questions set cardbox = ?, next_scheduled = ?, incorrect = incorrect+1, streak=0, difficulty=4 where question = ?"
+    if currentCardbox < 8:
+      cur.execute(stmt, (0, getNext(0, schedVersion), alpha))
+    else: 
+      cur.execute(stmt, (2, getNext(2, schedVersion), alpha))
+      
 
 def skipWord (alpha, userid) :
   SKIP_DELAY = 3600*12 # twelve hour delay

@@ -138,7 +138,26 @@ function showUserPrefs(response, responseStatus) {
       i8.onchange = function () {localStorage.gSlothPref = i8.value;}
   p8.appendChild(s81);
   p8.appendChild(i8);
- 
+
+  var p9 = document.createElement("p");
+  var s91= document.createElement("span");
+  s91.innerHTML = "Schedule words using the ";
+  var i9 = document.createElement("select");
+  var i9Options = ["Original", "Modified"]
+  i9.id = "schedVersion";
+  for (var x=0;x<i9Options.length;x++) {
+    var op = document.createElement("option");
+    op.text = i9Options[x];
+    op.value = x;
+    i9.add(op);
+  }
+  i9.value = prefs.schedVersion;
+  var s92= document.createElement("span");
+  s92.innerHTML = " scheduling method.";
+  p9.appendChild(s91);
+  p9.appendChild(i9);
+  p9.appendChild(s92);
+  
   i5 = document.createElement("button");
   i5.innerHTML = "Save";
   i5.setAttribute("onclick", "setPrefs()");
@@ -153,19 +172,23 @@ function showUserPrefs(response, responseStatus) {
   document.getElementById('gameArea').appendChild(p7);
   document.getElementById('gameArea').appendChild(p8);
   document.getElementById('gameArea').appendChild(document.createElement("br"));
+  document.getElementById('gameArea').appendChild(p9);
+  document.getElementById('gameArea').appendChild(document.createElement("br"));
   document.getElementById('gameArea').appendChild(i5);
   }
 
 function setPrefs() {
 var d = {user: userid, newWordsAtOnce: $('#newWordsAtOnceInput').val(),
          reschedHrs: $('#reschedHrsInput').val(),
-         cb0max: $('#cb0maxInput').val(), closet: $('#closetInput').val()};
+         cb0max: $('#cb0maxInput').val(), closet: $('#closetInput').val(),
+         schedVersion: $('#schedVersion').val()};
 console.log(d);
  $.ajax({type: "POST", 
          url: "setUserPrefs.py",
          data: JSON.stringify(d),
          success: function(response) {
-            if (response.status == "success") {initUserPrefs();}
+            if (response.status == "success") {alert("User Prefs Saved.");
+                                               initUserPrefs();}
             else alert("Error setting user prefs: " + response.status);},
          error: function(jqXHR, textStatus, errorThrown) {
            console.log("Error setting user prefs. Status: " + textStatus + "  Error: " + errorThrown); 

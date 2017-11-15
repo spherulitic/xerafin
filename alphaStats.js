@@ -71,7 +71,7 @@ function getCardboxNumberDropdown(alpha) {
 
   /** Cardbox Number List Box Initialisation **/
   var periodList = document.createElement('select');
-  for(var x=0;x<15;x++) {
+  for(var x=0;x<20;x++) {
     cbOption = document.createElement("option");
     cbOption.text = String(x);
     cbOption.value = x;

@@ -7,6 +7,13 @@ params = json.load(sys.stdin)
 userid = params["user"]
 result = {"status": "success" }
 try:
+  schedVersion = int(params["schedVersion"])
+  assert schedVersion == 0 or schedVersion == 1
+  xl.setPrefs2("schedVersion", userid, schedVersion)
+except:
+  pass
+
+try:
   newWordsAtOnce = int(params["newWordsAtOnce"])
   reschedHrs = int(params["reschedHrs"])
   closet = int(params["closet"])

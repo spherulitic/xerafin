@@ -340,7 +340,7 @@ function submitSlothAnswer () {
       else {
       $('#answerBox').css('background', 'LightGreen');
       e.style.visibility = 'visible';
-      e.parentNode.style.background = "url('b34.png') repeat";
+      e.parentNode.style.background = "url('images/b34.png') repeat";
       slothScore += Math.pow(answer.length, 2);
       /**NEW**/
        document.getElementById('answerField').scrollTop = 0;
@@ -365,7 +365,7 @@ function submitSlothAnswer () {
        else
           $('#answerBox').css('background', 'Khaki');
     }
-    setTimeout(function() { $('#answerBox').css('background', 'url("b34.png") repeat');}, 300);
+    setTimeout(function() { $('#answerBox').css('background', 'url("images/b34.png") repeat');}, 300);
     $('#answerBox').focus();
 }
 
