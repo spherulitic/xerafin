@@ -198,3 +198,8 @@ box-shadow: -2px -2px 3px #444;
    margin: 0 .05em 0 .1em;
    vertical-align: middle;
 }
+
+/* fonts */
+/* used in Phantasy Cardbox */
+@import url('https://fonts.googleapis.com/css?family=Alegreya+SC');
+
