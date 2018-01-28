@@ -77,7 +77,7 @@ function initInvaders2() {
   canvas.onclick = function (e) {
          pos = getPosition_inv(e);
          // toggle through music+sound, sound only, all muted
-         if (e.x > 340 && e.y > 340) {
+         if (e.x > 350 && e.y > 350) {
             if (localStorage.musicEnabled == "true") {
                 localStorage.musicEnabled = "false";
                 document.getElementById("invadersMusic").pause();

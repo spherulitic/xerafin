@@ -32,7 +32,7 @@ with xs.getMysqlCon() as con:
       command = "select count(*) from user_prefs where userid = %s"
       con.execute(command, userid)
       if con.fetchone()[0] == 0:
-         command = "insert into user_prefs (userid, studyOrderIndex, closet, newWordsAtOnce, reschedHrs, showNumSolutions, cb0max, schedVersion) values (%s, 0, 20, 4, 24, 'Y', 200, 0)"
+         command = "insert into user_prefs (userid, studyOrderIndex, closet, newWordsAtOnce, reschedHrs, showNumSolutions, cb0max, schedVersion, secLevel) values (%s, 0, 20, 4, 24, 'Y', 200, 0, 1)"
          con.execute(command, userid)
 
     except mysql.Error, e: 

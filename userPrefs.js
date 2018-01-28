@@ -143,7 +143,7 @@ function showUserPrefs(response, responseStatus) {
   var s91= document.createElement("span");
   s91.innerHTML = "Schedule words using the ";
   var i9 = document.createElement("select");
-  var i9Options = ["Original", "Modified"]
+  var i9Options = ["Original", "Modified", "Forgiving"]
   i9.id = "schedVersion";
   for (var x=0;x<i9Options.length;x++) {
     var op = document.createElement("option");

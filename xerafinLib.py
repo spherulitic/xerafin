@@ -275,7 +275,7 @@ def wrong (alpha, userid) :
   schedVersion = getPrefs("schedVersion", userid)
   with lite.connect(getDBFile(userid)) as con:
     cur = con.cursor()
-    if schedVersion == 1:
+    if schedVersion == 1 or schedVersion == 2:
       cur.execute("select cardbox from questions where question='{0}'".format(alpha))
       currentCardbox = cur.fetchone()[0]
     else: 
@@ -404,6 +404,18 @@ def isAlphagramValid(alpha):
     else:
       return False
   return False
+
+def ghostbuster(userid):
+   with lite.connect(getDBFile(userid)) as con:
+     cur = con.cursor()
+     cur.execute("select question from questions")
+     rows = cur.fetchall()
+     for row in rows:
+       if isAlphagramValid(row[0]):
+         pass
+       else:
+         cur.execute("delete from questions where question = ?", (row[0],))
+
 
 def dbClean (cur) :
 
