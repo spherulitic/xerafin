@@ -11,8 +11,9 @@ try:
 except:
   me = "0"
 
-result = {"today": [ ], "yesterday": [ ], "lastWeek": [ ] }
+result = {"today": [ ], "yesterday": [ ], "lastWeek": [ ]}
 result["myRank"] = { "today": 0, "yesterday": 0, "lastWeek": 0 }
+result["totals"] = { "users": {"today": 0, "yesterday": 0, "lastWeek": 0}, "solved": {"today": 0, "yesterday": 0, "lastWeek": 0}}
 error = {"status": "success"}
 currScores = { }
 todayScore = { }
@@ -50,7 +51,15 @@ try:
         con.execute(command, myAnswered)
         row = con.fetchone()
         result["myRank"]["today"] = row[0]+1
-
+#      I have no idea why this didn't work
+#      command = "select sum(questionsAnswered), count(*) from leaderboard where dateStamp = curdate()"
+      command = "select count(*) from leaderboard where dateStamp = curdate()"
+      con.execute(command)
+      result["totals"]["users"]["today"] = con.fetchone()[0]
+      command = "select questionsAnswered from leaderboard where dateStamp = curdate()"
+      con.execute(command)
+      result["totals"]["solved"]["today"] = sum([x[0] for x in con.fetchall()])
+      
 ####
 #### YESTERDAY
 ####
@@ -72,6 +81,14 @@ try:
         command = "select count(*) from leaderboard join login using (userid) where dateStamp = curdate() - interval 1 day and questionsAnswered > %s"
         con.execute(command, myAnswered)
         result["myRank"]["yesterday"] = con.fetchone()[0]+1
+#      I have no idea why this didn't work
+#      command = "select sum(questionsAnswered), count(*) from leaderboard where dateStamp = curdate() - interval 1 day"
+      command = "select count(*) from leaderboard where dateStamp = curdate() - interval 1 day"
+      con.execute(command)
+      result["totals"]["users"]["yesterday"] = con.fetchone()[0]
+      command = "select questionsAnswered from leaderboard where dateStamp = curdate() - interval 1 day"
+      con.execute(command)
+      result["totals"]["solved"]["yesterday"] = sum([x[0] for x in con.fetchall()])
 
 ####
 #### LAST WEEK
@@ -94,6 +111,14 @@ try:
         command = "select userid from leaderboard where dateStamp >= curdate() - interval 7 day group by userid having sum(questionsAnswered) > %s"
         con.execute(command, myAnswered)
         result["myRank"]["lastWeek"] = len(con.fetchall())+1
+#      I have no idea why this didn't work
+#      command = "select sum(questionsAnswered), count(*) from leaderboard where dateStamp = curdate()"
+      command = "select count(*) from leaderboard where dateStamp >= curdate() - interval 7 day"
+      con.execute(command)
+      result["totals"]["users"]["lastWeek"] = con.fetchone()[0]
+      command = "select questionsAnswered from leaderboard where dateStamp >= curdate() - interval 7 day"
+      con.execute(command)
+      result["totals"]["solved"]["lastWeek"] = sum([x[0] for x in con.fetchall()])
 
 except Exception as ex: 
   template = "An exception of type {0} occured. Arguments:\n{1!r}"
