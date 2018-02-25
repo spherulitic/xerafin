@@ -6,7 +6,20 @@ function URLExists(url) {
 }
 
 function showManageCardbox() {
-  var upForm = "<h3>Upload Custom Word List</h3>";
+	
+  if (!document.getElementById("pan_1_f")) {	
+		panelData = {	
+					"contentClass" : "panelContentDefault",
+					"title": "Cardbox File Management",
+					"minimizeObject": "content_pan_1_f",
+					"variant": "f",
+					"closeButton": false,
+					"refreshButton" : false,	
+					"style" : 'Light',
+					"tooltip": "<p>Something helpful will go here.</p>"
+					};
+		generatePanel(1,panelData,"leftArea");
+		upForm = "<h3>Upload Custom Word List</h3>";
   upForm += "<p>Upload a .txt file with one alphagram or word per line.</p>";
   upForm += "<p>These words will be added to your cardbox ahead of the default study list.</p>";
   upForm += "<input type=file id='wlistFile' accept='.txt'>";
@@ -19,9 +32,9 @@ function showManageCardbox() {
   if (URLExists('cardboxes/' + userid + '.db')) {
     upForm += "<br><br><a href='cardboxes/" + userid + ".db'>Download Cardbox Here</a> <br> (Right Click and Save As...)";
         }
-  $( "#gameArea" ).html(upForm);
-
+  $( "#content_pan_1_f" ).html(upForm);
   }
+}
 
 function uploadCardbox() {
   var fileList = document.getElementById('cboxFile').files;

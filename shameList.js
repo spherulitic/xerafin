@@ -1,22 +1,28 @@
 
 function showShameList() {
-
-  $("#gameArea").html("");
+	if (!document.getElementById("pan_1_e")) {	
+		panelData = {	
+					"contentClass" : "panelContentDefault",
+					"title": "List of Shame",
+					"minimizeObject": "content_pan_1_e",
+					"variant": "e",
+					"closeButton": false,
+					"refreshButton" : false,	
+					"style" : 'Light',
+					"tooltip": "<p>Something helpful will go here.</p>"
+					};
+		generatePanel(1,panelData,"leftArea");
+  
   var textArea = document.createElement("textarea");
   textArea.cols = 40;
   textArea.rows = 10;
   textArea.id = "shameList";
   textArea.style.textTransform = "uppercase";
-  
-  var x = document.createElement("h3");
-  x.innerHTML = "List of Shame";
-  document.getElementById("gameArea").appendChild(x);
-
   x = document.createElement("div");
   x.style.textAlign = "left";
   x.innerHTML = "Enter a list of alphagrams or words.<br>Each of these will be reset to cardbox 0 or queued to be added to your cardbox.";
-  document.getElementById("gameArea").appendChild(x);
-  document.getElementById("gameArea").appendChild(textArea);
+  document.getElementById("content_pan_1_e").appendChild(x);
+  document.getElementById("content_pan_1_e").appendChild(textArea);
   x = document.createElement("div");
   x.style.textAlign = "center";
   var y = document.createElement("button");
@@ -24,8 +30,9 @@ function showShameList() {
   y.id = "shameButton";
 
   x.appendChild(y);
-  document.getElementById("gameArea").appendChild(x);
+  document.getElementById("content_pan_1_e").appendChild(x);
   $('#shameButton').click(function() { submitShameList($("#shameList").val()); });
+	}
   }
 
 function submitShameList(text) {

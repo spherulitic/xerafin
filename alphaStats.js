@@ -1,6 +1,4 @@
 function showAlphaStats (alpha) {
-
-  localStorage.middleDefault = 3;
   d = { userid: userid, alpha: alpha };
   $.ajax({type: "POST",
           url: "getAuxInfo.py",
@@ -13,58 +11,29 @@ function showAlphaStats (alpha) {
 }
 
 function createAlphaStatsTable() {
-
-  $('#middleArea').html("");
-  document.getElementById('middleArea').style.display = 'inherit';
-  
-  /** Element Initialisation **/
-  var lbHeader = document.createElement("div");
-  var button1 = document.createElement('button');
-  var button2 = document.createElement('button');
-  var headerText1 = document.createElement('div');
-  var cardboxTable = document.createElement("table");
-  var headerCol = document.createElement('thead');
-  var headerRow1 = document.createElement('tr');
-  var headerCell1 = document.createElement('th');
+	if (!document.getElementById("pan_5")) {
+		panelData = {	"contentClass" : "panelContentDefault",
+						"title": "Alphagram Info",
+						"tooltip": "This Works!"
+				};
+		generatePanel(5,panelData,"middleArea", showAlphaStats, hideAlphaStats);
+		var cardboxTable = document.createElement("table");
+		var headerCol = document.createElement('thead');
+		var headerRow1 = document.createElement('tr');
+		var headerCell1 = document.createElement('th');
  
-  /** Initial Styling **/
-  lbHeader.className += ' lbHeader';
-  headerText1.className+= ' tableHeaderDark';
-  button1.className += ' tableButtonDark';
-  button2.className += ' tableButtonDark';
-  button1.style.cssFloat = 'right';
-  button2.style.cssFloat = 'left';
-  cardboxTable.className += " lbTable";
-  cardboxTable.style.width = "80%";
-  
-   
-  /** IDs **/
-  lbHeader.id = "lbHeader";
-  cardboxTable.id = "alphaTable";
-
-  /** Hide / Refresh Buttons **/
-  button2.onclick = function() {showAlphaStats(document.getElementById("currentAlpha").value);};
-  button1.onclick = hideAlphaStats;  
-  button1.innerHTML = '✘';
-  button2.innerHTML = '↻';
-
-  /** Title Div **/
-  
-  headerText1.innerHTML = 'Alphagram Info';
-
-  /** Components of Area Added **/
-  document.getElementById('middleArea').appendChild(lbHeader);
-  lbHeader.appendChild(button1);
-  lbHeader.appendChild(button2);
-  lbHeader.appendChild(headerText1); 
-  document.getElementById('middleArea').appendChild(cardboxTable);
- 
+		/** Initial Styling **/
+		cardboxTable.className += " lbTable";
+		cardboxTable.style.width = "80%"; 
+		cardboxTable.id = "alphaTable";
+		document.getElementById('content_pan_5').appendChild(cardboxTable); 
   /** Unorganised **/
  
   var tableBody = document.createElement('tbody');
   tableBody.id = 'alphaTableBody';
   cardboxTable.appendChild(tableBody);
-
+	}
+	document.getElementById('alphaTableBody').innerHTML="";
 }
 
 function getCardboxNumberDropdown(alpha) {
@@ -169,11 +138,8 @@ function displayAlphaStats (response, responseStatus) {
         row = document.createElement("tr");
         document.getElementById('alphaTableBody').appendChild(row);
 }
-
 function hideAlphaStats() {
-  localStorage.middleDefault = 0;
-  document.getElementById('middleArea').style.display = 'none';
-  $('#middleArea').html("");
+  $('#pan_5').remove();
 }
 
 function addToCardboxFromStats(word) {

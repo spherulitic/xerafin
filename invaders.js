@@ -5,7 +5,12 @@ function initInvaders() {
         type: "POST",
         data: JSON.stringify(d),
         url: "newQuiz.py",
-        success: initInvaders2,
+        success: function(response,responseStatus){
+			if (typeof $('#cardboxInfoQToday')!=='undefined'){$('#cardboxInfoQToday').html(response.qAnswered);}
+			if (typeof $('#cardboxInfoScore')!=='undefined'){$('#cardboxInfoScore').html(response.score);}
+			var movement = Number(response.score)-Number(response.startScore);
+			if (typeof $('#cardboxInfoDiff')!=='undefined'){$('#cardboxInfoDiff').html((movement > 0 ? "+" : "")+movement);}
+			initInvaders2()},
         error: function(jqXHR, textStatus, errorThrown) {
             console.log("Error, status = " + textStatus + " error: " + errorThrown);
             initInvaders2();
@@ -15,28 +20,24 @@ function initInvaders() {
 
 
 function initInvaders2() {
-
-  console.log("Starting Invaders");
-  COLOR_LIST = [ "black", "azure", "mediumorchid", "palegreen", "yellowgreen", "khaki", "salmon", "hotpink", "crimson", "magenta", "orange", "peachpuff", "mistyrose", "floralwhite" ] // maximum number of anagrams is 13
-  ALPHA_HEIGHT = 17;
-  LETTER_WIDTH = 13;
-  FALL_SPEED = 50.0; // ms per pixel
-  WORD_FREQ = 8000; // new word freq in ms
-  currentScore = 0;
-  personalHighScore = 0;
-  dailyHighScore = 0;
-  invaderStatus = 'finished';
-  invadersAlphas = [ ];
-  explosions = [ ];
-  nextAlphaTimer_inv = -1;
-  clearAnswersTimer_inv = -1;
-  gettingWord_inv = false;
-  explosion_sound = new Audio('explosion_sm.wav');
-
-  // run newQuiz before everything starts to unlock stuff
-
-  var d = { userid: userid };
-  $.ajax({type: "POST",
+	console.log("Starting Invaders");
+	COLOR_LIST = [ "black", "azure", "mediumorchid", "palegreen", "yellowgreen", "khaki", "salmon", "hotpink", "crimson", "magenta", "orange", "peachpuff", "mistyrose", "floralwhite" ] // maximum number of anagrams is 13
+	ALPHA_HEIGHT = 17;
+	LETTER_WIDTH = 13;
+	FALL_SPEED = 50.0; // ms per pixel
+	WORD_FREQ = 8000; // new word freq in ms
+	currentScore = 0;
+	personalHighScore = 0;
+	dailyHighScore = 0;
+	invaderStatus = 'finished';
+	invadersAlphas = [ ];
+	explosions = [ ];
+	nextAlphaTimer_inv = -1;
+	clearAnswersTimer_inv = -1;
+	gettingWord_inv = false;
+// run newQuiz before everything starts to unlock stuff
+	var d = { userid: userid };
+	$.ajax({type: "POST",
          data: JSON.stringify(d),
          url: "getInvaderHighScores.py",
          success: function(response, responseStatus) {
@@ -46,83 +47,94 @@ function initInvaders2() {
 	 error: function(jqXHR, textStatus, errorThrown) {
 	      console.log("Error, status = " + textStatus + " error: " + errorThrown); 
               }} );
-
-  // in case a quiz was underway
-  stopScrollTimer();
-  resetHookWidthsQuiz();
-  var gameArea = document.getElementById("gameArea");
-  $('#gameArea').empty();
- 
-  var bgMusic = document.createElement("audio");
-  bgMusic.src = "invadersMusic.ogg";
-  bgMusic.autoplay = false;
-  bgMusic.loop = true;
-  bgMusic.controls = false;
-  bgMusic.id = "invadersMusic";
-
-  gameArea.appendChild(bgMusic);
-  // NOTE: localStorage can only store strings, not booleans!
-  if (localStorage.musicEnabled == "true") {
-      bgMusic.play(); }
-
-  var canvas = document.createElement("canvas");
-  canvas.id = "invadersCanvas";
-//  canvas.width = $(window).width()/3.7;
-//  canvas.height = $(window).height()/2;
-  INVW = 360;
-  INVH = 360;
-  canvas.width = INVW;
-  canvas.height = INVH;
-  canvas.style = "border: 1px;";
-  canvas.onclick = function (e) {
-         pos = getPosition_inv(e);
-         // toggle through music+sound, sound only, all muted
-         if (e.x > 350 && e.y > 350) {
-            if (localStorage.musicEnabled == "true") {
-                localStorage.musicEnabled = "false";
-                document.getElementById("invadersMusic").pause();
-                localStorage.soundEnabled = "true";
-            } else if (localStorage.soundEnabled == "true") {
-                        localStorage.soundEnabled = "false"; 
-                   } else { localStorage.musicEnabled = "true";
-                          localStorage.soundEnabled = "true";
-                          document.getElementById("invadersMusic").play();
-                   }
-              drawSoundIcon_inv();
-            }
-         for(var i=0;i<invadersAlphas.length;i++) {
-            if(invadersAlphas[i].leftx<=pos.x && pos.x <= invadersAlphas[i].leftx+invadersAlphas[i].width &&
-               invadersAlphas[i].y-invadersAlphas[i].height<=pos.y && pos.y <= invadersAlphas[i].y) {
-                  if (invadersAlphas[i].active) 
-                     invadersAlphas[i].timeout = 0; // clicking marks it wrong
-                  displayWord_inv(invadersAlphas[i], invadersAlphas[i].words);
-                  break;
+	// in case a quiz was underway
+	stopScrollTimer();
+	resetHookWidthsQuiz();
+	
+	if (!document.getElementById("pan_1_c")) {	
+		panelData = {	
+					"contentClass" : "panelContentDefault",
+					"title": "Cardbox Invaders",
+					"minimizeObject": "content_pan_1_c",
+					"variant": "c",
+					"closeButton": false,
+					"refreshButton" : false,	
+					"style" : 'Light',
+					"tooltip": "<p>Something helpful will go here.</p>"
+					};
+		generatePanel(1,panelData,"leftArea");
+		
+	}
+		$('#content_pan_1_c').empty();
+		explosion_sound = new Audio('explosion_sm.wav');	
+		var bgMusic = document.createElement("audio");
+		bgMusic.src = "invadersMusic.ogg";
+		bgMusic.autoplay = false;
+		bgMusic.loop = true;
+		bgMusic.controls = false;
+		bgMusic.id = "invadersMusic";
+		$('#content_pan_1_c').append(bgMusic);
+// NOTE: localStorage can only store strings, not booleans!
+// (RF) NOTE: JSON stringify/parse in those cases, can even make massive arrays using that method.
+		if (localStorage.musicEnabled == "true") { bgMusic.play(); }
+		var canvas = document.createElement("canvas");
+		canvas.id = "invadersCanvas";
+		//  canvas.width = $(window).width()/3.7;
+		//  canvas.height = $(window).height()/2;
+		INVW = 360;
+		INVH = 360;
+		canvas.width = INVW;
+		canvas.height = INVH;
+		canvas.style = "border: 1px;";
+		canvas.onclick = function (e) {
+			pos = getPosition_inv(e);
+// toggle through music+sound, sound only, all muted
+			if ((pos.x > 330) && (pos.y > 340)) {
+				if (localStorage.musicEnabled == "true") {
+					localStorage.musicEnabled = "false";
+					document.getElementById("invadersMusic").pause();
+					localStorage.soundEnabled = "true";} 
+				else if (localStorage.soundEnabled == "true") {
+                        localStorage.soundEnabled = "false"; } 
+				else {	localStorage.musicEnabled = "true";
+						localStorage.soundEnabled = "true";
+						document.getElementById("invadersMusic").play();
+				}
+			drawSoundIcon_inv();
+			}
+			for(var i=0;i<invadersAlphas.length;i++) {
+				if(invadersAlphas[i].leftx<=pos.x && pos.x <= invadersAlphas[i].leftx+invadersAlphas[i].width && 
+				invadersAlphas[i].y-invadersAlphas[i].height<=pos.y && pos.y <= invadersAlphas[i].y) {
+					if (invadersAlphas[i].active) 
+						invadersAlphas[i].timeout = 0; // clicking marks it wrong
+					displayWord_inv(invadersAlphas[i], invadersAlphas[i].words);
+					break;
                }
-         }
-       };
-  ctx = canvas.getContext('2d');
-  explosionImg = new Image();
-  explosionImg.src = "images/explosion_sprite.png";
-  invaderBgImg = new Image();
-  invaderBgImg.onload = function() { ctx.drawImage(invaderBgImg, 0, 0); 
-	  ctx.textAlign = 'center';
-	  ctx.font = '20px courier';
-	  ctx.fillStyle = 'red';
-	  ctx.fillText('CARDBOX', 180, 70);
-	  ctx.fillText('INVADERS', 180, 95);
-	  // 20 pt courier, each letter is 12px across
-	  ctx.font = '16px courier';
-          ctx.fillText("Don't let your cardbox", 180, 180);
-          ctx.fillText(" fill the screen", 180, 200);
-          ctx.fillText('Click an alphagram to', 180, 240);
-          ctx.fillText('mark wrong and see answers', 180, 260);
-	  ctx.fillText('Press Enter to Begin', 180, 300);
-          drawSoundIcon_inv();
-          var invaderIcon = new Image();
-          invaderIcon.onload = function () { ctx.drawImage(invaderIcon, 240, 50, 40, 40); }
-          invaderIcon.src = "images/cardboxInvaders2.png";
-};
-  invaderBgImg.src = "images/nightsky.png";
+			}
+		};
+		ctx = canvas.getContext('2d');
+		explosionImg = new Image();
+		explosionImg.src = "images/explosion_sprite.png";
+		invaderBgImg = new Image();
+		invaderBgImg.onload = function() { ctx.drawImage(invaderBgImg, 0, 0); 
+		ctx.textAlign = 'center';
+		ctx.font = '20px courier';
+		ctx.fillStyle = 'red';
+		ctx.fillText('CARDBOX', 180, 70);
+		ctx.fillText('INVADERS', 180, 95);
+// 20 pt courier, each letter is 12px across
+		ctx.font = '16px courier';
+		ctx.fillText("Don't let your cardbox", 180, 180);
+		ctx.fillText(" fill the screen", 180, 200);
+		ctx.fillText('Click an alphagram to', 180, 240);
+		ctx.fillText('mark wrong and see answers', 180, 260);
+		ctx.fillText('Press Enter to Begin', 180, 300);
+        drawSoundIcon_inv();
+		var invaderIcon = new Image();
+		invaderIcon.onload = function () { ctx.drawImage(invaderIcon, 240, 50, 40, 40); }
+		invaderIcon.src = "images/cardboxInvaders2.png";
+	};
+	invaderBgImg.src = "images/nightsky.png";
 
   
 
@@ -183,20 +195,13 @@ var showWordsTable = document.createElement("table");
   answerBoxField.style = "width: 50%; display: inline-block; text-align: center;";
   answerBoxField.appendChild(answerBox);
 
-  answerBoxRow.appendChild(buttonBoxPause);
-  answerBoxRow.appendChild(answerBoxField);
-  answerBoxRow.appendChild(buttonBoxReset);
-
-  gameArea.appendChild(canvas);
-  gameArea.appendChild(answerBoxRow);
-  gameArea.appendChild(showWordsRow);
-
-  answerBox.focus();
- 
+  $(answerBoxRow).append(buttonBoxPause, answerBoxField, buttonBoxReset);
+  $('#content_pan_1_c').append(canvas,answerBoxRow,showWordsRow);
+  
   $('#answerBox').on("keypress", function(e) {if(e.ctrlKey) {$(this).val("");
                                    } else if (e.which === 13 || e.which == 32) {
                                               submitInvadersAnswer(); }});
-
+	answerBox.focus();
 }
 
 function getPosition_inv(event) {
@@ -207,7 +212,7 @@ function getPosition_inv(event) {
   var rect = canvas.getBoundingClientRect();
   x -= rect.left;
   y -= rect.top;
-
+  console.log('x:'+x+' y:'+y);
   return { x: x, y: y }
 
 }

@@ -8,8 +8,12 @@ import random
 #userid = "10157462952395078"
 params = json.load(sys.stdin)
 userid = params["user"]
-#numQuestions = params["numQuestions"]
 numQuestions = 1
+try:
+  cardbox = int(params["cardbox"])
+except:
+  cardbox = 0
+
 result = {"getFromStudyOrder": False }
 words = { }
 error = {"status": "success"}
@@ -21,7 +25,7 @@ error = {"status": "success"}
 
 try:
   # getQuestions returns { "ALPHAGRAM": [WORD, WORD, WORD] }
-  nextQuestion = xl.getQuestions(numQuestions, userid)
+  nextQuestion = xl.getQuestions(numQuestions, userid, cardbox)
   nextAlphagram = nextQuestion.keys()[0] # assume there's only one question we are getting
   # these days time is so random
   random.seed()

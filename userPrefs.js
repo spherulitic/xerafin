@@ -18,10 +18,19 @@ function showUserPrefs(response, responseStatus) {
   // need prefs and currently occupied cardboxes
   console.log("Prefs");
   console.log(response[0]);
-  var prefs = response[0]
-  $( "#gameArea" ).html("");
-  var p1 = document.createElement("h3");
-      p1.innerHTML = "User Preferences";
+  var prefs = response[0];
+  if (!document.getElementById("pan_1_d")) {	
+		panelData = {	
+					"contentClass" : "panelContentDefault",
+					"title": "Preferences",
+					"style": "Light",
+					"variant": "d",
+					"closeButton": false,
+					"refreshButton" : false,	
+					"tooltip": "<p>Something helpful will go here.</p>"
+					};
+		generatePanel(1,panelData,"leftArea");
+		
   var p2 = document.createElement("p");
   var s21 = document.createElement("span");
       s21.innerHTML = "Xerafin will give you words that are due in order from cardbox 0 through cardbox ";
@@ -161,21 +170,21 @@ function showUserPrefs(response, responseStatus) {
   i5 = document.createElement("button");
   i5.innerHTML = "Save";
   i5.setAttribute("onclick", "setPrefs()");
-  document.getElementById('gameArea').appendChild(p1);
-  document.getElementById('gameArea').appendChild(p2);
-  document.getElementById('gameArea').appendChild(document.createElement("br"));
-  document.getElementById('gameArea').appendChild(p3);
-  document.getElementById('gameArea').appendChild(document.createElement("br"));
-  document.getElementById('gameArea').appendChild(p4);
-  document.getElementById('gameArea').appendChild(document.createElement("br"));
-  document.getElementById('gameArea').appendChild(p6);
-  document.getElementById('gameArea').appendChild(p7);
-  document.getElementById('gameArea').appendChild(p8);
-  document.getElementById('gameArea').appendChild(document.createElement("br"));
-  document.getElementById('gameArea').appendChild(p9);
-  document.getElementById('gameArea').appendChild(document.createElement("br"));
-  document.getElementById('gameArea').appendChild(i5);
+  document.getElementById('content_pan_1_d').appendChild(p2);
+  document.getElementById('content_pan_1_d').appendChild(document.createElement("br"));
+  document.getElementById('content_pan_1_d').appendChild(p3);
+  document.getElementById('content_pan_1_d').appendChild(document.createElement("br"));
+  document.getElementById('content_pan_1_d').appendChild(p4);
+  document.getElementById('content_pan_1_d').appendChild(document.createElement("br"));
+  document.getElementById('content_pan_1_d').appendChild(p6);
+  document.getElementById('content_pan_1_d').appendChild(p7);
+  document.getElementById('content_pan_1_d').appendChild(p8);
+  document.getElementById('content_pan_1_d').appendChild(document.createElement("br"));
+  document.getElementById('content_pan_1_d').appendChild(p9);
+  document.getElementById('content_pan_1_d').appendChild(document.createElement("br"));
+  document.getElementById('content_pan_1_d').appendChild(i5);
   }
+}
 
 function setPrefs() {
 var d = {user: userid, newWordsAtOnce: $('#newWordsAtOnceInput').val(),

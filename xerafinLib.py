@@ -231,6 +231,24 @@ def getTotalByCardbox(userid):
   except Exception as e:
 #      return "non-sql error " + str(e)
       return {0: -2}
+
+def getTotalByLength(userid):
+
+  result = { }
+  try:
+    with lite.connect(getDBFile(userid)) as con:
+      cur = con.cursor()
+      command = "select length(question), count(*) from questions where next_scheduled is not null group by length(question)"
+      cur.execute(command)
+      for row in cur.fetchall():
+        result[row[0]] = row[1]
+    return result
+  except lite.Error as e:
+    return {0: -1}
+  except Exception as e:
+    return {0: -2}
+
+
   
 def getNext (newCardbox = 0, schedVersion = 0) :
 
@@ -507,13 +525,13 @@ def newQuiz (userid):
     command = "update questions set difficulty = -1 where difficulty = 0 and next_scheduled < ?"
     cur.execute(command, (max(now, clearedUntil),))
 
-def getBingoFromCardbox (userid):
+def getBingoFromCardbox (userid, cardbox=0):
   """
   Returns a list of alphagrams that are due, length 7 or greater
   """
   with lite.connect(getDBFile(userid)) as con:
     cur = con.cursor()
-    cur.execute("select question from questions where cardbox is not null and length(question) >= 7 and difficulty in (-1,0,2) order by difficulty, cardbox, next_scheduled limit 1")
+    cur.execute("select question from questions where cardbox is not null and length(question) >= 7 and difficulty in (-1,0,2) order by case cardbox when ? then -2 else difficulty end, cardbox, next_scheduled limit 1", (cardbox,))
     result = cur.fetchone()
     if result is not None: 
       return result[0]
@@ -535,21 +553,30 @@ def getBingoFromCardbox (userid):
   return None
     
 	   
-def getQuestions (numNeeded, userid, questionLength=None) :
+def getQuestions (numNeeded, userid, cardbox, questionLength=None) :
   """
   Returns a dict with a quiz of numNeeded questions in the format { "Alphagram" -> [ Word, Word, Word ] }
   """
+  # Cardbox doesn't filter, it only prioritizes one cardbox over others
+  # If you specifically ask for a cardbox in the backlog, ignore backlogging
+  closet = getPrefs("closet", userid)
+  if cardbox >= closet:
+    diffToGet = (-1,2)
+    dFormat = "?,?"
+  else:
+    diffToGet = (-1,)
+    dFormat = "?"
   allQuestions = []
   quiz = {}
   with lite.connect(getDBFile(userid)) as qCon:
     cur = qCon.cursor()
-    getCardsQry = "select question from questions where difficulty = -1 and next_scheduled is not null order by cardbox, next_scheduled limit ?" 
-    cur.execute(getCardsQry, (numNeeded,))
+    getCardsQry = "select question from questions where difficulty in ({0}) and next_scheduled is not null order by case cardbox when ? then -1 else cardbox end, next_scheduled limit ?".format(dFormat)
+    cur.execute(getCardsQry, diffToGet+(cardbox,numNeeded))
     result = cur.fetchall()
     while (len(result) < numNeeded):
    #  if questionLength is None:
       makeWordsAvailable(userid, cur)
-      cur.execute(getCardsQry, (numNeeded,))
+      cur.execute(getCardsQry, diffToGet+(cardbox,numNeeded))
       result = cur.fetchall()
    #  else:
    #    makeWordsAvailableWithFilter(numNeeded, questionLength)

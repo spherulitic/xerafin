@@ -23,6 +23,17 @@ try:
      users = row[0]
      questions = row[1] 
 
+     # Add daily summary to lb_summary
+     command = "insert into lb_summary (period, dateStamp, questionsAnswered, numUsers) values (%s, CURDATE() - interval 1 day, %s, %s)"
+     con.execute(command, ('DAY', questions, users))
+
+     try:
+       if time.strftime("%A") == "Monday":
+         command = "insert into lb_summary(period, dateStamp, questionsAnswered, numUsers) select 'WEEK', min(dateStamp), sum(questionsAnswered), count(distinct userid) from leaderboard where DATE_FORMAT(dateStamp, '%Y%u') = DATE_FORMAT(curdate() - interval 1 day, '%Y%u') group by DATE_FORMAT(dateStamp, '%Y%u')"
+         con.execute(command)
+     except:
+       pass
+
      # Add Daily Summary chat to database
 
      userid = u'0'

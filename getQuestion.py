@@ -4,12 +4,18 @@ import xerafinLib as xl
 import json, sys
 
 #userid = "10157462952395078"
+error = {"status": "success"}
 params = json.load(sys.stdin)
 userid = params["user"]
 numQuestions = params["numQuestions"]
+
+try:
+  cardbox = int(params["cardbox"])
+except:
+  cardbox = 0
+
 result = {"getFromStudyOrder": False }
 words = { }
-error = {"status": "success"}
 try:
   lock = params["lock"]
 except:
@@ -17,13 +23,12 @@ except:
 
 try:
   # { "ALPHAGRAM": [WORD, WORD, WORD] }
-  result["questions"] = xl.getQuestions(numQuestions, userid)
+  result["questions"] = xl.getQuestions(numQuestions, userid, cardbox)
   auxInfoList = [ ] 
   for key in result["questions"].keys():
     auxInfoList.append(xl.getAuxInfo(key, userid))
     for word in result["questions"][key]:
        h = xl.getHooks(word)
-#       words[word] = [h[0], h[2], "Does this work"]
        defn = unicode(xl.getDef(word), 'latin1').encode('ascii', 'xmlcharrefreplace')
        innerHooks = xl.getDots(word)
        words[word] = [ h[0], h[2], defn, innerHooks ]

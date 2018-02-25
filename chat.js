@@ -1,48 +1,65 @@
-function startChat () {
-   getLoggedInUsers();
-   mostRecent = (new Date).getTime() - 86400000; // One Day Ago
-   chatQueue = [ ];
-   CHAT_QUEUE_MAX_LENGTH = 100;
-   lastReadRow = 0;
-   var usersLabel = document.createElement("div");
-   var userDisplayArea = document.createElement("div");
-   var chatBox = document.createElement("input");
-   var chatDisplayBox = document.createElement("div");
-   chatDisplayTable = document.createElement("table");
-   chatDisplayTable.id = 'chatTable';
-   chatDisplayTable.classname += ' chatTable';
-   usersLabel.className += ' tableHeaderLight';
-   usersLabel.innerHTML = "User Chat"; 
-   userDisplayArea.id = "userDisplayArea";
-   /*userDisplayArea.className+= " chatActiveUsers"; */
-   chatDisplayBox.id = "chatDisplayBox";
-   chatDisplayBox.className+=' well well-sm pre-scrollable';    
-   chatBox.type = "text";
-   chatBox.id = "chatBox";
-   chatBox.className+=' chatInput';
- 
-   getInitChats();
-   chatArea = document.getElementById("chatArea");
-   chatArea.appendChild(usersLabel);
-   chatArea.appendChild(userDisplayArea);
-   chatArea.appendChild(chatBox);
-   chatArea.appendChild(chatDisplayBox);
-   chatDisplayBox.appendChild(chatDisplayTable);
-   chatDisplayBox.style.maxWidth='100%';
+function initChatGlobals() {
+	mostRecent = (new Date).getTime() - 86400000; // One Day Ago
+	chatQueue = [ ];
+	CHAT_QUEUE_MAX_LENGTH = 150;
+	lastReadRow = 0;
+}
 
-/**Event Listeners**/
-   
-   chatBox.addEventListener("keypress", function(e) {
+function startChat () {
+	if (!document.getElementById("pan_2")) {
+		initChatGlobals();	
+		panelData = {	
+					"contentClass" : "panelContentDefault",
+					"title": "Chat",
+					"minimizeObject": "chatRegion",
+					"closeButton": false,
+					"refreshButton" : false,
+					"tooltip": "<p>Something helpful will go here.</p>"
+					};
+		generatePanel(2,panelData,"rightArea");
+		var userDisplayArea = document.createElement("div");
+			userDisplayArea.id = "userDisplayArea";
+			userDisplayArea.className+= " chatActiveUsers";
+		var chatDisplayBox = document.createElement("div");
+			chatDisplayBox.id = "chatDisplayBox";
+			chatDisplayBox.className+=' well well-sm pre-scrollable'; 
+			chatDisplayBox.style.maxWidth='100%';	
+		var chatInputBox = document.createElement('div');
+			chatInputBox.className+=' input-group';
+			chatInputBox.style.margin = '10px 0px 10px 0px';
+		var chatInputAddon = document.createElement('span');
+			chatInputAddon.className += 'input-group-addon primary';
+			chatInputAddon.innerHTML = '<i class="glyphicon glyphicon-comment" style="color:#fff;"></i>'
+		var chatBox = document.createElement("input");	
+			chatBox.type = "text";
+			chatBox.id = "chatBox";
+			chatBox.className+=' form-control chatInput';
+			chatBox.style.background='inherit';
+		var chatRegion = document.createElement("div");
+			chatRegion.id='chatRegion';
+		var chatDisplayTable = document.createElement("table");
+			chatDisplayTable.id = 'chatTable';
+			chatDisplayTable.classname += ' chatTable';
+		$(chatInputBox).append(chatInputAddon, chatBox);
+		$('#content_pan_2').append(userDisplayArea,chatRegion);
+		$('#chatRegion').append(chatInputBox, chatDisplayBox);
+		$('#chatDisplayBox').append(chatDisplayTable);
+		
+		chatBox.addEventListener("keypress", function(e) {
         if (e.which === 13 && $(this).val().trim()) {
            var chatContent = parseEmoji($(this).val());
            console.log(chatContent);
            submitChat(chatContent, false);
            $(this).val("");
         } });
-	$('#chatBox').keypress("m",function(e) {
-        if(e.ctrlKey) 
-        $(this).val("");
-    });
+		$('#chatBox').keypress("m",function(e) {
+			if(e.ctrlKey) 
+			$(this).val("");
+		});
+	}	
+	getInitChats();
+	getLoggedInUsers();
+	 
 }
 
 function getLoggedInUsers() {
@@ -76,7 +93,7 @@ function displayUserArray (userList) {
    var activeUserHeading = document.createElement('div');
    var userDisplayTable = document.createElement("table");
    var userDisplayTableBody = document.createElement("tbody");
-   userDisplayArea.appendChild(activeUserHeading);
+   $('#userDisplayArea').append(activeUserHeading);
    activeUserHeading.className+= " activeUserHeading"; 
    activeUserHeading.id= "activeUserHeading"; 
    var widths=getActiveUserDimensions ($('#activeUserHeading').width(),50,userList.length,1,2,25);
@@ -115,7 +132,7 @@ function displayUserArray (userList) {
         }
        }
     }
-    userDisplayTable.appendChild(userDisplayTableBody);
+	$(userDisplayTable).append(userDisplayTableBody);
     activeUserContainer.appendChild(userDisplayTable);
     userDisplayArea.appendChild(activeUserContainer);
 }
@@ -154,10 +171,10 @@ function displayChats (response, responseStatus) {
    lastReadRow = response[1];
    console.log("Get Chat Response");
    console.log(response);
-   chatDisplayTable.innerHTML="";
+   document.getElementById('chatTable').innerHTML="";
    var expiredChats = [ ];
    
-   chatDisplayBox.style.border = '1px solid #999';
+   $('#chatDisplayBox').css('border', '1px solid #000');
    for (var x=0; x<newChats.length;x++) {
      if (newChats[x].expire)
        expiredChats.push(newChats[x]);
@@ -196,10 +213,11 @@ function displayChats (response, responseStatus) {
      var chatPic = document.createElement("img");
      
      if (x==(chatQueue.length-1)){chatText.style.borderTop = "0px";}
-     else {chatText.style.borderTop = "1px solid #ddd";}
+     else {chatText.style.borderTop = "1px solid #444";}
      
      chatDateNode.style.width='10%';
      chatDateNode.style.textAlign='right';
+	 chatDateNode.style.color='#ddd';
 
      chatDateNode.innerHTML = chatDate.getHours() + ':' + (chatDate.getMinutes() < 10 ? '0' : '') + chatDate.getMinutes();
      chatDateNode.title = chatDate.getHours() + ':' + (chatDate.getMinutes() < 10 ? '0' : '') + chatDate.getMinutes() + ':' + (chatDate.getSeconds() < 10 ? '0' : '') + chatDate.getSeconds();
@@ -216,8 +234,8 @@ function displayChats (response, responseStatus) {
         }
      }
      chatPic.title = chatQueue[x].name;
-     chatPic.style.height = '30px';
-     chatPicNode.appendChild(chatPic);
+     chatPic.style.height = '28px';
+     $(chatPicNode).append(chatPic);
      chatPicNode.style.width = '10%';
      chatPicNode.style.textAlign = 'center';
      chatText.style.verticalAlign = 'middle';
@@ -229,11 +247,9 @@ function displayChats (response, responseStatus) {
      chatText.id='chatText';
      chatText.style.textAlign = 'left';
      chatText.className += ' chatText';
-     chatNode.appendChild(chatDateNode);
-     chatNode.appendChild(chatPicNode);
-     chatNode.appendChild(chatText); 
-     chatDisplayTable.appendChild(chatNode);
-      
+	 $('#chatTable').append(chatNode);
+	 $(chatNode).append(chatDateNode,chatPicNode,chatText);
+        
    }  
    
    chatQueue = chatQueue.filter(function (e){return e}); // remove deleted values from the array

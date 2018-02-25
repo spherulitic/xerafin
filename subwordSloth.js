@@ -7,7 +7,8 @@ if (typeof question !== 'undefined') {
   slothQuestion = question;
   initSloth2(); }
 else {
-  d = { user: userid };
+	if (localStorage.cardboxSent=='false'){d = { user: userid };}
+	else {d = {user:userid, cardbox: localStorage.cardboxCurrent};}
   $.ajax({type: "POST",
          data: JSON.stringify(d),
          url: "getNextBingo.py",
@@ -25,15 +26,23 @@ function populateSlothQuestion(response, responseStatus) {
  }
  
 function initSloth2() { 
-
+	if (!document.getElementById("pan_1_b")) {	
+		panelData = {	
+					"contentClass" : "panelContentDefault",
+					"title": "Subword Sloth",
+					"minimizeObject": "content_pan_1_b",
+					"variant": "b",
+					"closeButton": false,
+					"refreshButton" : false,	
+					"style" : 'Light',
+					"tooltip": "<p>Known Bugs: <br>Scrolling issues on minimize/maximize</p>"
+					};
+		generatePanel(1,panelData,"leftArea");
   console.log("Starting Sloth for " + slothQuestion);
-
+	}
+	$('#content_pan_1_b').empty();
   stopScrollTimer();
   resetHookWidthsQuiz();
-
-  var gameArea = document.getElementById("gameArea");
-  $('#gameArea').empty();
-
   var alphagramArea = document.createElement("div");
   alphagramArea.className = "quizAlphaSuper";
   alphagramArea.id = "alphaSuper";
@@ -124,12 +133,7 @@ function initSloth2() {
   answerField.style.width = "100%";
   answerField.paddingBottom = "10px";
 		
-  gameArea.appendChild(alphagramArea);
-  gameArea.appendChild(timerLabel);
-  gameArea.appendChild(progressBar);
-  gameArea.appendChild(answerBoxField);
-  gameArea.appendChild(answerField);
-
+  $('#content_pan_1_b').append(alphagramArea, timerLabel, progressBar, answerBoxField, answerField);
   $('#startButton').on("click", startSloth);
   if ((Number(localStorage.gAlphaDisplay))==0) {
       stringToTiles(Array(slothQuestion.length+1).join(" "), '#slothAlphagram');
@@ -137,9 +141,8 @@ function initSloth2() {
    } else {
       $('#slothAlphagram').css('visibility', 'hidden');
       $('#slothAlphagram').html(alphaSortMethod(slothQuestion, Number(localStorage.gAlphaSortInput)));
-      $('#alphaSuper').css('background', 'url("b42.png") repeat');
+      $('#alphaSuper').css('background', 'url("images/b42.png") repeat');
    }      
-
 
   var d = { user: userid, alpha: slothQuestion, getAllWords: localStorage.gSlothPref };
   $.ajax({type: "POST",
@@ -152,10 +155,17 @@ function initSloth2() {
 }
 
 function setupSloth (response, responseStatus) {
-//  console.log(response)
-//  console.log("setup sloth");
   document.getElementById("startButton").style.display = "block";
   slothData = response[0];
+  console.log(response[0]);
+  if (Number(localStorage.cardboxCurrent)!==slothData[slothData.length-1].auxInfo.cardbox){
+		localStorage.cardboxSent='false';
+		localStorage.cardboxCurrent=slothData[slothData.length-1].auxInfo.cardbox;
+		if ($('#pan_4').length>0){
+		   cardboxHighlightAction(slothData[slothData.length-1].auxInfo.cardbox, false);
+		   showCardboxStats();
+		}
+   }
   console.log("Sloth Data");
   console.log(slothData);
 var  tmpWordlist = [ ];
@@ -190,7 +200,7 @@ function generateSlothTable (content,wordLength) {
 	currentTable.style.borderSpacing= '2px';
 	var tableHeading = document.createElement('div');
 	tableHeading.id='slothHeading'+wordLength;
-	tableHeading.style.background='url("b42.png") repeat';
+	tableHeading.style.background='url("images/b42.png") repeat';
 	/**tableHeading.style.background='#6ac';**/
 	tableHeading.style.paddingLeft='5px';
 	tableHeading.style.color='#000';
@@ -305,7 +315,7 @@ function slothTimerExpire () {
     } 
     } 
     }  // end for loop
-
+	
   var tds = document.querySelectorAll('#answerField td');
   for (var x=0; x<tds.length; x++) {
     if (tds[x].firstChild.style.visibility == 'hidden') {
@@ -377,6 +387,10 @@ function slothSubmitQuestion(d) {
          success: function(response) { console.log(d.question + " updated.");
 			console.log(response); 
 			if (d.incrementQ){
+				if (typeof $('#cardboxInfoQToday')!=='undefined'){$('#cardboxInfoQToday').html(response[0].qAnswered);}
+				if (typeof $('#cardboxInfoScore')!=='undefined'){$('#cardboxInfoScore').html(response[0].score);}
+				var movement = Number(response[0].score)-Number(response[0].startScore);
+				if (typeof $('#cardboxInfoDiff')!=='undefined'){$('#cardboxInfoDiff').html((movement > 0 ? "+" : "")+movement);}
 			checkMilestones(response[0].qAnswered);}
 			},
 	 error: function(jqXHR, textStatus, errorThrown) {

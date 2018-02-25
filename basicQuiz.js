@@ -1,18 +1,28 @@
 function startQuiz() {
     initGlobalsQuiz();
     initUIQuiz();   
-    initClickEventsQuiz();
-    initKeyEventsQuiz();    
+     
     /** AJaX call to get first question **/
     var d = {
-        user: userid
+        user: userid,
+		cardbox: localStorage.cardboxCurrent
     };
     $.ajax({
         type: "POST",
         data: JSON.stringify(d),
-        url: "newQuiz.py",
-        success: getQuestion,
+        url: "newQuiz.py",	
+        beforeSend: function(){$("#quizConnect").html('<img src="images/ajaxLoad.gif" style="height:0.8em"> Initializing Quiz...');},
+        success: function(response, responseStatus) {
+				$("#quizConnect").html('');
+				console.log(response);
+				if (typeof $('#cardboxInfoQToday')!=='undefined'){$('#cardboxInfoQToday').html(response.qAnswered);}
+				if (typeof $('#cardboxInfoScore')!=='undefined'){$('#cardboxInfoScore').html(response.score);}
+				var movement = Number(response.score)-Number(response.startScore);
+				if (typeof $('#cardboxInfoDiff')!=='undefined'){$('#cardboxInfoDiff').html((movement > 0 ? "+" : "")+movement);}
+				getQuestion();
+		},
         error: function(jqXHR, textStatus, errorThrown) {
+			gNetworkErrorReport (jqXHR.status, '#quizConnect');
             console.log("Error, status = " + textStatus + " error: " + errorThrown);
             getQuestion();
         }
@@ -30,26 +40,41 @@ function initGlobalsQuiz() {
     correctState = 0;
     correctPercent = 0.0;
     hintQuantity = 0;
+	if (typeof localStorage.cardboxCurrent=='undefined'){localStorage.setItem('cardboxCurrent','0')};
+	if (typeof localStorage.cardboxSent=='undefined'){localStorage.setItem('cardboxSent',false)};
 }
 
 function initUIQuiz() {
-    var gameArea = document.getElementById("gameArea");
-    gameArea.innerHTML = "";    
+	
+	if (!document.getElementById("pan_1_a")) {	
+		panelData = {	
+					"contentClass" : "quizContent",
+					"title": "Basic Quiz",
+					"minimizeObject": "content_pan_1_a",
+					"variant": "a",
+					"closeButton": false,
+					"refreshButton" : false,	
+					"style" : 'Light',
+					"tooltip": "<p>Something helpful will go here.</p>"
+					};
+		generatePanel(1,panelData,"leftArea");
+		
     /** Generate ordered DOM for Quiz [localName, type, classes, id, parent, innerHTML] **/    
-    createElemArray([
-    /*0*/           ['a','div','quizAlphaSuper','alphaSuper','gameArea',''],
+		createElemArray([
+    /*0*/           ['a','div','quizAlphaSuper','alphaSuper','content_pan_1_a',''],
                     ['a1','div','quizAlphaContain','alphaContainer','a',''],
                     ['a1a','div','quizAlphaLeft','leftHook','a1',''],
-                    ['a1a','div','quizAlpha','alphagram','a1',''],
-                    ['a1a','div','quizAlphaRight','rightHook','a1',''],
-                    ['b','div','quizAnswerRegion','','gameArea',''],
-                    ['b1','button','quizButton quizButtonCorrect','markAsCorrect','b','&#10004;'],
-                    ['b2','button','quizButton quizButtonNext','nextQuestion','b','&#10144;'],
-                    ['b3','button','quizButton quizButtonIncorrect','markAsIncorrect','b','✘'],
+                    ['a1b','div','quizAlpha','alphagram','a1',''],
+                    ['a1c','div','quizAlphaRight','rightHook','a1',''],
+					['a2','div','quizConnection','quizConnect','content_pan_1_a',''],
+                    ['b','div','quizAnswerRegion','','content_pan_1_a',''],
+                    ['b1','button','btn quizButton quizButtonCorrect','markAsCorrect','b','<span class="glyphicon glyphicon-ok"></span>'],
+                    ['b2','button','btn quizButton quizButtonNext','nextQuestion','b','<span class="glyphicon glyphicon-arrow-right"></span>'],
+                    ['b3','button','btn quizButton quizButtonIncorrect','markAsIncorrect','b','<span class="glyphicon glyphicon-remove"></span>'],
                     ['b4','div','quizAnswerContain','answerContainer','b',''],
      /*10*/         ['b4a','div','quizAnswerNumber','answerAmount','b4',''],
                     ['b4b','input','quizAnswerBox','answerBox','b4',''],
-                    ['c','table','quizSessionTable','sessionInfo','gameArea',''],
+                    ['c','table','quizSessionTable','sessionInfo','content_pan_1_a',''],
                     ['c1','thead','','sessionHeader','c',''],
                     ['c1a','th','','sessionHeaderCell1','c1','questions'],
                     ['c1b','th','quizSessionTableHCardbox','sessionHeaderCell2','c1','cardbox'],
@@ -62,24 +87,29 @@ function initUIQuiz() {
                     ['c2c','td','','sessionContentCell3','c2','<span id="dueDate"></span>'],
                     ['c2d','td','','sessionContentCell4','c2','<span id="sessionScore">' + localStorage.qQAlpha + '</span>'],
                     ['c2e','td','','sessionContentCell5','c2','<span id="correctPercent">' + correctPercent.toFixed(2) + '%' + '</span>'],
-                    ['d','div','quizButtonRow','buttonRow','gameArea',''],
-                    ['d1','div','quizSubButtonBox','','d',''],
-                    ['d1a','button','quizSubButton','shuffleButton','d1','&#8633;'],
-                    ['d2','div','quizSubButtonBox','','d',''],
-                    ['d2a','button','quizSubButton','slothButton','d2','<img id="imgSloth" src="sloth.png" style="width:30px;height:30px;margin:auto auto;">'],
-    /*30*/          ['d3','div','quizSubButtonBox','','d',''],
-                    ['d3a','button','quizSubButton','skipButton','d3',"&#9658;"],
-                    ['d4','div','quizSubButtonBox','','d',''],
-                    ['d4a','button','quizSubButton','advancedButton','d4',"&#8801;"],
-                    ['e','div','quizAdvancedBox','advancedBox','gameArea',''],
-                    ['e1','button','quizAdvancedButton','counterReset','e','Reset<br>Counters'],
-                    ['e2','button','quizAdvancedButton','addHint','e','Hint'],
-                    ['e3','button','quizAdvancedButton','showQuestionStats','e','Stats'],
-                    ['e4', 'div', 'quizBlankCheckbox', 'blankQuizBox', 'e', ''],
-                    ['e4a', 'input', '', 'blankQuizCheck', 'e4', ''],
-                    ['e4b', 'label', '', 'blankQuizLabel', 'e4', '?'],
-                    ['f','table','wordTable','correctAnswers','gameArea',''],
-                    ['g','div','wordTableWrong','wrongAnswers','gameArea','']
+                    ['d','div','btn-group btn-group-justified quizButtonRow','buttonRow','content_pan_1_a',''],
+					['d1','div','btn-group','','d',''],
+                    ['d1a','button','btn btn-default quizSubButton','shuffleButton','d1','<span class="glyphicon glyphicon-random"></span>'],
+					['d2','div','btn-group','','d',''],
+                    ['d2a','button','btn btn-default quizSubButton','slothButton','d2','<img id="imgSloth" src="sloth.png" style="width:28px;height:28px;margin:auto auto;padding:0px;">'],    
+                    ['d3','div','btn-group','','d',''],
+				    ['d3a','button','btn btn-default quizSubButton','skipButton','d3','<span class="glyphicon glyphicon-step-forward"></span>'],
+					['d4','div','btn-group','','d',''],
+                    ['d4a','button','btn btn-default quizSubButton','advancedButton','d4','<span class="glyphicon glyphicon-menu-hamburger"></span>'],
+                    ['e','div','quizAdvancedBox','advancedBox','content_pan_1_a',''],
+					['e1','div','btn-group btn-group-justified','','e',''], 
+					['e1a','div','btn-group','','e1',''],
+                    ['e1a1','button','btn btn-default quizAdvancedButton','counterReset','e1a','Reset #'],
+					['e1b','div','btn-group','','e1',''],
+                    ['e1b1','button','btn btn-default quizAdvancedButton','addHint','e1b','Hint'],
+					['e1c','div','btn-group','','e1',''],
+                    ['e1c1','button','btn btn-default quizAdvancedButton','showQuestionStats','e1c','Stats'],
+					['e1d', 'div', 'btn-group quizBlankWrapper','','e1',''],
+                    ['e1d1', 'div', 'quizBlankCheckbox', 'blankQuizBox', 'e1d', ''],
+                    ['e1d1a', 'input', '', 'blankQuizCheck', 'e1d1', ''],
+                    ['e1d1b', 'label', '', 'blankQuizLabel', 'e1d1', '?'],
+                    ['f','table','wordTable','correctAnswers','content_pan_1_a',''],
+                    ['g','div','wordTableWrong','wrongAnswers','content_pan_1_a','']
                     ]);
                    
     /** Additional initialisation **/
@@ -101,10 +131,14 @@ function initUIQuiz() {
     var buttonTitle=['Shuffle Tiles','Sloth This Word!','Skip Word','Advanced...','Clear Questions, Score and Correct % for this device.','See one more letter of solution(s).', 'Show stats and change cardbox for this question'];
     for (var i=0;i<buttonTitle.length;i++){
         document.getElementById(buttonId[i]).title=buttonTitle[i];
-    }   
+    } 
+		initClickEventsQuiz();
+		initKeyEventsQuiz(); 
+	}
     if ((Number(localStorage.gAlphaDisplay))==1) {
         $("alphagramLabel").css({'font-size':'2.8em','line-height':'0em','padding-top':'0.8em','padding-bottom':'0.8em;'});
     }
+	
 }
 
 function initClickEventsQuiz(){
@@ -134,6 +168,7 @@ function initClickEventsQuiz(){
 }
 
 function initKeyEventsQuiz(){
+	//window.addEventListener('resize', function(event){displayUserArray(usersArray)});
     answerBox.addEventListener("keypress", function(e) {if (e.which === 13) {$(this).attr("disabled", "disabled");submitAnswer();}});
     $('#answerBox').keypress("m",function(e) {if(e.ctrlKey) $(this).val("");});
     $('#answerBox').keypress(function(e) {if (e.which == 32) {if (quizState !== "finished"){$(this).attr("disabled", "disabled");submitAnswer();}}});   
@@ -143,10 +178,8 @@ function getQuestion() {
     var url;
     var callback;
     $('#nextQuestion').off("click");
-    var d = {
-        numQuestions: 1,
-        user: userid
-    };
+	if (localStorage.cardboxSent=='false'){var d= {numQuestions: 1, user:userid};}
+	else {var d = {numQuestions: 1,user: userid,cardbox: localStorage.cardboxCurrent};};
     if (document.getElementById('blankQuizCheck').checked) {
        url = "getBlankQuestion.py";
        callback = initBlankQuestion;
@@ -159,11 +192,15 @@ function getQuestion() {
         type: "POST",
         url: url,
         data: JSON.stringify(d),
+		beforeSend: function (){delayTimer=setTimeout(function(){$("#quizConnect").html('<img src="images/ajaxLoad.gif" style="height:0.8em"> Loading Next Question...')},300);},
+            complete: function (){if (typeof scrollTimer !== 'undefined' && scrollTimer !== null ){
+                clearInterval(scrollTimer);}   
+                clearTimeout(delayTimer);},
         success: callback,
         error: function(jqXHR, textStatus, errorThrown) {
+			gNetworkErrorReport (jqXHR.status, '#quizConnect');
             console.log("Error, status = " + textStatus + " error: " + errorThrown)
             stopScrollTimer();
-            $('#alphagram').html('Connection Error');
             $('#answerBox').removeAttr("disabled", "disabled");
             $('#nextQuestion').click(function() {
                 textFocus = false;
@@ -175,24 +212,26 @@ function getQuestion() {
 }
 
 function resizeHookFontQuiz () {
-    var hookFont = $('#alphaSuper').width()/15;
+    var hookFont = $('#alphaSuper').width()/18;
     if (hookFont>30){hookFont=30;}
-    $('#leftHook').css({'font-size':hookFont+'px','line-Height':hookFont+'px'});
-    $('#rightHook').css({'font-size':hookFont+'px','line-Height':hookFont+'px'});
+    $('#leftHook').css({'font-size':hookFont+'px','line-height':'0.7'});
+    $('#rightHook').css({'font-size':hookFont+'px','line-height':'0.7'});
 }
 function resetHookWidthsQuiz () {
     hookWidth = 0;
         $('#rightHook').width(0);
         $('#leftHook').width(0);
         resizeHookFontQuiz();
-        for (i=0;i<allAnswers.length;i++){   
-            $('#leftHook').html(addLineBreaks(eval('wordData.'+allAnswers[i]+'[0]'), 7));
-            var x=$('#leftHook').width();
-            if (x>hookWidth){hookWidth=x;}
-            $('#leftHook').html(addLineBreaks(eval('wordData.'+allAnswers[i]+'[1]'), 7));
-            var x=$('#leftHook').width();
-            if (x>hookWidth){hookWidth=x;}
-        }       
+		if (typeof allAnswers!=="undefined"){
+			for (i=0;i<allAnswers.length;i++){   
+				$('#leftHook').html(addLineBreaks(eval('wordData.'+allAnswers[i]+'[0]'), 7));
+				var x=$('#leftHook').width();
+				if (x>hookWidth){hookWidth=x;}
+				$('#leftHook').html(addLineBreaks(eval('wordData.'+allAnswers[i]+'[1]'), 7));
+				var x=$('#leftHook').width();
+				if (x>hookWidth){hookWidth=x;}
+			}
+		}
         $('#rightHook').width(hookWidth);
         $('#leftHook').width(hookWidth);
         $('#leftHook').html('');
@@ -233,14 +272,28 @@ function initBlankQuestion(response, responseStatus) {
         allAnswers = Object.keys(wordData);
         alphagram = r.question + "?";
         fullAlpha = r.fullAlpha;
+		
         aux = r.answers;
+		for (var x=0;x<aux.length;x++){
+			if (aux[x].alpha==fullAlpha) {
+				if (Number(localStorage.cardboxCurrent)!==aux[x].auxInfo.cardbox){
+					localStorage.cardboxSent='false';
+					localStorage.cardboxCurrent=aux[x].auxInfo.cardbox;	
+					if ($('#pan_4').length>0){
+						cardboxHighlightAction(aux[x].auxInfo.cardbox, false);
+						showCardboxStats();
+					}
+				}
+			}
+		}
+   }
+				
         if (r.getFromStudyOrder) {
            prepareNewWords();
         }
 // check here to see if there's some lag and the question is a duplicate
         displayQuestion();
     }
-}
 
 function initQuestionData(response, responseStatus) {
     var r = response[0];
@@ -264,11 +317,11 @@ function initQuestionData(response, responseStatus) {
             }
         });
     }
-    if (Object.keys(question)[0] == alphagram && quizState == "finished") {
-        setTimeout(getQuestion, 700)
+    if (Object.keys(question)[0] == alphagram && quizState == "finished") {		
+        $("#quizConnect").html('<img src="images/ajaxLoad.gif" style="height:0.8em"> Awaiting Server Response...');
+        setTimeout(getQuestion, 700);
         // the previous question took too long
         // to submit, so we need to wait to get a fresh one
-        $('#answerBox').val("Loading Question ...");
     } else {
         alphagram = Object.keys(question)[0];
         answers = eval("question." + alphagram);
@@ -305,15 +358,20 @@ function displayQuestion() {
          else {
             document.getElementById('slothButton').title = 'Alphagram is too short for sloths!'; }
         }     
+	$('#alphaSuper').removeClass('incorrect'); 
+	$('#alphaSuper').removeClass('correct');
    document.getElementById('nextQuestion').disabled = false;
    if ((Number(localStorage.gAlphaDisplay))==0) {
       stringToTiles(alphaSortMethod(alphagram, Number(localStorage.gAlphaSortInput)), '#alphagram');
-      $('#alphaSuper').css('background', '#5ab');
+	
+	
+	 
    } else {
       $('#alphagram').html(alphaSortMethod(alphagram, Number(localStorage.gAlphaSortInput)));
-      $('#alphaSuper').css('background', 'url("b42.png") repeat');
+	  
    } 
-        
+   $('#alphaSuper').addClass('unanswered');
+   $('#quizConnect').html(""); 
    $('#leftHook').html("");
    $('#rightHook').html("");
    $('#correctAnswers').html("");
@@ -354,6 +412,15 @@ function displayQuestion() {
    quizState = "started";
    incorrectAnswerFlag = false;
    incrementQ = true;
+   $('#content_pan_1_a').css("visibility","visible"); 
+	if (Number(localStorage.cardboxCurrent)!==aux.cardbox){
+		localStorage.cardboxSent='false';
+		localStorage.cardboxCurrent=aux.cardbox;
+		if ($('#pan_4').length>0){
+		   cardboxHighlightAction(aux.cardbox, false);
+		   showCardboxStats();
+		}
+   }
 }
 
 function submitAnswer() {
@@ -405,7 +472,7 @@ function submitAnswer() {
     }
 }
 function checkMilestones(answered) {
-    var ranges = [[50, 49, 301], [100, 301, 1001], [200, 1001, 50000]];
+    var ranges = [[50, 49, 501], [100, 501, 1001], [200, 1001, 50000]];
     for (var i = 0; i < ranges.length; i++) {
         if ((answered % (ranges[i][0]) == 0) && (answered > ranges[i][1]) && (answered < ranges[i][2])) {
             submitChat(username + " has completed <b>" + answered + "</b> alphagrams today!", true);
@@ -452,7 +519,7 @@ function submitBlankQuestion() {
       var correct = (wrongAlphas.indexOf(a) == -1);
       if (!notInCardbox) {
          var currentCardbox = aux[x].auxInfo.cardbox;
-         var dueNow = (aux[x].auxInfo.difficulty < 2); }
+         var dueNow = (aux[x].auxInfo.difficulty < 3); }
       
       for(var i=0;i<aux[x].words.length;i++) {
          var word = aux[x].words[i];
@@ -541,7 +608,12 @@ function submitQuestion(correct) {
                 $('#cardboxNumber').html(aux.cardbox); }
             if ((response[0].qAnswered !== null ) ) {
                 if (incrementQ) {
+					console.log(response);
                     checkMilestones(response[0].qAnswered);
+					if (typeof $('#cardboxInfoQToday')!=='undefined'){$('#cardboxInfoQToday').html(response[0].qAnswered);}
+					if (typeof $('#cardboxInfoScore')!=='undefined'){$('#cardboxInfoScore').html(response[0].score);}
+					var movement = Number(response[0].score)-Number(response[0].startScore);
+				    if (typeof $('#cardboxInfoDiff')!=='undefined'){$('#cardboxInfoDiff').html((movement > 0 ? "+" : "")+movement);}
                     incrementQ = false;
                 }
             } 
@@ -560,7 +632,10 @@ function submitQuestion(correct) {
     }
     if (correct) {
         //console.log("Correct Question");
-        $('#alphaSuper').css('background', '#8ABD22');
+		$('#alphaSuper').removeClass('incorrect');
+		$('#alphaSuper').removeClass('unanswered');
+		$('#alphaSuper').addClass('correct');
+	  
         $('#markAsCorrect').hide();
         $('#markAsIncorrect').show();
         $('#nextQuestion').show();
@@ -576,7 +651,9 @@ function submitQuestion(correct) {
     } 
     else {
         //console.log("Incorrect Question");
-        $('#alphaSuper').css('background', '#DD5337');
+		$('#alphaSuper').removeClass('unanswered');
+		$('#alphaSuper').removeClass('correct');
+		$('#alphaSuper').addClass('incorrect');
         $('#markAsIncorrect').hide();
         $('#markAsCorrect').show();
         $('#nextQuestion').show();
@@ -804,13 +881,19 @@ function stringToTiles(input, parent) {
     var tileValue = [1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10];
     var tiles = [];
     $(parent).html("");
-     $(parent).css('width',$('#alphaSuper').width()-$('#leftHook').width()-$('#rightHook').width());
+	
+	var totalWidth= $('#alphaSuper').width()-$('#leftHook').width()-$('#rightHook').width();
+	//hack to deal with quiz starting as minimized and hence no width with variables we can't get to.  
+	//Thank you Jquery :p
+	if (totalWidth<150) {totalWidth = $('#leftArea').width()*0.66;
+	console.log ('widthTest-'+totalWidth);}
+     $(parent).css('width',totalWidth);
     var tileContainer = document.createElement('div');
     var x = getActiveUserDimensions ($(parent).width()-(tileLetter.length*4),40,tileLetter.length,1,1,1);
     $(parent).width(tileLetter.length*x.picWidth+ (tileLetter.length*4));
     for (i = 0; i < tileLetter.length; i++) {      
         tiles[i] = document.createElement('div');
-        tiles[i].className += ' xeraTiles';
+        tiles[i].className += ' xeraTiles noselect';
         tiles[i].id = 'tile' + i;
         tiles[i].style.width = x.picWidth+'px';
         tiles[i].style.height = tiles[i].style.width;
@@ -832,7 +915,7 @@ function stringToTiles(input, parent) {
         $( "#tileContainer" ).sortable( "option", "disabled", false );
         $( "#tileContainer" ).disableSelection();
        } );
-     window.addEventListener('resize', function(event){displayUserArray(usersArray)});
+     
 }
 
 function getTableLineData(word, auxWordData) {
@@ -1001,5 +1084,10 @@ function getCardboxFromAlpha(alpha) {
      } 
   }
   return null;
+}
+function gNetworkErrorReport (code, target){
+    if (code<400) {$(target).html('Network Error. Please Check your connection settings and try again.')};
+    if (code>=400) {$(target).html('Server Error ['+code+'].  Please try again.')};
+    if (code==502) {$(target).html('Connection Error.  Please reconnect to internet and try again.')};
 }
         

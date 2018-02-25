@@ -6,6 +6,10 @@ import updateActive as ua
 
 params = json.load(sys.stdin)
 userid = params["user"]
+try:
+  cardbox = int(params["cardbox"])
+except:
+  cardbox = 0
 #userid = "10157462952395078"  # me
 ua.updateActive(userid)
 error = {"status": "success"}
@@ -13,7 +17,7 @@ result = { }
 
 try:
 
-  result["alpha"] = xl.getBingoFromCardbox(userid)
+  result["alpha"] = xl.getBingoFromCardbox(userid, cardbox)
 #  result["alpha"] = 'ILLOTXY'
 
 except Exception as ex:

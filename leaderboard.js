@@ -1,187 +1,161 @@
-function showLeaderboardHeader () {
 
-  localStorage.middleDefault = 2;
-  $('#middleArea').html("");
-  document.getElementById('middleArea').style.display = 'inherit';
-
-  /** Initialisation of Header Region **/
-  var lbHeader = document.createElement("div");
-  lbHeader.id = "lbHeader";
-  lbHeader.className += ' lbHeader';
-  document.getElementById('middleArea').appendChild(lbHeader);
-
-  /** Hide / Refresh Buttons **/
-  var button1 = document.createElement('button');
-  var button2 = document.createElement('button');
-  button1.onclick = hideLeaderboard;
-  button2.onclick = showLeaderboard;
-  button1.className += ' tableButtonDark';
-  button2.className += ' tableButtonDark';
-  button1.style.cssFloat = 'right';
-  button2.style.cssFloat = 'left';
-  button1.innerHTML = '✘';
-  button2.innerHTML = '↻';
-
-  /** Title Div **/
-  var headerText1 = document.createElement('div');
-  headerText1.className+= ' tableHeaderDark';
-  headerText1.innerHTML = 'Leaderboard';
-  
-  /** Components of Header added **/
-  lbHeader.appendChild(button1);
-  lbHeader.appendChild(button2);
-  lbHeader.appendChild(headerText1);
-  
-  /** Initialisation of Table div **/
-  var lbContent = document.createElement('div');
-  lbContent.margin = '0 auto';
-  lbContent.id = "lbContent"
-  var lbTable = document.createElement('table');
-  lbTable.id = "lbTable";
-  lbContent.appendChild(lbTable);
-  lbTable.className += ' lbTable';
-  
-  var headerCol = document.createElement('thead');
-  var headerCell1 = document.createElement('th');
-  var header1 = document.createElement('div');
-
-/** List Box Initialisation **/
-
-  var periodList = document.createElement('select');
-  var periodOption1 = document.createElement("option");
-  periodOption1.text = "Today";
-  periodOption1.value = 1;
-  periodList.add(periodOption1);
-  var periodOption2 = document.createElement("option");
-  periodOption2.text = "Yesterday";
-  periodOption2.value = 2;
-  periodList.add(periodOption2);
-  var periodOption3 = document.createElement("option");
-  periodOption3.text = "Last 7 Days";
-  periodOption3.value = 3;
-  periodList.add(periodOption3);
-
-/** Finds previous list box value and creates default is no value present **/
- 
-  switch (leaderboardPanel){
-    case "today": periodList.value=1;break;
-    case "yesterday": periodList.value=2;break;
-    case "lastWeek": periodList.value=3;break;
-    default: leaderboardPanel="today";periodList.value=1;
-  }
-
-/** Actions when list box value changes **/
-
-  periodList.onchange = function() { 
-    if (periodList.value == 1){
-    leaderboardPanel = "today";
-    showLeaderboardData(leaderboardData.today.sort(sortByAnswered),
-      leaderboardData.myRank.today); };
-    if (periodList.value == 2){
-    leaderboardPanel = "yesterday";
-    showLeaderboardData(leaderboardData.yesterday.sort(sortByAnswered),
-      leaderboardData.myRank.yesterday); }
-    if (periodList.value == 3){
-    leaderboardPanel = "lastWeek";
-    showLeaderboardData(leaderboardData.lastWeek.sort(sortByAnswered),
-      leaderboardData.myRank.lastWeek); };
-    };
-
-  
-  document.getElementById('lbHeader').appendChild(lbTable);
-  var headerRow2 = document.createElement('tr');
-  headerCell1 = document.createElement('th');
-  var headerCell4 = document.createElement('th');
-  var headerCell5 = document.createElement('th');
-  headerCell1.colSpan= "3";
-  headerCell1.appendChild(periodList);
-  headerCell4.innerHTML = 'questions done';
-  headerCell5.innerHTML = 'cardbox score';
-  headerRow2.appendChild(headerCell1);
-  headerRow2.appendChild(headerCell4);
-  headerRow2.appendChild(headerCell5);
-  headerCol.appendChild(headerRow2);
-  lbTable.appendChild(headerCol);
-  var tableBody = document.createElement('tbody');
-  tableBody.id = 'lbTableBody';
-  lbTable.appendChild(tableBody);
-  
-
+function initLeaderboard(){
+	showLeaderboardHeader();
+	showLeaderboard(0,0);
 }
+function showLeaderboardHeader () {
+	if (!document.getElementById("pan_3")) {
+		panelData = {	"contentClass" : "lbContent",
+					"title": "Rankings",
+					"tooltip": "<p style='text-align:left'>Leaderboard will update automatically every 5 minutes.  Using the Refresh button will also reset this timer.</p><p style='text-align:left'>No known bugs at present</p>"
+					};
+		generatePanel(3,panelData,"middleArea", initLeaderboard, hideLeaderboard);
 
-function showLeaderboard () {
-  var d = {userid: userid}
-  $.ajax({type: "POST",
-          url: "getLeaderboardStats.py",
-          data: JSON.stringify(d),
-          success: displayLeaderboardStats,
-          error: function(jqXHR, textStatus, errorThrown) {
-          console.log("Error getting leaderboard stats, status = " + textStatus + " error: " + errorThrown);
-          } } );
+		/** List Box Initialisation **/
+		gGenerateListBox ("rankList", [["Leaderboard",1],["My Rank",2]], "content_pan_3");
+		gGenerateListBox ("periodList", [["Today",1],["Yesterday",2],["Last 7 Days",3], ["This Week",4], ["Last Week",5], ["This Month",6], ["This Year", 7]], "content_pan_3");
 
-   }
-
-function displayLeaderboardStats (response, responseStatus) {
-  leaderboardData = response[0];
-  if (leaderboardPanel == "today") 
-    showLeaderboardData(leaderboardData.today.sort(sortByAnswered), 
-            leaderboardData.myRank.today);
-  else if (leaderboardPanel == "yesterday")
-    showLeaderboardData(leaderboardData.yesterday.sort(sortByAnswered),
-            leaderboardData.myRank.yesterday);
-  else if (leaderboardPanel == "lastWeek")
-    showLeaderboardData(leaderboardData.lastWeek.sort(sortByAnswered),
-            leaderboardData.myRank.lastWeek);
+		/** Finds previous list box value and creates default if no value present **/
+		if (typeof localStorage.defaultRankType=='undefined'){localStorage.setItem('defaultRankType','1')}
+		else {$('#rankList').val(localStorage.defaultRankType)};
+		if (typeof localStorage.defaultRankPeriod=='undefined'){localStorage.setItem('defaultRankPeriod','1')}
+		else {$('#periodList').val(localStorage.defaultRankPeriod)};
+	
+		$("#rankList").change(function() { 
+					localStorage.defaultRankType = $ ( this ).val();
+					showLeaderboard ($("#rankList").val(),$("#periodList").val());		  
+		});
+		$("#periodList").change(function() { 
+				localStorage.defaultRankPeriod = $( this ).val();
+				showLeaderboard ($("#rankList").val(),$("#periodList").val());
+		});
+	
+		var lbRows = document.createElement('div');
+		lbRows.id = "lbRows";
+		lbRows.className+=" noselect";
+		document.getElementById("content_pan_3").appendChild(lbRows); 
+	}
+}
+function chooseLeaderboardData (response,responseStatus, inputType, period){
+	switch (Number(inputType)){
+		case 1: if (response[0] && response[0].leaderboard && typeof response[0].leaderboard.myRank!=='undefined'){var rankPar = response[0].leaderboard.myRank};
+		switch (Number(period)){
+			case 1: var result = response[0].leaderboard.today;break;
+			case 2: var result = response[0].leaderboard.yesterday;break;
+			case 3: var result = response[0].leaderboard.sevenDays;break;
+			case 4: var result = response[0].leaderboard.thisWeek;break;
+			case 5: var result = response[0].leaderboard.lastWeek;break;
+			case 6: var result = response[0].leaderboard.thisMonth;break;
+			case 7: var result = response[0].leaderboard.thisYear;break;
+		};break;
+		case 2: var rankPar = response[0].userrank.myRank;
+		switch (Number(period)){
+			case 1: var result = response[0].userrank.today;break;
+			case 2: var result = response[0].userrank.yesterday;break;
+			case 3: var result = response[0].userrank.sevenDays;break;
+			case 4: var result = response[0].userrank.thisWeek;break;
+			case 5: var result = response[0].userrank.lastWeek;break;
+			case 6: var result = response[0].userrank.thisMonth;break;
+			case 7: var result = response[0].userrank.thisYear;break;
+			
+		};break;
+	};
+	if (typeof rankPar!=="undefined"){
+	switch (Number(period)){
+		case 1: var myRanks= rankPar.today;break;
+		case 2: var myRanks= rankPar.yesterday;break;
+		case 3: var myRanks= rankPar.sevenDays;break;
+		case 4: var myRanks= rankPar.thisWeek;break;
+		case 5: var myRanks= rankPar.lastWeek;break;
+		case 6: var myRanks= rankPar.thisMonth;break;
+		case 7: var myRanks= rankPar.thisYear;break;
+	}
+	}
+	else {myranks=0};
+	//console.log('Rank:'+myRanks+'. Data to Display:<br>'+result);
+	showLeaderboardData(result, myRanks);
+}
+function showLeaderboard (inputType, period) {
+	if (Number(inputType) === 0){if (typeof localStorage.defaultRankType !== 'undefined') {inputType=Number(localStorage.defaultRankType)} else {inputType = 1;}}
+	if (Number(period) === 0){if (typeof localStorage.defaultRankPeriod !== 'undefined') {period=Number(localStorage.defaultRankPeriod)} else {period = 1;}}
+	
+	clearTimeout(leaderboardTimeout);
+	leaderboardTimeout = setTimeout(function(){showLeaderboard(inputType,period)}, 300000);
+	switch (Number(inputType)){
+		case 1: d = {userid: userid, leaderboard:true};break;
+		case 2: d = {userid: userid, userrank: true};break;
+		default: d = {userid: userid, userrank: true};break;
+	}
+	switch (Number(period)){
+		case 1: d.timeframe = "today";break;
+		case 2: d.timeframe = "yesterday";break;
+		case 3: d.timeframe = "sevenDays";break;
+		case 4: d.timeframe = "thisWeek";break;
+		case 5: d.timeframe = "lastWeek";break;
+		case 6: d.timeframe = "thisMonth";break;
+		case 7: d.timeframe = "thisYear";break;
+		default: d.timeframe = "Today";break;
+	}
+	$.ajax({
+		type: "POST",		
+		url: "getLeaderboardStats2.py",
+		data: JSON.stringify(d),
+		beforeSend: function(){
+						$("#heading_text_pan_3").html('Rankings <img src="images/ajaxLoad.gif" style="height:0.8em">');
+		},
+		success: function(response, responseStatus){
+			$("#heading_text_pan_3").html("Rankings");
+				chooseLeaderboardData(response, responseStatus, inputType, period);				
+		},
+		error: function(jqXHR, textStatus, errorThrown) {
+			console.log("Error getting leaderboard stats, status = " + textStatus + " error: " + errorThrown);	  
+		} 
+	});
 }
 
 function hideLeaderboard() {
-  localStorage.middleDefault = 0;
-  document.getElementById('middleArea').style.display = 'none';
-  $('#middleArea').html("");
+	clearTimeout(leaderboardTimeout);
+	$('#pan_3').remove();
 }
 
 function showLeaderboardData(data, myRank) {
-  var MAX_TOP_PLAYERS = 10 // leaderboard should show the top x players
-             // if there is an x+1th player, it's me; show with myRank
-  showLeaderboardHeader();
+  var MAX_TOP_PLAYERS = 10;
+  $('#lbRows').html('');
   var getOrdinal = function(n) {
-    var s=["th","st","nd","rd"], v=n%100;
-    return (s[(v-20)%10]||s[v]||s[0]);
-  }
+	  return["st","nd","rd"][((n+90)%100-10)%10-1]||"th"};
   for (var x=0;x<data.length;x++) {
-    var row = document.createElement('tr'); 
-    document.getElementById('lbTableBody').appendChild(row);
-    if (x==0){row.style.fontWeight='bold';};
-    var col=[];
-    var columnInfo = [(x+1)+"<sup>"+getOrdinal(x+1)+"</sup>",'<img src="'+data[x].photo+'" style="height:30px;" title="'+data[x].name+'">',data[x].name, data[x].answered, data[x].score];  
-    for (var y=1;y<6;y++){
-      col[y] = document.createElement("td");
+	var row = [];
+    row[x] = document.createElement('div');
+	row[x].className+=' lbDiv';
+	row[x].id = 'lbdiv'+x;
+	$(row[x]).css('opacity','0');	
+    $('#lbRows').append(row[x]);
+    if (x==0){row[x].style.fontWeight='bold';}
+	var rankcheck=0
+    var col= [];
+	if (typeof data[x].rank!=='undefined'){rankcheck=data[x].rank} else {rankcheck=x+1};
+    var columnInfo = [(rankcheck)+"<sup>"+getOrdinal(rankcheck)+"</sup>",
+	'<img src="'+data[x].photo+'" style="padding:0;" title="'+data[x].name+'">',
+	data[x].name, 
+	data[x].answered]; 
+	
+    for (var y=1;y<5;y++){
+      col[y] = document.createElement("div");
+	  col[y].className+=' lbDivchild';
       col[y].innerHTML = columnInfo[y-1];
-      row.appendChild(col[y]);
+      row[x].appendChild(col[y]);
+	  if (username==data[x].name){
+		if (y>1){			
+			col[y].style.background="#8abd22"; 			
+		}
+	}
     }
-    /** Exceptions to loop **/
-    col[1].className+=' lbTableRank';
-    col[2].style.borderRight = 'solid 0px';
-    col[3].style.borderLeft = 'solid 0px';
-    col[3].style.width = '45%';
-    col[3].style.textAlign = 'left'; 
-    if (x>=MAX_TOP_PLAYERS){col[1].innerHTML = (myRank)+"<sup>"+getOrdinal(x+1)+"</sup>";}  
-    if (username==data[x].name){row.style.background="#5ab";} //*Cheap hack to highlight user.  Bug if 2 people with the same name are in the rankings *//   
-  }
-  var footNote=[];
-  var rowFoot = document.createElement("tr");
-  for (var y=1;y<6;y++){
-    footNote[y] = document.createElement("td");
-    rowFoot.appendChild(footNote[y]);
-  } 
-  document.getElementById('lbTableBody').appendChild(rowFoot);
+    if (x>=MAX_TOP_PLAYERS && myRank>x && username==data[x].name){
+		col[1].innerHTML = (myRank)+"<sup>"+getOrdinal(myRank)+"</sup>";} 
+		
+	
+}	
+	for (x=data.length-1;x>=0;x--) {
+		$("#lbdiv"+x).delay(150*(data.length-x)).fadeTo(1200,1);
+	} 
 }
-
-function sortByAnswered(a, b) {
-  return b.answered - a.answered;
-}
-
-function sortByScore(a, b) {
-  return b.score - a.score;
-}
-
