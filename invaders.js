@@ -439,7 +439,7 @@ function endGame_inv (restart, pause) {
   
   var d;
   if (currentScore >= personalHighScore || currentScore >= dailyHighScore) {
-  d = { userid: userid, score: currentScore };
+  d = { userid: userid, score: currentScore, gameOver: !pause };
   $.ajax({type: "POST",
          data: JSON.stringify(d),
          url: "setInvaderHighScores.py",
@@ -447,10 +447,6 @@ function endGame_inv (restart, pause) {
                       result = response[0];
                       personalHighScore = result.personal;
                       dailyHighScore = result.daily.score; 
-
-                      if (currentScore >= dailyHighScore && !pause) {
-                            submitChat(username + " has set a new high score of " + currentScore + " for today in Cardbox Invaders!", true, 2);
-                      }
                   },
 	 error: function(jqXHR, textStatus, errorThrown) {
 	      console.log("Error, status = " + textStatus + " error: " + errorThrown); 

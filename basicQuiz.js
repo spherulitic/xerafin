@@ -475,7 +475,7 @@ function checkMilestones(answered) {
     var ranges = [[50, 49, 501], [100, 501, 1001], [200, 1001, 50000]];
     for (var i = 0; i < ranges.length; i++) {
         if ((answered % (ranges[i][0]) == 0) && (answered > ranges[i][1]) && (answered < ranges[i][2])) {
-            submitChat(username + " has completed <b>" + answered + "</b> alphagrams today!", true);
+            //submitChat(username + " has completed <b>" + answered + "</b> alphagrams today!", true);
         }
     }
 }

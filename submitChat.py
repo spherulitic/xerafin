@@ -1,63 +1,26 @@
 #!/usr/bin/python
 
-import json, sys, os
-import MySQLdb as mysql
-import time
-import updateActive as ua
-import xerafinSetup as xs
+import json, sys
+import xerafinChat as xChat
 
-error = {"status": "success"}
-result = [ ]
 params = json.load(sys.stdin)
-userid = unicode(params["userid"])
-message = unicode(params["chatText"])
-chatTime = int(params["chatTime"])  # Epoch * 1000 -- in milliseconds
-try:
-  expire = params["expire"]
-except:
-  expire = False
-
-now = int(time.time())
-if int(userid) > 10:
-  ua.updateActive(userid)
-AUTOLOGOFF = .1 # in hours
-logoffTime = now - (3600*AUTOLOGOFF)
-
-try:
-  with xs.getMysqlCon(useUnicode=True) as con:
-    if con is None:
-      result["status"] = "Chat Database Connection Failed"
-    else:
-      try:
-         if expire:
-           command = "delete from chat where userid = %s and timeStamp = %s"
-           con.execute(command, (userid, chatTime))
-         else:
-           command = 'insert into chat (userid, timeStamp, message) values (%s, %s, %s)'
-           con.execute(command, (userid.encode('utf8'), chatTime, message.encode('utf8')))
-         command = "select userid from login where last_active > %s"
-         con.execute(command, logoffTime)
-         for row in con.fetchall():
-           filename = os.path.join('chats', row[0] + '.chat')
-           with open(filename, 'a') as f:
-             if expire:
-               msg = userid+u','+unicode(chatTime)+u','+u'\n'
-             else:               
-               msg = userid+u','+unicode(chatTime)+u','+message+u'\n'
-             f.write(msg.encode('utf8'))
-      except mysql.Error, e:
-         result["status"] = "MySQL error %d %s " % (e.args[0], e.args[1])
-      except:
-         template = "An exception of type {0} occured. Arguments:\n{1!r}"
-         message = template.format(type(ex).__name__, ex.args)
-         result["status"] =  message
-
-
-except:
-  result["status"] = "Chat DB Failure"
-
 print "Content-type: application/json\n\n"
-print json.dumps([result, error])
+
+try:
+  userid = unicode(params["userid"])
+  message = unicode(params["chatText"])
+  chatTime = int(params["chatTime"])  # Epoch * 1000 -- in milliseconds
+  try:
+    expire = params["expire"]
+  except:
+    expire = False
+
+  result = xChat.post(userid, message, chatTime, expire)
+  print json.dumps(result)
+except:
+  print json.dumps("Incorrect parameters")
+
+
 
 
 

@@ -40,7 +40,7 @@ function startChat () {
 		var chatDisplayTable = document.createElement("table");
 			chatDisplayTable.id = 'chatTable';
 			chatDisplayTable.classname += ' chatTable';
-		$(chatInputBox).append(chatInputAddon, chatBox);
+		chatInputBox.append(chatInputAddon, chatBox);
 		$('#content_pan_2').append(userDisplayArea,chatRegion);
 		$('#chatRegion').append(chatInputBox, chatDisplayBox);
 		$('#chatDisplayBox').append(chatDisplayTable);
@@ -235,7 +235,7 @@ function displayChats (response, responseStatus) {
      }
      chatPic.title = chatQueue[x].name;
      chatPic.style.height = '28px';
-     $(chatPicNode).append(chatPic);
+     chatPicNode.append(chatPic);
      chatPicNode.style.width = '10%';
      chatPicNode.style.textAlign = 'center';
      chatText.style.verticalAlign = 'middle';
@@ -248,7 +248,7 @@ function displayChats (response, responseStatus) {
      chatText.style.textAlign = 'left';
      chatText.className += ' chatText';
 	 $('#chatTable').append(chatNode);
-	 $(chatNode).append(chatDateNode,chatPicNode,chatText);
+	 chatNode.append(chatDateNode,chatPicNode,chatText);
         
    }  
    

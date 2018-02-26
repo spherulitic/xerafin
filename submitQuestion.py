@@ -1,10 +1,11 @@
 #!/usr/bin/python
 
 import xerafinLib as xl
-import json, sys
+import json, sys, time
 import updateActive as ua
 import MySQLdb as mysql
 import xerafinSetup as xs
+import xerafinChat as xchat
 
 params = json.load(sys.stdin)
 userid = params["user"]
@@ -40,8 +41,34 @@ try:
 
   result["aux"] = xl.getAuxInfo(alpha, userid)
   result["score"] = xl.getCardboxScore(userid)
+
+  # MILESTONE CHATS 
+  # Every 50 up to 500, every 100 up to 1000, every 200 after that
+  
+  SYSTEM_USERID = 0 # Xerafin system uid
+  milestone = (result["qAnswered"] < 501 and result["qAnswered"]%50==0) or (result["qAnswered"] < 1001 and result["qAnswered"]%100==0) or (result["qAnswered"]%200==0)
+
+  if milestone:
+    with xs.getMysqlCon() as con:
+      command = "select name from login where userid = %s"
+      con.execute(command, userid)
+      name = con.fetchone()[0]
+     
+    # Find the previous milestone chat to expire
+      command = "select max(timeStamp) from chat where userid = %s and message like %s"
+      con.execute(command, (SYSTEM_USERID, "%{0} has completed %".format(name)))
+      expiredChatTime = con.fetchone()[0]
+      
+    now = int(time.time()) * 1000
+    msg = "{0} has completed <b>{1}</b> alphagrams today!".format(name, result["qAnswered"])
+    error["milestoneDelete"] = xchat.post(u'0', msg)
+    error["milestoneSubmit"] = xchat.post(u'0', u'', expiredChatTime, True)
+
 except:
-  error["status"] = "Cardbox DB Failure"
+  template = "An exception of type {0} occured. Arguments:\n{1!r}"
+  errmsg = template.format(type(ex).__name__, ex.args)
+  error["status"] = errmsg
+
 
 print "Content-type: application/json\n\n"
 print json.dumps([result, error])

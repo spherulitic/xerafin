@@ -259,8 +259,16 @@ function slothTimerExpire () {
 //  console.log("Sloth Timer Expire");
   var wd;
   var d;
-  if (slothScore / totalScore >= 0.6)
-    submitSlothChat();
+  if (slothScore / totalScore >= 0.6) {
+      var progress = Math.round((slothScore/totalScore)*100) + '%';
+      d = {userid: userid, score: Math.round((slothScore/totalScore)*100), alpha: slothQuestion}
+      $.ajax({type: "POST",
+         data: JSON.stringify(d),
+         url: "submitSloth.py",
+         success: function(response) { console.log("Sloth submitted.");
+                                       console.log(response); }
+      });
+  }
   $('#answerBox').attr("disabled", "disabled");
   $('#startButton').html("Next Word");
   $('#startButton').off('click');
