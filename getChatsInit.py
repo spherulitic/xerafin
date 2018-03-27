@@ -30,5 +30,5 @@ with xs.getMysqlCon() as con:
         error["status"] = "Chat DB Failure"
 
 print "Content-type: application/json\n\n"
-print json.dumps([result, 0, error])
+print json.dumps([result, 0, int(time.time()), error])
 

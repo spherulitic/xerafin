@@ -499,9 +499,10 @@ def makeWordsAvailable (userid, cur) :
     # if readycnt = 0, there are no words available to repeat so we must add new
     #   even overriding newWordsAtOnce = 0 or cb0max
     if readycnt == 0:
-#      addWords(max(getPrefs("newWordsAtOnce", userid),1), userid, cur)
+      addWords(max(getPrefs("newWordsAtOnce", userid),1), userid, cur)
 # reintroduced this bug by request. fix it once there's a "quiz from CB 0" bit
-      addWords(getPrefs("newWordsAtOnce", userid), userid, cur)
+# fixed this darned bug
+#      addWords(getPrefs("newWordsAtOnce", userid), userid, cur)
     elif cb0cnt < cb0max:
       addWords(getPrefs("newWordsAtOnce", userid), userid, cur)
     newWordsAt = newWordsAt + 3600

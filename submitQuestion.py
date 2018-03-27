@@ -55,14 +55,16 @@ try:
       name = con.fetchone()[0]
      
     # Find the previous milestone chat to expire
-      command = "select max(timeStamp) from chat where userid = %s and message like %s"
-      con.execute(command, (SYSTEM_USERID, "%{0} has completed %".format(name)))
-      expiredChatTime = con.fetchone()[0]
-      
-    now = int(time.time()) * 1000
+      try:
+        command = "select max(timeStamp) from chat where userid = %s and message like %s"
+        con.execute(command, (SYSTEM_USERID, "%{0} has completed %".format(name)))
+        expiredChatTime = con.fetchone()[0]
+        error["milestoneDelete"] = xchat.post(u'0', u'', expiredChatTime, True)
+      except:
+        pass 
+ 
     msg = "{0} has completed <b>{1}</b> alphagrams today!".format(name, result["qAnswered"])
-    error["milestoneDelete"] = xchat.post(u'0', msg)
-    error["milestoneSubmit"] = xchat.post(u'0', u'', expiredChatTime, True)
+    error["milestoneSubmit"] = xchat.post(u'0', msg)
 
 except:
   template = "An exception of type {0} occured. Arguments:\n{1!r}"

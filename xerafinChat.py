@@ -41,7 +41,7 @@ def post(userid, message, chatTime=None, expire=False):
           msg = userid+u','+unicode(chatTime)+u','+message+u'\n'
           result["msg"] = msg
         command = "select userid from login where last_active > %s"
-        con.execute(command, logoffTime)
+        con.execute(command, [logoffTime])
         for row in con.fetchall():
           filename = os.path.join('chats', row[0] + '.chat')
           with open(filename, 'a') as f:

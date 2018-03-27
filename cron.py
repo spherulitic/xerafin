@@ -34,11 +34,18 @@ try:
      except:
        pass
 
+     try:
+       if time.strftime("%d") == '01':
+         command = "insert into lb_summary(period, dateStamp, questionsAnswered, numUsers) select 'MONTH', min(dateStamp), sum(questionsAnswered), count(distinct userid) from leaderboard where DATE_FORMAT(dateStamp, '%Y%m) = DATE_FORMAT(curdate() - interval 1 day, '%Y%m') group by DATE_FORMAT(dateStamp, '%Y%m')"
+         con.execute(command)
+     except:
+       pass
+
      # Add Daily Summary chat to database
 
      userid = u'0'
      chatTime = now * 1000
-     message = 'Good job everyone! Yesterday {0} Xerafin users solved {1} alphagrams!'
+     message = 'Good job Xerfers! Yesterday {0} users solved {1} alphagrams!'
      message = message.format(users, questions)
      command = "insert into chat (userid, timeStamp, message) values (%s, %s, %s)"
 

@@ -34,6 +34,7 @@ with xs.getMysqlCon() as con:
       if con.fetchone()[0] == 0:
          command = "insert into user_prefs (userid, studyOrderIndex, closet, newWordsAtOnce, reschedHrs, showNumSolutions, cb0max, schedVersion, secLevel) values (%s, 0, 20, 4, 24, 'Y', 200, 0, 1)"
          con.execute(command, userid)
+         xl.checkCardboxDatabase(userid)
 
     except mysql.Error, e: 
       result["status"] = "MySQL error %d %s" % (e.args[0], e.args[1])

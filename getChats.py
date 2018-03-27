@@ -51,4 +51,4 @@ with open(chatFile, 'r') as f:
     tries = tries + 1 
           
 print "Content-type: application/json\n\n"
-print json.dumps([result, lastReadRow, error])
+print json.dumps([result, lastReadRow, int(time.time()), error])

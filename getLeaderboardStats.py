@@ -7,6 +7,30 @@ import xerafinSetup as xs
 import datetime
 import time
 
+def getUsersByPeriod (period):
+  try:
+    if period in ["today", "yesterday"]:
+      dateMask = {"today": "curdate()", "yesterday": "curdate() - interval 1 day"}
+      command = "select count(*) from leaderboard where dateStamp = {0}".format(dateMask[period])
+      con.execute(command)
+    elif period == "eternity":
+      command = "select count(distinct userid) from leaderboard"
+      con.execute(command)
+    elif period == "sevenDays":
+      command = "select count(distinct userid) from leaderboard where dateStamp >= curdate() - interval 7 day"
+      con.execute(command)
+    else:
+      dateMask = {"thisWeek": "%Y%u", "lastWeek": "%Y%u", "thisMonth": "%Y%m", "thisYear": "%Y"}
+      if period == "lastWeek":
+        datePeriod = "curdate() - interval 7 day"
+      else:
+        datePeriod = "curdate()"
+      command = "select count(distinct userid) from leaderboard where DATE_FORMAT(dateStamp, %s) = DATE_FORMAT({0}, %s)".format(datePeriod)
+      con.execute(command, (dateMask[period], dateMask[period]))
+    return con.fetchone()[0] 
+  except:
+    return 0
+
 try:
   params = json.load(sys.stdin)
 except:
@@ -63,6 +87,7 @@ error = { }
 if getLeaderboard:
   leaderboard = { } 
   leaderboard["myRank"] = { }
+  leaderboard["users"] = { }
 
   try:
     with xs.getMysqlCon() as con:
@@ -71,6 +96,7 @@ if getLeaderboard:
   #### TODAY
   ####
       if timeframe in ["today", "all"]:
+        leaderboard["users"]["today"] = getUsersByPeriod("today")
         leaderboard["today"] = [ ]
         command = "select name, photo, questionsAnswered, userid from leaderboard join login using (userid) where dateStamp = curdate() order by questionsAnswered desc limit 10"
         con.execute(command)
@@ -93,12 +119,14 @@ if getLeaderboard:
             con.execute(command, myAnswered)
             row = con.fetchone()
             leaderboard["myRank"]["today"] = row[0]+1
-        
+        command = "select count(*) from leaderboard where dateStamp = curdate()"
+          
   ####
   #### YESTERDAY
   ####
 
       if timeframe in ["yesterday", "all"]:
+        leaderboard["users"]["yesterday"] = getUsersByPeriod("yesterday")
         leaderboard["yesterday"] = [ ]
         command = "select name, photo, questionsAnswered, userid from leaderboard join login using (userid) where dateStamp = curdate() - interval 1 day order by questionsAnswered desc limit 10"
         con.execute(command)
@@ -126,6 +154,7 @@ if getLeaderboard:
   #### LAST SEVEN DAYS
   ####
       if timeframe in ["sevenDays", "all"]:
+        leaderboard["users"]["sevenDays"] = getUsersByPeriod("sevenDays")
         leaderboard["sevenDays"] = [ ] 
         command = "select name, photo, sum(questionsAnswered), userid from leaderboard join login using (userid) where dateStamp >= curdate() - interval 7 day group by name, photo, userid order by sum(questionsAnswered) desc limit 10"
         con.execute(command)
@@ -149,6 +178,7 @@ if getLeaderboard:
             leaderboard["myRank"]["sevenDays"] = con.rowcount+1
    ### This (current) week
       if timeframe in ["thisWeek", "all"]:
+        leaderboard["users"]["thisWeek"] = getUsersByPeriod("thisWeek")
         leaderboard["thisWeek"] = [ ] 
         command = "select name, photo, sum(questionsAnswered), userid from leaderboard join login using (userid) where DATE_FORMAT(dateStamp, '%Y%u') = DATE_FORMAT(curdate(), '%Y%u') group by name, photo, userid order by sum(questionsAnswered) desc limit 10"
         con.execute(command)
@@ -173,6 +203,7 @@ if getLeaderboard:
         
    ### Last week
       if timeframe in ["lastWeek", "all"]:
+        leaderboard["users"]["lastWeek"] = getUsersByPeriod("lastWeek")
         leaderboard["lastWeek"] = [ ] 
         command = "select name, photo, sum(questionsAnswered), userid from leaderboard join login using (userid) where DATE_FORMAT(dateStamp, '%Y%u') = DATE_FORMAT(curdate() - interval 7 day, '%Y%u') group by name, photo, userid order by sum(questionsAnswered) desc limit 10"
         con.execute(command)
@@ -197,6 +228,7 @@ if getLeaderboard:
         
       # This Month
       if timeframe in ["thisMonth", "all"]:
+        leaderboard["users"]["thisMonth"] = getUsersByPeriod("thisMonth")
         leaderboard["thisMonth"] = [ ] 
         command = "select name, photo, sum(questionsAnswered), userid from leaderboard join login using (userid) where DATE_FORMAT(dateStamp, '%Y%m') = DATE_FORMAT(curdate(), '%Y%m') group by name, photo, userid order by sum(questionsAnswered) desc limit 10"
         con.execute(command)
@@ -221,6 +253,7 @@ if getLeaderboard:
         
       # This Year
       if timeframe in ["thisYear", "all"]:
+        leaderboard["users"]["thisYear"] = getUsersByPeriod("thisYear")
         leaderboard["thisYear"] = [ ] 
         command = "select name, photo, sum(questionsAnswered), userid from leaderboard join login using (userid) where DATE_FORMAT(dateStamp, '%Y') = DATE_FORMAT(curdate(), '%Y') group by name, photo, userid order by sum(questionsAnswered) desc limit 10"
         con.execute(command)
@@ -295,14 +328,8 @@ if getGlobal:
           thisWeekQuestions = int(row[0]) + yesterdayQuestions + todayQuestions
         else:
           thisWeekQuestions = yesterdayQuestions + todayQuestions
-      command = "select count(distinct userid) from leaderboard where DATE_FORMAT(dateStamp, '%Y%u') = DATE_FORMAT(curdate(), '%Y%u')"
-      con.execute(command)
-      try:
-        thisWeekUsers = con.fetchone()[0]
-      except:
-        thisWeekUsers = 0
       globe["questions"]["thisWeek"] = thisWeekQuestions
-      globe["users"]["thisWeek"] = thisWeekUsers
+      globe["users"]["thisWeek"] = getUsersByPeriod("thisWeek")
       
       # Monthly totals
       
@@ -318,11 +345,8 @@ if getGlobal:
           thisMonthQuestions = int(row[0]) + yesterdayQuestions + todayQuestions
         else:
           thisMonthQuestions = yesterdayQuestions + todayQuestions
-      command = "select count(distinct userid) from leaderboard where DATE_FORMAT(dateStamp, '%Y%m') = DATE_FORMAT(curdate(), '%Y%m')"
-      con.execute(command)
-      thisMonthUsers = con.fetchone()[0]
       globe["questions"]["thisMonth"] = thisMonthQuestions
-      globe["users"]["thisMonth"] = thisMonthUsers
+      globe["users"]["thisMonth"] = getUsersByPeriod("thisMonth")
 
       # Annual totals
 
@@ -337,12 +361,9 @@ if getGlobal:
           thisYearQuestions = int(row[0]) + thisMonthQuestions
         else:
           thisYearQuestions = thisMonthQuestions
-        command = "select count(distinct userid) from leaderboard where DATE_FORMAT(dateStamp, '%Y') = DATE_FORMAT(curdate(), '%Y')"
-        con.execute(command)
-        thisYearUsers = con.fetchone()[0]
 
       globe["questions"]["thisYear"] = thisYearQuestions
-      globe["users"]["thisYear"] = thisYearUsers
+      globe["users"]["thisYear"] = getUsersByPeriod("thisYear")
 
       # Eternity totals
 
@@ -353,12 +374,9 @@ if getGlobal:
         eternityQuestions = int(row[0]) + thisYearQuestions
       else:
         eternityQuestions = thisYearQuestions
-      command = "select count(distinct userid) from leaderboard"
-      con.execute(command)
-      eternityUsers = con.fetchone()[0]
 
       globe["questions"]["eternity"] = eternityQuestions
-      globe["users"]["eternity"] = eternityUsers
+      globe["users"]["eternity"] = getUsersByPeriod("eternity")
 
   except Exception as ex: 
     template = "Globe: An exception of type {0} occured. Arguments:\n{1!r}"
@@ -469,7 +487,7 @@ if getUserRecords:
   result["userrecords"] = userrecords
 
 if getUserRank:
-  userrank = {"myRank": { } }
+  userrank = {"myRank": { }, "users": { } }
   PLUSMINUS = 5
   
   try:
@@ -477,6 +495,7 @@ if getUserRank:
 
       # TODAY
       if timeframe in ["today", "all"]:
+        userrank["users"]["today"] = getUsersByPeriod("today")
         userrank["today"] = [ ]
         command = "select questionsAnswered from leaderboard where userid = %s and dateStamp = curdate()"
         con.execute(command, me)
@@ -508,6 +527,7 @@ if getUserRank:
 
       # YESTERDAY
       if timeframe in ["yesterday", "all"]:
+        userrank["users"]["yesterday"] = getUsersByPeriod("yesterday")
         userrank["yesterday"] = [ ] 
         command = "select questionsAnswered from leaderboard where userid = %s and dateStamp = curdate() - interval 1 day"
         con.execute(command, me)
@@ -537,6 +557,7 @@ if getUserRank:
 
       # LAST WEEK
       if timeframe in ["sevenDays", "all"]:
+        userrank["users"]["sevenDays"] = getUsersByPeriod("sevenDays")
         userrank["sevenDays"] = [ ]
         command = "select sum(questionsAnswered) from leaderboard where userid = %s and dateStamp >= curdate() - interval 7 day"
         con.execute(command, me)
@@ -565,6 +586,7 @@ if getUserRank:
       
       # THIS (CURRENT) WEEK
       if timeframe in ["thisWeek", "all"]:
+        userrank["users"]["thisWeek"] = getUsersByPeriod("thisWeek")
         userrank["thisWeek"] = [ ]
         command = "select sum(questionsAnswered) from leaderboard where userid = %s and DATE_FORMAT(dateStamp, '%%Y%%u') = DATE_FORMAT(curdate(), '%%Y%%u')"
         con.execute(command, me)
@@ -593,6 +615,7 @@ if getUserRank:
       
       # LAST WEEK
       if timeframe in ["lastWeek", "all"]:
+        userrank["users"]["lastWeek"] = getUsersByPeriod("lastWeek")
         userrank["lastWeek"] = [ ]
         command = "select sum(questionsAnswered) from leaderboard where userid = %s and DATE_FORMAT(dateStamp, '%%Y%%u') = DATE_FORMAT(curdate() - interval 7 day, '%%Y%%u')"
         con.execute(command, me)
@@ -621,6 +644,7 @@ if getUserRank:
       
       # THIS MONTH
       if timeframe in ["thisMonth", "all"]:
+        userrank["users"]["thisMonth"] = getUsersByPeriod("thisMonth")
         userrank["thisMonth"] = [ ]
         command = "select sum(questionsAnswered) from leaderboard where userid = %s and DATE_FORMAT(dateStamp, '%%Y%%m') = DATE_FORMAT(curdate(), '%%Y%%m')"
         con.execute(command, me)
@@ -650,6 +674,7 @@ if getUserRank:
 
       # THIS YEAR
       if timeframe in ["thisYear", "all"]:
+        userrank["users"]["thisYear"] = getUsersByPeriod("thisYear")
         userrank["thisYear"] = [ ]
         command = "select sum(questionsAnswered) from leaderboard where userid = %s and DATE_FORMAT(dateStamp, '%%Y') = DATE_FORMAT(curdate(), '%%Y')"
         con.execute(command, me)
@@ -820,5 +845,4 @@ if getIndivRecords:
 
 print "Content-type: application/json\n\n"
 print json.dumps([result, error])
-
 
