@@ -32,7 +32,7 @@ try:
     if score >= result["daily"]["score"]:
       result["daily"] = {"score": score, "userid": userid}
       con.execute("update invaders_daily set score = %s, userid = %s where dateStamp = curdate()", (score, userid))
-      if gameover:
+      if gameover and int(score) > 0:
         command = "select name from login where userid = %s"
         con.execute(command, userid)
         name = con.fetchone()[0]

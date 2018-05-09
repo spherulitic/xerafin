@@ -17,9 +17,13 @@ try:
     cur = con.cursor()
     if xl.isAlphagramValid(question):
       xl.addWord(question, cur)
+      added = True
     else:
       error["status"] = "Invalid Alphagram"
-  xl.wrong(question, userid)
+      added = False
+  # If the word isn't there, then xl.wrong bombs, overwriting the Invalid Alphagram msg
+  if added:
+    xl.wrong(question, userid)
 
 except Exception as ex:
   template = "An exception of type {0} occured. Arguments:\n{1!r}"

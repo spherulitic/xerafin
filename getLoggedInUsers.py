@@ -21,12 +21,16 @@ with xs.getMysqlCon() as con:
     error["status"] = "DB connection failure"
   else:
     try:
-      command = "select name, photo, last_active from login where last_active > %s order by name"
+      command = "select name, firstName, lastName, photo, last_active from login where last_active > %s order by name"
 #      command = "select name, photo, last_active from login"
       con.execute(command, logoffTime)
       for row in con.fetchall():
 #        print str(row)
-        result.append({"name": row[0], "photo": row[1], "lastActive": row[2]})
+        if row[1] and row[2]:
+          name = "{0} {1}".format(row[1], row[2])
+        else:
+          name = row[0]
+        result.append({"name": name, "photo": row[3], "lastActive": row[4]})
 		
     except mysql.Error, e: 
       error["status"] = "MySQL error %d %s" % (e.args[0], e.args[1])

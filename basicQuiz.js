@@ -107,7 +107,7 @@ function initUIQuiz() {
 					['e1d', 'div', 'btn-group quizBlankWrapper','','e1',''],
                     ['e1d1', 'div', 'quizBlankCheckbox', 'blankQuizBox', 'e1d', ''],
                     ['e1d1a', 'input', '', 'blankQuizCheck', 'e1d1', ''],
-                    ['e1d1b', 'label', '', 'blankQuizLabel', 'e1d1', '?'],
+                    ['e1d1b', 'label', 'noselect', 'blankQuizLabel', 'e1d1', '?'],
                     ['f','table','wordTable','correctAnswers','content_pan_1_a',''],
                     ['g','div','wordTableWrong','wrongAnswers','content_pan_1_a','']
                     ]);
@@ -475,6 +475,9 @@ function checkMilestones(answered) {
     var ranges = [[50, 49, 501], [100, 501, 1001], [200, 1001, 50000]];
     for (var i = 0; i < ranges.length; i++) {
         if ((answered % (ranges[i][0]) == 0) && (answered > ranges[i][1]) && (answered < ranges[i][2])) {
+            // only cornify if the user is in basic quiz
+//            if(localStorage.gUnicorns == "true" && document.getElementById("pan_1_a")) {
+//                   cornify_add(); }
             //submitChat(username + " has completed <b>" + answered + "</b> alphagrams today!", true);
         }
     }

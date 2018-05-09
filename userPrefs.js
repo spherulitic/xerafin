@@ -166,6 +166,15 @@ function showUserPrefs(response, responseStatus) {
   p9.appendChild(s91);
   p9.appendChild(i9);
   p9.appendChild(s92);
+
+  var i10 = document.createElement("button");
+  i10.id = "unicornButton";
+  if (localStorage.gUnicorns == "true")
+    i10.innerHTML = "Turn off unicorns";
+  else
+    i10.innerHTML = "Turn on unicorns";
+  i10.setAttribute("onclick", "prefsUnicornToggle()");
+   
   
   i5 = document.createElement("button");
   i5.innerHTML = "Save";
@@ -183,6 +192,11 @@ function showUserPrefs(response, responseStatus) {
   document.getElementById('content_pan_1_d').appendChild(p9);
   document.getElementById('content_pan_1_d').appendChild(document.createElement("br"));
   document.getElementById('content_pan_1_d').appendChild(i5);
+  document.getElementById('content_pan_1_d').appendChild(document.createElement("br"));
+  document.getElementById('content_pan_1_d').appendChild(document.createElement("br"));
+  document.getElementById('content_pan_1_d').appendChild(document.createElement("br"));
+// Cornify on milestone preference - April Fools 2018
+//  document.getElementById('content_pan_1_d').appendChild(i10);
   }
 }
 
@@ -205,9 +219,17 @@ console.log(d);
                    }
 });
 
-
-
 }
+
+function prefsUnicornToggle () {
+  if (localStorage.gUnicorns == "true") {
+    document.getElementById("unicornButton").innerHTML = "Turn on unicorns";
+    localStorage.gUnicorns = "false"; 
+  } else { 
+    document.getElementById("unicornButton").innerHTML = "Turn off unicorns";
+    localStorage.gUnicorns = "true";  }
+}
+
 
 function prefsChangeCloset(c) {
  $('#closetValue').html(parseInt(c)+1);

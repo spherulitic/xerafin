@@ -17,6 +17,14 @@ userid = params["id"]
 token = params["token"]
 name = params["name"]
 photo = params["photo"]
+
+try:
+  first = params["firstName"]
+  last = params["lastName"]
+except:
+  first = name
+  last = ""
+
 now = int(time.time())
 
 with xs.getMysqlCon() as con:
@@ -26,13 +34,13 @@ with xs.getMysqlCon() as con:
     try:
       command = "delete from login where userid = %s"
       con.execute(command, userid)
-      command = "insert into login (userid, last_login, last_active, token, name, photo) values (%s, %s, %s, %s, %s, %s)"
-      con.execute(command, (userid, now, now, token, name, photo))
+      command = "insert into login (userid, last_login, last_active, token, name, firstName, lastName, photo) values (%s, %s, %s, %s, %s, %s, %s, %s)"
+      con.execute(command, (userid, now, now, token, name, first, last, photo))
       # Check if they have user preferences; if not insert defaults
       command = "select count(*) from user_prefs where userid = %s"
       con.execute(command, userid)
       if con.fetchone()[0] == 0:
-         command = "insert into user_prefs (userid, studyOrderIndex, closet, newWordsAtOnce, reschedHrs, showNumSolutions, cb0max, schedVersion, secLevel) values (%s, 0, 20, 4, 24, 'Y', 200, 0, 1)"
+         command = "insert into user_prefs (userid, studyOrderIndex, closet, newWordsAtOnce, reschedHrs, showNumSolutions, cb0max, schedVersion, secLevel, isTD) values (%s, 0, 20, 4, 24, 'Y', 200, 0, 0, 0)"
          con.execute(command, userid)
          xl.checkCardboxDatabase(userid)
 
