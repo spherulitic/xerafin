@@ -1,236 +1,189 @@
 function initUserPrefs() {
-
- // ajax call to get user prefs
- var d = { userid: userid };
- $.ajax({type: "POST", 
-         url: "getUserPrefs.py",
-         data: JSON.stringify(d),
-         success: showUserPrefs,
-         error: function(jqXHR, textStatus, errorThrown) {
-           console.log("Error retrieving user prefs. Status: " + textStatus + "  Error: " + errorThrown); }
-});
-
+	var d = { userid: userid };
+	$.ajax({
+		type: "POST", 
+		url: "getUserPrefs.py",
+		data: JSON.stringify(d),
+		success: showUserPrefs,
+		error: function(jqXHR, textStatus, errorThrown) {
+			console.log("Error retrieving user prefs. Status: " + textStatus + "  Error: " + errorThrown); 
+		}
+	});
 }
 
 function showUserPrefs(response, responseStatus) {
-
-  // get response from ajax call
-  // need prefs and currently occupied cardboxes
-  console.log("Prefs");
-  console.log(response[0]);
-  var prefs = response[0];
-  if (!document.getElementById("pan_1_d")) {	
+	appendDebugLog(response[0]);
+	var prefs = response[0];
+	if (!document.getElementById("pan_1_d")) {	
 		panelData = {	
 					"contentClass" : "panelContentDefault",
 					"title": "Preferences",
-					"style": "Light",
+					"style": "Dark",
 					"variant": "d",
 					"closeButton": false,
 					"refreshButton" : false,	
-					"tooltip": "<p>Something helpful will go here.</p>"
+					"tooltip": "<p>Under Redevelopment.</p>"
 					};
 		generatePanel(1,panelData,"leftArea");
-		
-  var p2 = document.createElement("p");
-  var s21 = document.createElement("span");
-      s21.innerHTML = "Xerafin will give you words that are due in order from cardbox 0 through cardbox ";
-  var i1 = document.createElement("select");
-      i1.id = "closetInput";
-      i1.setAttribute("onchange", "prefsChangeCloset(this.value)");
-      for (var x=4;x<21;x++) {
-        var o = document.createElement("option");
-        o.text = x.toString();
-        o.value = x;
-        i1.add(o);
-        if (x == parseInt(prefs.closet))
-          i1.selectedIndex = x-4;
-      }      
-  p2.appendChild(s21);
-  p2.appendChild(i1);
-  var p3 = document.createElement("p");
-  var s31 = document.createElement("span");
-      s31.innerHTML = " Then it will give you words scheduled in the near future. For each hour you work ahead, it will give you 10 words which are overdue in cardbox ";
-  var s32 = document.createElement("span");
-      s32.id = "closetValue";
-      s32.innerHTML = parseInt(prefs.closet) + 1;
-  var s33 = document.createElement("span");
-      s33.innerHTML = " or higher.";   
-  p3.appendChild(s31);
-  p3.appendChild(s32);
-  p3.appendChild(s33);
-  
-  var p4 = document.createElement("p");
-  var s41 = document.createElement("span");
-      s41.innerHTML = "After ";
-  var i41 = document.createElement("input");
-      i41.id = "reschedHrsInput";
-      i41.setAttribute("type", "text");
-      i41.maxlength = 3;
-      i41.size = 3;
-      i41.value = prefs.reschedHrs;
-  var s42 = document.createElement("span");
-      s42.innerHTML = " hours, it will add ";
-  var i42 = document.createElement("input");
-      i42.id = "newWordsAtOnceInput";
-      i42.setAttribute("type", "text");
-      i42.maxlength = 3;
-      i42.size = 3;
-      i42.value = prefs.newWordsAtOnce;
-  var s43 = document.createElement("span");
-      s43.innerHTML = " words for each additional hour you work ahead, as long as cardbox 0 has fewer than ";
-  var i43 = document.createElement("input");
-      i43.id = "cb0maxInput";
-      i43.setAttribute("type", "text");
-      i43.maxlength = 4;
-      i43.size = 4;
-      i43.value = prefs.cb0max;
-  var s44 = document.createElement("span");
-      s44.innerHTML = " questions in it.";
-  p4.appendChild(s41);
-  p4.appendChild(i41);
-  p4.appendChild(s42);
-  p4.appendChild(i42);
-  p4.appendChild(s43);
-  p4.appendChild(i43);
-  p4.appendChild(s44);
+		gCreateElemArray([
+			['a0','div','','prefDiv','content_pan_1_d',''],
+			['a1','ul','nav nav-pills nav-justified','prefTabs','a0',''],
+			['a1a','li','active','prefCardboxTab','a1','<a data-toggle="tab" href="#prefCardboxDiv">Cardbox</a>'],
+			['a1b','li','','prefAppearanceTab','a1','<a data-toggle="tab" href="#prefAppearanceDiv">Appearance</a>'],
+			['a1c','li','','prefGameSettingTab','a1','<a data-toggle="tab" href="#prefOtherDiv">Other</a>'],
+			['a2','div','tab-content well well-sm quizContent pre-scrollable prefContent','prefContent','a0',''],
+			['a2a','div','tab-pane fade in active','prefCardboxDiv','a2',''],
+			['a2Head','div','prefHead','prefCardboxHead','a2a','Cardbox'],
+			['a2a4','div','prefPar','prefScheduleType','a2a',''],
+			['a2a4a','span','','prefScheduleS1','a2a4','Schedule words using the '],
+			['a2a4c','span','','prefScheduleS2','a2a4',' scheduling method.'],	
+			['a2a1','div','prefPar','prefCloset','a2a',''],
+			['a2a1a','span','','prefClosetS1','a2a1','Xerafin will give you words that are due in order from cardbox 0 through cardbox '],
+			['a2a2','div','prefPar','prefClosetStatus','a2a',''],
+			['a2a2a','span','','prefClosetStatusS1','a2a2','Then it will give you words scheduled in the near future. For each hour you work ahead, it will give you 10 words which are overdue in cardbox '],
+			['a2a2b','span','','prefClosetValue','a2a2',parseInt(prefs.closet)+1],
+			['a2a2c','span','','prefClosetStatusS2','a2a2',' or higher.'],
+			['a2a3','div','prefPar','prefNewWords','a2a',''],
+			['a2a3a','span','','prefNewWordsS1','a2a3','After '],
+			['a2a3b','input','prefInput','reschedHrsInput','a2a3',''],
+			['a2a3c','span','','prefNewWordsS2','a2a3',' hours, it will add '],
+			['a2a3d','input','prefInput','newWordsAtOnceInput','a2a3',''],
+			['a2a3e','span','','prefNewWordsS3','a2a3',' words for each additional hour you work ahead, as long as cardbox 0 has fewer than '],
+			['a2a3f','input','prefInput','cb0maxInput','a2a3',''],
+			['a2a3g','span','','prefNewWordsS4','a2a3',' questions in it.'],
+			['a2b','div','tab-pane fade','prefAppearanceDiv','a2',''],
+			['a2bHead','div','prefHead','prefAppHead','a2b','Appearance'],
+			['a2b1','div','prefPar','prefAlphaArrange','a2b',''],
+			['a2b1a','span','','prefAlphaArrangeS1','a2b1','All quiz alphagrams will be arranged '],
+			['a2b2','div','prefPar','prefAlphaDisplay','a2b',''],
+			['a2b2a','span','','prefAlphaDisplayS1','a2b2','Alphagrams are to be displayed as '],
+			['a2c','div','tab-pane fade','prefOtherDiv','a2',''],
+			['a2c1','div','prefHead','prefOtherHead','a2c','Other'],
+			['a2c3','div','prefPar','prefSlothSubalphas','a2c',''],
+			['a2c3a','span','','prefSlothSubsS1','a2c3','In Sloth, quiz on '],
+			['a3','button','btn btn-default','prefSaveButton','a0','Save']
+		]);
+		$('#reschedHrsInput').val(prefs.reschedHrs);
+		$('#newWordsAtOnceInput').val(prefs.newWordsAtOnce);
+		$('#cb0maxInput').val(prefs.cb0max);
+		gSetInputSize('reschedHrsInput',3,3);
+		gSetInputSize('newWordsAtOnceInput',3,3);
+		gSetInputSize('cb0maxInput',4,4); 	
+		generateSchedInfo(prefs.schedVersion);
+		var opt=new Array();
+		for (var x=4;x<21;x++) {opt.push([x.toString(),x]);}
+		gGenerateListBox("prefClosetInput",opt,'prefCloset','');
+		$('#prefClosetInput').val(Number(prefs.closet));
+		$('#prefClosetInput').on('change',function(e){prefsChangeCloset(this.value);});	
+		gGenerateListBox("prefAlphaArrangeSelect",[['Alphabetically',0],['Vowels First',1],['Consonants First',2],['Randomly',3]],"prefAlphaArrange","");
+		$('#prefAlphaArrangeSelect').insertAfter($(this).parent().eq(0));
+		$('#prefAlphaArrangeSelect').val(Number(localStorage.gAlphaSortInput));
+		$('prefAlphaArrangeSelect').on('change',function () {localStorage.gAlphaSortInput = this.value;});
+		$('#prefSaveButton').on('click',function(){setPrefs();});
+		gGenerateListBox("schedVersion",[["Original",0],["Modified",1],["Forgiving",2]],"prefScheduleType","");
+		$('#schedVersion').val(prefs.schedVersion); 
+		$('#schedVersion').insertAfter($('#prefScheduleS1'));
+		$('#schedVersion').on('change',function(e){
+			$('#schedTable').remove();
+			$('#schedComment').remove();
+			generateSchedInfo(Number($('#schedVersion').val()));
+		});
+		gGenerateListBox("slothSetup",[['All Subanagrams',0],['Some Subanagrams',1]],"prefSlothSubalphas",'');
+		$('#slothSetup').insertAfter($('#prefSlothSubsS1'));
+		$('#slothSetup').val(Number(localStorage.gSlothPref));
+		$('#slothSetup').on('change',function(e){localStorage.gSlothPref = $('#slothSetup').val();});
+		gGenerateListBox("alphaDisplay",[['Tiles',0],['Capital Letters',1]],"prefAlphaDisplay","");
+		$('#alphaDisplay').insertAfter($('#prefAlphaDisplayS1'));
+		$('#alphaDisplay').val(Number(localStorage.gAlphaDisplay));
+		$('#alphaDisplay').on('change',function(e){localStorage.gAlphaDisplay = $('#alphaDisplay').val();});
+	}
+}
 
-  var p6 = document.createElement("p");
-  var s61 = document.createElement ("span");
-  s61.innerHTML = "All quiz alphagrams will be arranged ";
-  var i6 = document.createElement("select");
-  
-  var i6Options = ['Alphabetically','Vowels First','Consonants First', 'Randomly'];
-      i6.id = "alphaSortInput";
-      for (var x=0;x<i6Options.length;x++) {
-        var op = document.createElement("option");
-        op.text = i6Options[x];
-        op.value = x;
-        i6.add(op);
-      }      
-      i6.value = Number(localStorage.gAlphaSortInput);
-      i6.onchange = function () {localStorage.gAlphaSortInput = i6.value;}
-  p6.appendChild(s61);
-  p6.appendChild(i6);
-  
-  var p7 = document.createElement("p");
-  var s71 = document.createElement ("span");
-  s71.innerHTML = "Alphagrams are to be displayed as ";
-
-  var i7 = document.createElement("select");
-  var i7Options = ['Tiles','Capital Letters'];
-      i7.id = "alphaSortInput";
-      for (var x=0;x<i7Options.length;x++) {
-        var op = document.createElement("option");
-        op.text = i7Options[x];
-        op.value = x;
-        i7.add(op);
-      }      
-      i7.value = Number(localStorage.gAlphaDisplay);
-      i7.onchange = function () {localStorage.gAlphaDisplay = i7.value;}
-  p7.appendChild(s71);
-  p7.appendChild(i7);
- 
-  var p8 = document.createElement("p");
-  var s81 = document.createElement ("span");
-  s81.innerHTML = "In Sloth, quiz on ";
-
-  var i8 = document.createElement("select");
-  var i8Options = ['All Subanagrams' ,'Some Subanagrams'];
-      i8.id = "slothSetup";
-      for (var x=0;x<i8Options.length;x++) {
-        var op = document.createElement("option");
-        op.text = i8Options[x];
-        op.value = x;
-        i8.add(op);
-      }      
-      i8.value = Number(localStorage.gSlothPref);
-      i8.onchange = function () {localStorage.gSlothPref = i8.value;}
-  p8.appendChild(s81);
-  p8.appendChild(i8);
-
-  var p9 = document.createElement("p");
-  var s91= document.createElement("span");
-  s91.innerHTML = "Schedule words using the ";
-  var i9 = document.createElement("select");
-  var i9Options = ["Original", "Modified", "Forgiving"]
-  i9.id = "schedVersion";
-  for (var x=0;x<i9Options.length;x++) {
-    var op = document.createElement("option");
-    op.text = i9Options[x];
-    op.value = x;
-    i9.add(op);
-  }
-  i9.value = prefs.schedVersion;
-  var s92= document.createElement("span");
-  s92.innerHTML = " scheduling method.";
-  p9.appendChild(s91);
-  p9.appendChild(i9);
-  p9.appendChild(s92);
-
-  var i10 = document.createElement("button");
-  i10.id = "unicornButton";
-  if (localStorage.gUnicorns == "true")
-    i10.innerHTML = "Turn off unicorns";
-  else
-    i10.innerHTML = "Turn on unicorns";
-  i10.setAttribute("onclick", "prefsUnicornToggle()");
-   
-  
-  i5 = document.createElement("button");
-  i5.innerHTML = "Save";
-  i5.setAttribute("onclick", "setPrefs()");
-  document.getElementById('content_pan_1_d').appendChild(p2);
-  document.getElementById('content_pan_1_d').appendChild(document.createElement("br"));
-  document.getElementById('content_pan_1_d').appendChild(p3);
-  document.getElementById('content_pan_1_d').appendChild(document.createElement("br"));
-  document.getElementById('content_pan_1_d').appendChild(p4);
-  document.getElementById('content_pan_1_d').appendChild(document.createElement("br"));
-  document.getElementById('content_pan_1_d').appendChild(p6);
-  document.getElementById('content_pan_1_d').appendChild(p7);
-  document.getElementById('content_pan_1_d').appendChild(p8);
-  document.getElementById('content_pan_1_d').appendChild(document.createElement("br"));
-  document.getElementById('content_pan_1_d').appendChild(p9);
-  document.getElementById('content_pan_1_d').appendChild(document.createElement("br"));
-  document.getElementById('content_pan_1_d').appendChild(i5);
-  document.getElementById('content_pan_1_d').appendChild(document.createElement("br"));
-  document.getElementById('content_pan_1_d').appendChild(document.createElement("br"));
-  document.getElementById('content_pan_1_d').appendChild(document.createElement("br"));
-// Cornify on milestone preference - April Fools 2018
-//  document.getElementById('content_pan_1_d').appendChild(i10);
-  }
+function writeSchedInfo(schedInfo){
+	var timeframe = new Array();
+	timeframe = ['hrs','days','wks','mths','yrs'];
+	gGenerateTable(['#','Range','#','Range'], 'prefScheduleType', 'userSearch prefTable', 'schedTable', 'schedContent');
+	var y;
+	var z = Math.ceil(schedInfo[0].length/2);
+	for (var x=0;x<z;x++){
+		if (x+z==schedInfo[0].length-1){y="+";} else {y="";}
+		if (x<z-1){
+			gGenerateTableRow (['cardboxSchedNumber'+x,'cardboxSchedRange'+x], 
+						[x, schedInfo[0][x][0]+' - '+schedInfo[0][x][1]+' '+timeframe[schedInfo[0][x][2]],
+						x+z+y, schedInfo[0][x+z][0]+' - '+schedInfo[0][x+z][1]+' '+timeframe[schedInfo[0][x+z][2]]], 
+						'schedTable', "cardboxSchedRow"+x);
+		}		
+		else {
+			if (isOdd(schedInfo[0].length)==true){
+				gGenerateTableRow (['cardboxSchedNumber'+x,'cardboxSchedRange'+x], 
+						[x, schedInfo[0][x][0]+' - '+schedInfo[0][x][1]+' '+ timeframe[schedInfo[0][x][2]],"",""]
+						,'schedTable', "cardboxSchedRow"+x)
+			}
+			else {
+				gGenerateTableRow (['cardboxSchedNumber'+x,'cardboxSchedRange'+x], 
+						[x, schedInfo[0][x][0]+' - '+schedInfo[0][x][1]+' '+timeframe[schedInfo[0][x][2]],
+						x+z+y, schedInfo[0][x+z][0]+' - '+schedInfo[0][x+z][1]+' '+timeframe[schedInfo[0][x+z][2]]], 
+						'schedTable', "cardboxSchedRow"+x);
+			}
+		}
+	}
+	$('#prefScheduleType').append($('#schedTable'));
+	var comment = document.createElement('div');
+	comment.id = 'schedComment';
+	comment.className+=" italNote";
+	console.log(schedInfo[1]);
+	$(comment).html(schedInfo[1]);
+	$('#prefScheduleType').append(comment);
+}
+function generateSchedInfo(sched){
+	var schedule = new Array();	
+	var infoMessage = new Array();
+	schedule = [
+				[[12,37,0],[3,5,1],[5,9,1],[11,17,1],[16,26,1],[27,41,1],[50,70,1],[80,110,1],[130,170,1],[300,360,1],[430,530,1]],
+				[[5,12,0],[1,2,1],[3,6,1],[7,14,1],[14,28,1],[30,60,1],[60,105,1],[120,210,1],[240,360,1],[430,530,1]],
+				[[12,37,0],[3,5,1],[5,9,1],[11,17,1],[16,26,1],[27,41,1],[50,70,1],[80,110,1],[130,170,1],[300,360,1],[430,530,1]],
+				];
+	
+	infoMessage = [
+		'All alphagrams answered incorrectly using this schedule return to cardbox 0.',
+		'Alphagrams answered incorrectly using this schedule that are residing in cardbox 8 or above return to cardbox 2 instead of cardbox 0.'
+	]
+	switch (sched) {
+		case 0: writeSchedInfo([schedule[0],infoMessage[0]]);break;
+		case 1: writeSchedInfo([schedule[1],infoMessage[1]]);break;
+		case 2: writeSchedInfo([schedule[2],infoMessage[1]]);break;
+	}
+				
 }
 
 function setPrefs() {
-var d = {user: userid, newWordsAtOnce: $('#newWordsAtOnceInput').val(),
-         reschedHrs: $('#reschedHrsInput').val(),
-         cb0max: $('#cb0maxInput').val(), closet: $('#closetInput').val(),
-         schedVersion: $('#schedVersion').val()};
-console.log(d);
- $.ajax({type: "POST", 
-         url: "setUserPrefs.py",
-         data: JSON.stringify(d),
-         success: function(response) {
-            if (response.status == "success") {alert("User Prefs Saved.");
-                                               initUserPrefs();}
-            else alert("Error setting user prefs: " + response.status);},
-         error: function(jqXHR, textStatus, errorThrown) {
-           console.log("Error setting user prefs. Status: " + textStatus + "  Error: " + errorThrown); 
-           alert("Error setting user prefs: " + errorThrown);
-                   }
-});
-
+	var d = {
+		user: userid, 
+		newWordsAtOnce: $('#newWordsAtOnceInput').val(),
+		reschedHrs: $('#reschedHrsInput').val(),
+		cb0max: $('#cb0maxInput').val(), 
+		closet: $('#prefClosetInput').val(),
+		schedVersion: $('#schedVersion').val()
+	};
+	appendDebugLog(d);
+	$.ajax({
+		type: "POST", 
+		url: "setUserPrefs.py",
+		data: JSON.stringify(d),
+		success: function(response) {
+			if (response.status == "success") {
+				alert("User Prefs Saved.");
+				initUserPrefs();
+			}
+			else alert("Error setting user prefs: " + response.status);
+		},
+		error: function(jqXHR, textStatus, errorThrown) {
+			console.log("Error setting user prefs. Status: " + textStatus + "  Error: " + errorThrown); 
+			alert("Error setting user prefs: " + errorThrown);
+		}
+	});
 }
-
-function prefsUnicornToggle () {
-  if (localStorage.gUnicorns == "true") {
-    document.getElementById("unicornButton").innerHTML = "Turn on unicorns";
-    localStorage.gUnicorns = "false"; 
-  } else { 
-    document.getElementById("unicornButton").innerHTML = "Turn off unicorns";
-    localStorage.gUnicorns = "true";  }
-}
-
 
 function prefsChangeCloset(c) {
- $('#closetValue').html(parseInt(c)+1);
+ $('#prefClosetValue').html(parseInt(c)+1);
 }

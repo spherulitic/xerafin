@@ -26,10 +26,6 @@ function refreshCardboxInfo() {
 	if ($('#dueTab').hasClass('active')){showCardboxStats(1)}
 	else if ($('#coverageTab').hasClass('active')){showCardboxStats(2)};
 }
-function returnUpdateTime() {
-	let newDate = new Date();
-	return "Last Updated "+ (newDate.getHours() < 10 ? "0" : "")+newDate.getHours() + ":" + (newDate.getMinutes() < 10 ? "0" : "") + newDate.getMinutes() + ':' + (newDate.getSeconds() < 10 ? "0" : "") + newDate.getSeconds();
-}
 
 function createCardboxStatsPanel() {
   if (typeof localStorage.cardboxCurrent=='undefined'){localStorage.setItem('cardboxCurrent','0');}
@@ -48,15 +44,27 @@ function createCardboxStatsPanel() {
 	infoDiv.id = 'cardboxScoreInfo';
 	infoDiv.className+= 'cardboxScoreInfo';
 	var cBScoreDiv = document.createElement('div');
-	cBScoreDiv.innerHTML = 'Cardbox Value: <span id="cardboxInfoScore"></span>';
+	cBScoreDiv.innerHTML = 'Cardbox Value<br>';
 	cBScoreDiv.className+= 'cardboxScoreChild';
+	cBScoreDiv.id = 'cardboxScoreDiv';
+	var cardboxInfoScore = document.createElement('span');
+	cardboxInfoScore.id = 'cardboxInfoScore';
+	cBScoreDiv.appendChild(cardboxInfoScore);
 	var cBQTodayDiv = document.createElement('div');
-	cBQTodayDiv.innerHTML = 'Questions Today: <span id="cardboxInfoQToday"></span>';
+	cBQTodayDiv.innerHTML = 'Questions Today<br>';
 	cBQTodayDiv.className+= 'cardboxScoreChild';
+	cBQTodayDiv.id='cBQTodayDiv';
+	var cardboxInfoQToday = document.createElement('span');
+	cardboxInfoQToday.id = 'cardboxInfoQToday';
+	cBQTodayDiv.appendChild(cardboxInfoQToday);
 	var cBDiffDiv = document.createElement('div');
-	cBDiffDiv.innerHTML = 'Cardbox Movement: <span id="cardboxInfoDiff"></span>';
+	cBDiffDiv.innerHTML = 'Cardbox Movement<br>';
 	cBDiffDiv.className+= 'cardboxScoreChild';
+	var cardboxInfoDiff = document.createElement('span');
+	cardboxInfoDiff.id = 'cardboxInfoDiff';
+	cBDiffDiv.appendChild(cardboxInfoDiff);
 	$(infoDiv).append(cBScoreDiv, cBQTodayDiv, cBDiffDiv);
+	console.log(localStorage.qCardboxStartScore+" "+localStorage.qCardboxDiff+" "+localStorage.qCardboxQAnswered);
 	var cardboxTab = document.createElement('ul');
 	cardboxTab.id = 'cardboxTab';
 	cardboxTab.className+=' nav nav-pills nav-justified';
@@ -106,6 +114,9 @@ function createCardboxStatsPanel() {
 	});
 	gGenerateTable(['Length','','Alphagrams','In Cardbox','%'], 'coverageContent', 'statTable', 'coverageTable','coverageBody');
 	$('#cardboxTable, #coverageTable').css('visibility','hidden');	
+	document.getElementById('cardboxInfoScore').innerHTML=localStorage.qCardboxStartScore;
+	document.getElementById('cardboxInfoDiff').innerHTML=localStorage.qCardboxDiff;
+	document.getElementById('cardboxInfoQToday').innerHTML=localStorage.qCardboxQAnswered;
   }
 }
 
@@ -147,8 +158,9 @@ function displayCardboxDue (response, responseStatus) {
 	});	
 	gGenerateTableRow ([null,null,null,null],['Total','',cardboxTotal,dueTotal],"cardboxTableBody","cardboxDueFoot");
 	cardboxHighlightAction(localStorage.cardboxCurrent, false);
+	$('#cardboxUpdateTimeBox').html(gReturnUpdateTime());
 	$('#cardboxTable').css('visibility','visible');
-	$('#cardboxUpdateTimeBox').html(returnUpdateTime());
+	
 }
 
 function displayCardboxCoverage(response,responseStatus){
@@ -175,7 +187,7 @@ function displayCardboxCoverage(response,responseStatus){
 	console.log(response[0]);
 	gGenerateTableRow ([null,null,null,null],['Total','',availTotal,alphaTotal,(((alphaTotal/availTotal)*100).toFixed(2))+'%'],"coverageBody","coverageFoot");
 	$('#coverageTable').css('visibility','visible');
-	$('#cardboxUpdateTimeBox').html(returnUpdateTime());
+	$('#cardboxUpdateTimeBox').html(gReturnUpdateTime());
 }
 
 function hideCardboxStats() {

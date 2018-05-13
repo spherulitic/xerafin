@@ -18,7 +18,7 @@ function findPanel(panel){
 			
 function clearPanel(panel){
 	var x=findPanel(panel);
-	if (!x) {console.log('Error when attempting to remove panel: '+panel+' does not exist!');}
+	if (!x) {}
 	else {
 		var cols=JSON.parse(localStorage.panelPositions);
 		cols[x[0]].splice(x[1],1);
@@ -29,11 +29,9 @@ function clearPanel(panel){
 
 function togglePanel(panel){
 	var x=findPanel(panel);
-	if (!x) {console.log('Error when attempting to toggle panel: '+panel+' does not exist!');}
 	var cols=JSON.parse(localStorage.panelPositions);
 	cols[x[0]][x[1]][1]=!(cols[x[0]][x[1]][1]);
-	localStorage.panelPositions=JSON.stringify(cols);
-	console.log('After Toggle:'+localStorage.panelPositions);	
+	localStorage.panelPositions=JSON.stringify(cols);	
 }
 
 function addPanel(panel,column ,ind){
@@ -83,6 +81,9 @@ function panelFunctionLookup(panel){
 		case '4': showCardboxStats(); break;
 		case '5': showAlphaStats(""); break;
 		case '6': showGameStats(); break;
+		case '100': initTournamentStandings(); break;
+		case '500': initManageUsers(); break;
+		
 	}
 }
 
@@ -92,7 +93,6 @@ function populatePanelsFromArray(){
 //If nextTarget and nextMinim exist, they override some of the values set from those scripts,
 //clearing those two localStorage variables on closure (so that they don't fire again without being 
 //reinitialized.)
-	
 	var panelList=JSON.parse(localStorage.panelPositions);
 	console.log('Panel Population called, contents: '+ JSON.stringify(panelList));
 	var colStateArray = new Array();
@@ -117,7 +117,7 @@ function populatePanelsFromArray(){
 			}
 		}
 	}
-	console.log('panel States:'+JSON.stringify(colStateArray));
+	//console.log('panel States:'+JSON.stringify(colStateArray));
 }
 
 function getPanelInStorageQueue(panel){
@@ -135,13 +135,13 @@ function getPanelInStorageQueue(panel){
 function removePanelInStorageQueue(panel){
 	var storageQueue=JSON.parse(localStorage.panelStateArray);
 	var ind=getPanelInStorageQueue(panel);
-	console.log("Removing: "+JSON.stringify(ind));
 	storageQueue.splice(ind[4],1);
 	if (storageQueue.length==0){
 		console.log("All panels loaded, clearing queue");
-		localStorage.removeItem('panelStateArray');}
+		localStorage.removeItem('panelStateArray');
+	}
 	else {localStorage.panelStateArray=JSON.stringify(storageQueue);
-		console.log('Remaining Queue: '+localStorage.panelStateArray);
+		//console.log('Remaining Queue: '+localStorage.panelStateArray);
 	}
 }
 
@@ -149,23 +149,18 @@ function generatePanel(ident, data, targ, refresher, closure){
 	if (typeof data.variant==='undefined'){
 		var panelSuffix = ident;
 		var queueData=getPanelInStorageQueue(panelSuffix.toString());
-		console.log('Queuedata Get for '+panelSuffix+' (No variant) = '+JSON.stringify(queueData));
-		console.log(panelSuffix+' detected in queue at row '+queueData[4]);
 	}
 	else {
 		var panelSuffix = ident+'_'+data.variant;
 		var queueData=getPanelInStorageQueue(panelSuffix.toString());
-		console.log('Queuedata Get for '+panelSuffix+' = '+JSON.stringify(queueData));
-		if (typeof queueData[4]!=='undefined'){console.log(panelSuffix+' detected in queue at row '+queueData[4]);}
 		if (!queueData){
-			console.log("Queue:"+queueData);
 		if (($('[id^=pan_'+ident+'_]').length>0) && ($('[id^=pan_'+panelSuffix+']').length==0)) {
-			console.log($('[id^=pan_'+ident+'_]').length+"-"+$('[id^=pan_'+panelSuffix+']').length);
 			var parentNode = $('[id^=pan_'+ident+'_]:first').parent();
-			var indexValue = $('[id^=pan_'+ident+'_]:first').index(parentNode);
-			console.log($(parentNode)+"-"+indexValue);
+			var parentId = parentNode.attr('id');
+			var indexNode = $('[id^=pan_'+ident+'_]:first');
+			var indexValue = indexNode.index();
+			//console.log("New Index:"+indexValue+", Node Name:"+indexNode.attr('id')+", Parent:"+parentId);
 			$('[id^=pan_'+ident+'_]').each(function(){
-				console.log('This:'+this);
 				var divId=$(this).attr('id');
 				clearPanel(divId.replace("pan_",""));
 				$(this).remove();				
@@ -178,11 +173,10 @@ function generatePanel(ident, data, targ, refresher, closure){
 		}
 		}
 	}
-	var buttonStyle="default"
-	console.log('Loading Panel: '+panelSuffix);
+	var buttonStyle="grey metalBOne";
 	if (typeof data.style=='undefined'){
 		data.style='Dark';
-		buttonStyle="primary";
+		buttonStyle="grey metalBOne";
 		
 	}
 		var newPanel = document.createElement('div');
@@ -206,7 +200,7 @@ function generatePanel(ident, data, targ, refresher, closure){
 		data.closeButton=true;
 		var closeButton = document.createElement('button');
 		closeButton.id = 'close_button_pan_'+panelSuffix;
-		closeButton.className += ' btn btn-danger';
+		closeButton.className += ' btn btn-grey btn-sm metalBOne';
 		$(closeButton).css('flex','0 0');		
 		$(closeButton).html('<span class="glyphicon glyphicon-remove" style="vertical-align:middle"></span>');
 		}
@@ -238,8 +232,8 @@ function generatePanel(ident, data, targ, refresher, closure){
 		
 		var headingText = document.createElement('div');
 		headingText.id = 'heading_text_pan_'+panelSuffix;
-		headingText.className += ' panelHeader'+data.style+' dragMe noselect';
-		$(headingText).css('flex','1 1');
+		headingText.className += ' panelHeader'+data.style+' dragMe noselect steelRowed';
+		$(headingText).css('flex','1 0');
 		$(headingText).html(data.title);
 				
 		btnGroup.appendChild(helpButton);
@@ -259,7 +253,7 @@ function generatePanel(ident, data, targ, refresher, closure){
 		panelContent.className = " "+data.contentClass;
 		newPanel.appendChild(panelContent);
 		
-		var fireOnce=once(function () {console.log('Hiding Panel :'+panelSuffix);
+		var fireOnce=once(function () {//console.log('Hiding Panel :'+panelSuffix);
 		if ((typeof queueData!=='boolean') && (queueData[1]=="true")) {	
 			if (typeof data.minimizeObject!=='undefined'){
 				$('#'+data.minimizeObject).ready(function () {
@@ -296,20 +290,20 @@ function generatePanel(ident, data, targ, refresher, closure){
 		if (typeof queueData=='boolean') {
 			if (indexMe==true){
 				console.log('Replace Fired: '+panelSuffix+', Par:'+$(parentNode).attr('id')+' Ind:'+ indexValue);
-				$(parentNode).eq(indexValue).prepend(newPanel);
-				
+				if (indexValue===0){$(parentNode).eq(indexValue).prepend(newPanel);}
+				else {$(parentNode).eq(indexValue-1).append(newPanel);}
 				addPanel(panelSuffix, $(parentNode).attr('id'), indexValue);
 			}
 			else {
-				console.log('Prepend New Fired: '+panelSuffix+','+targ+' at location 0');
+				//console.log('Prepend New Fired: '+panelSuffix+','+targ+' at location 0');
 				$('#'+targ).prepend(newPanel);
 				addPanel(panelSuffix, targ, 0);
 				
 			}	
 		}
 		else {
-			console.log("Panel Memory Fired: "+queueData[2]+" Position: "+queueData[3]);
-			if ($("#"+queueData+" > div").length<queueData[3]){
+			//console.log("Panel Memory Fired: "+queueData[2]+" Position: "+queueData[3]);
+			if ($("#"+queueData+" > div").length-1<queueData[3]){
 				$('#'+queueData[2]).append(newPanel);
 			}
 			else {

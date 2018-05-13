@@ -1,10 +1,9 @@
 function initChatGlobals() {
-	mostRecent = (new Date).getTime() - 86400000; // One Day Ago
+	mostRecent = new Date().getTime() - 86400000; // One Day Ago
 	chatQueue = [ ];
 	CHAT_QUEUE_MAX_LENGTH = 150;
 	lastReadRow = 0;
 }
-
 function startChat () {
 	if (!document.getElementById("pan_2")) {
 		initChatGlobals();	
@@ -28,23 +27,30 @@ function startChat () {
 			chatInputBox.className+=' input-group';
 			chatInputBox.style.margin = '10px 0px 10px 0px';
 		var chatInputAddon = document.createElement('span');
-			chatInputAddon.className += 'input-group-addon primary';
-			chatInputAddon.innerHTML = '<i class="glyphicon glyphicon-comment" style="color:#fff;"></i>'
+			chatInputAddon.className += 'input-group-addon primary steelRowed';
+			chatInputAddon.innerHTML = '<i class="glyphicon glyphicon-comment" style="color:#fff;"></i>';
 		var chatBox = document.createElement("input");	
-			chatBox.type = "text";
-			chatBox.id = "chatBox";
+				/*chatBox.type = "text";*/
 			chatBox.className+=' form-control chatInput';
+			chatBox.id = "chatBox";
 			chatBox.style.background='inherit';
 		var chatRegion = document.createElement("div");
 			chatRegion.id='chatRegion';
-		var chatDisplayTable = document.createElement("table");
+		var chatDisplayTable = document.createElement("div");
 			chatDisplayTable.id = 'chatTable';
 			chatDisplayTable.classname += ' chatTable';
-		chatInputBox.append(chatInputAddon, chatBox);
-		$('#content_pan_2').append(userDisplayArea,chatRegion);
+		var chatServerTime = document.createElement("div");
+			chatServerTime.id = 'chatServerTime';
+			chatServerTime.className+=' updateTime';
+		$(chatInputBox).append(chatInputAddon, chatBox);
+		$('#content_pan_2').append(userDisplayArea,chatRegion,chatServerTime);
 		$('#chatRegion').append(chatInputBox, chatDisplayBox);
 		$('#chatDisplayBox').append(chatDisplayTable);
-		
+		//$('#chatBox').on( 'keydown keyup paste',function(e) {
+		//	$('#chatBox').find('br, button').remove();
+		//	$('#chatBox').find('div, span, script, table, tr, td, th, tbody, thead, tfoot').replaceWith(function() { return $(this).contents(); });
+		//	$('#chatBox').find('img').css('height','25px');
+		//});
 		chatBox.addEventListener("keypress", function(e) {
         if (e.which === 13 && $(this).val().trim()) {
            var chatContent = parseEmoji($(this).val());
@@ -58,8 +64,7 @@ function startChat () {
 		});
 	}	
 	getInitChats();
-	getLoggedInUsers();
-	 
+	getLoggedInUsers();	 
 }
 
 function getLoggedInUsers() {
@@ -96,8 +101,8 @@ function displayUserArray (userList) {
    $('#userDisplayArea').append(activeUserHeading);
    activeUserHeading.className+= " activeUserHeading"; 
    activeUserHeading.id= "activeUserHeading"; 
-   var widths=getActiveUserDimensions ($('#activeUserHeading').width(),50,userList.length,1,2,25);
-   activeUserHeading.innerHTML = userList.length+' active user(s) ';/**+picRowWidth+' '+ Math.ceil((picRowWidth-(picWidth+1))/picWidth) + ' ' + picWidth;**/
+   var widths=getActiveUserDimensions ($('#activeUserHeading').width(),50,userList.length,1,3,30);
+   activeUserHeading.innerHTML = "<span class='userNumber'>"+userList.length+'</span> active users';
    userDisplayTable.className+= " chatActiveUsers";
    activeUserContainer.className+= " chatActiveUsersContainer";
    if (userList.length!==0){ 
@@ -121,10 +126,9 @@ function displayUserArray (userList) {
             else { 
                 userCell.style.width=widths.picWidth+'px';
                 userCell.textAlign = 'left';
-                var userPic = document.createElement("img");
+                var userPic = gGetPlayerPhoto(userList[y].photo,"activeUserImg"+z,"images/unknown_player.gif");
                 userPic.className+=' activePic';
                 userPic.style.height=widths.picWidth+'px';
-                userPic.src = userList[y].photo;
                 userPic.title = userList[y].name;
                 userCell.appendChild(userPic);
             }
@@ -166,102 +170,123 @@ function updateChats () {
            setTimeout(updateChats, 5000); } } );
 }
 
+function createPicCol (data, ident, pare){
+	var theCol = document.createElement("div");
+	var picWrap = document.createElement("div");
+	var pic = document.createElement("img");
+	var chatDateUnder = document.createElement("div");
+	var chatDate = new Date(data.chatDate);
+	var metalStyle = ['One', 'Two', 'Three'];
+	theCol.id=ident;
+	theCol.className+=' chatInfoCol';
+	picWrap.className+=' chatInfoWrapper';
+	picWrap.className+=' metalB'+metalStyle[getRandomInt(3)];
+	pic.className+=' chatPic';
+	pic.title = data.name;
+	pic.src = data.photo;	
+    if (parseInt(data.chatUser)===0) {pic.className+=' chatPicBroadcastX';}	
+	chatDateUnder.className+=' chatDateUnder';
+	chatDateUnder.innerHTML = chatDate.getHours() + ':' + (chatDate.getMinutes() < 10 ? '0' : '') + chatDate.getMinutes();
+	chatDateUnder.title = chatDate.getHours() + ':' + (chatDate.getMinutes() < 10 ? '0' : '') + chatDate.getMinutes() + ':' + (chatDate.getSeconds() < 10 ? '0' : '') + chatDate.getSeconds();
+	$(picWrap).append(pic,chatDateUnder);
+	$(theCol).append(picWrap);	
+	$('#'+pare).append(theCol);	
+}
+
+function createChatCol (data, ident, pare){
+	var theCol = document.createElement('div');
+	var chatWrapper = document.createElement('div');
+	var nameDiv = document.createElement('div');
+	var chatDiv = document.createElement('div');
+	nameDiv.className+=' chatTextName';
+	chatDiv.className+=' chatTextCol';
+	theCol.id=ident;
+	theCol.className+=' chatTextColWrapper';
+	$('#'+pare).append(theCol);
+	chatWrapper.className+=' chatTextWrapper';
+	if (parseInt(data.chatUser)==userid){nameDiv.className+=' chatTextNameMe';chatWrapper.style.cssFloat='left';}
+	else {chatWrapper.style.cssFloat='right';}
+	$(theCol).append(chatWrapper);
+	nameDiv.innerHTML=data.name;	
+	chatDiv.innerHTML=data.chatText;
+	$(chatWrapper).append(nameDiv,chatDiv);	
+}
+
+function createXeraCol (data, ident, pare){
+	var theCol = document.createElement('div');	
+	var xeraBroadcast = document.createElement('div');
+	var xeraOuter = document.createElement('div');
+	xeraOuter.className+=' chatXeraBroadcastOuter';
+	theCol.className+=' chatTextColWrapperTwo';
+	theCol.id = ident;
+	$("#"+pare).append(theCol);
+	
+	xeraBroadcast.className+=' chatXeraBroadcastInner Absolute-Center';
+	xeraBroadcast.innerHTML=data.chatText;
+	$(xeraOuter).append(xeraBroadcast);
+	$(theCol).append(xeraOuter);
+}
+
+function createChatRow (data, ident, pare){
+	var theRow = document.createElement('div');
+	theRow.id = ident;
+	theRow.className+=' chatRow';
+	$('#'+pare).append(theRow);
+	createPicCol (data, 'chatImg'+data.chatDate+"_"+getRandomInt(1000000), theRow.id);
+	if (parseInt(data.chatUser) >10) {
+		createChatCol(data, "chat"+data.chatDate+"_"+getRandomInt(1000000), ident);
+	}
+	else {
+		createXeraCol(data, "chatXera"+data.chatDate+"_"+getRandomInt(1000000), ident);
+	}
+}
+
 function displayChats (response, responseStatus) {
-   var newChats = response[0];
-   lastReadRow = response[1];
-   console.log("Get Chat Response");
-   console.log(response);
-   document.getElementById('chatTable').innerHTML="";
-   var expiredChats = [ ];
-   
-   $('#chatDisplayBox').css('border', '1px solid #000');
-   for (var x=0; x<newChats.length;x++) {
-     if (newChats[x].expire)
-       expiredChats.push(newChats[x]);
-     else 
-       chatQueue.push(newChats[x]);
+	var newChats = response[0];
+	var expiredChats = [ ];
+	var serverTime = new Date (response[2]*1000);
+	$('#chatServerTime').html("Server Time: "+ serverTime.toLocaleTimeString('en-GB', {hour: "numeric", minute: "numeric", timeZone: "America/Chicago"}));
+	lastReadRow = response[1];
+	
+	console.log(response);
+	document.getElementById('chatTable').innerHTML="";   
+	$('#chatDisplayBox').css('border', '1px solid #000');
+	for (var x=0; x<newChats.length;x++) {
+		if (newChats[x].expire)
+		expiredChats.push(newChats[x]);
+		else 
+		chatQueue.push(newChats[x]);
      // the DB query orders these ascending by time stamp
      mostRecent = newChats[x].chatDate;
-   }
-   var y = chatQueue.length;
-   for (var x=CHAT_QUEUE_MAX_LENGTH;x<y;x++)  
-     chatQueue.shift();
-
-   chatQueueLoop:
-   for (x=chatQueue.length-1;x>=0;x--) {
-     // has this been expired?
-     for(var i=0;i<expiredChats.length;i++) {
-       if (chatQueue[x].chatDate == expiredChats[i].chatDate &&
-           chatQueue[x].chatUser == expiredChats[i].chatUser) {
-              delete chatQueue[x];
-              continue chatQueueLoop;
-       }
-     }
-
-     var chatNode = document.createElement("tr");
-     chatNode.style.backgroundImage = 'b27.png';
-     chatNode.style.backgroundRepeat = 'repeat';
-     chatNode.style.marginTop = '0.2em;';
-     chatNode.style.width = '100%';
-     chatNode.style.display = 'table';
-     chatNode.style.verticalAlign = 'top';
-
-     var chatDate = new Date(chatQueue[x].chatDate);
-     var chatDateNode = document.createElement("td");
-     var chatPicNode = document.createElement("td");
-     var chatText = document.createElement("td");
-     var chatPic = document.createElement("img");
-     
-     if (x==(chatQueue.length-1)){chatText.style.borderTop = "0px";}
-     else {chatText.style.borderTop = "1px solid #444";}
-     
-     chatDateNode.style.width='10%';
-     chatDateNode.style.textAlign='right';
-	 chatDateNode.style.color='#ddd';
-
-     chatDateNode.innerHTML = chatDate.getHours() + ':' + (chatDate.getMinutes() < 10 ? '0' : '') + chatDate.getMinutes();
-     chatDateNode.title = chatDate.getHours() + ':' + (chatDate.getMinutes() < 10 ? '0' : '') + chatDate.getMinutes() + ':' + (chatDate.getSeconds() < 10 ? '0' : '') + chatDate.getSeconds();
-     chatPic.src = chatQueue[x].photo;
-//     if (chatPic.src == 'http://cross-tables.com/xerafin/xerafin.png') {
-     if (parseInt(chatQueue[x].chatUser) < 10) {
-         chatNode.className+=' xeraBroadcast';
-         chatText.className+=' xeraBroadcastBorderFix';
-         chatPicNode.className+=' xeraBroadcastImageAlign';
-     }
-     if (x!==0) {
-        if (chatQueue[x-1].photo !== 'http://cross-tables.com/xerafin/xerafin.png'){
-             chatNode.style.marginBottom = '0.3em';
-        }
-     }
-     chatPic.title = chatQueue[x].name;
-     chatPic.style.height = '28px';
-     chatPicNode.append(chatPic);
-     chatPicNode.style.width = '10%';
-     chatPicNode.style.textAlign = 'center';
-     chatText.style.verticalAlign = 'middle';
-     chatText.style.width = '80%';
-     chatText.style.maxWidth = '80%';
-     chatDateNode.style.verticalAlign = 'middle';
-     chatDateNode.style.paddingLeft = '0.3em';     
-     chatText.innerHTML = chatQueue[x].chatText; 
-     chatText.id='chatText';
-     chatText.style.textAlign = 'left';
-     chatText.className += ' chatText';
-	 $('#chatTable').append(chatNode);
-	 chatNode.append(chatDateNode,chatPicNode,chatText);
-        
-   }  
-   
-   chatQueue = chatQueue.filter(function (e){return e}); // remove deleted values from the array
-   updateChats();
+	}
+	var y = chatQueue.length;
+	for (var x=CHAT_QUEUE_MAX_LENGTH;x<y;x++)  
+		chatQueue.shift();
+//////////////
+chatQueueLoop:	
+//////////////
+	for (x=chatQueue.length-1;x>=0;x--) {
+		// has this been expired?
+		for(var i=0;i<expiredChats.length;i++) {
+			if (chatQueue[x].chatDate == expiredChats[i].chatDate &&
+				chatQueue[x].chatUser == expiredChats[i].chatUser) {
+				delete chatQueue[x];
+				continue chatQueueLoop;
+			}
+		}
+		createChatRow (chatQueue[x], 'chatRow'+chatQueue[x].chatDate+'_'+getRandomInt(1000000), 'chatTable');
+	}
+	chatQueue = chatQueue.filter(function (e){return e;}); // remove deleted values from the array
+	updateChats();
 } 
 
-function submitChat(message, isSystemGenerated, systemUserid = 0) {
-   d = { chatText: message, userid: userid, chatTime: (new Date).getTime() };
+function submitChat(message, isSystemGenerated, systemUserid) {
+	if (typeof systemUserid=="undefined"){systemUserid=0;}
+   d = { chatText: message, userid: userid, chatTime: new Date().getTime() };
    if (isSystemGenerated) d.userid = systemUserid;
    console.log ("sending chat:");
    console.log(d);
-   if (d.userid==0) { // system generated chat sent by Xerafin user
+   if (d.userid===0) { // system generated chat sent by Xerafin user
      $.ajax({type: "POST",
               url: "expireLastMilestoneChat.py",
             data: JSON.stringify({userid: userid}),
@@ -271,19 +296,22 @@ function submitChat(message, isSystemGenerated, systemUserid = 0) {
               },
           error: function(jqXHR, textStatus, errorThrown) {
               console.log("Error: milestone chat could not be expired."); 
-              submitChat2(d)} });
+              submitChat2(d);} 
+			});
    } else if (d.userid==2) {
-     $.ajax({type: "POST",
+	$.ajax({type: "POST",
               url: "expireLastInvaderChat.py",
-         success: function(response, responseStatus) {
-              console.log("Last invader chat expired " + response);
-              submitChat2(d);
-              },
-          error: function(jqXHR, textStatus, errorThrown) {
-              console.log("Error: invader chat could not be expired."); 
-              submitChat2(d)} });
+		success: function(response, responseStatus) {
+			console.log("Last invader chat expired " + response);
+			submitChat2(d);
+        },
+		error: function(jqXHR, textStatus, errorThrown) {
+			console.log("Error: invader chat could not be expired."); 
+			submitChat2(d);
+		} 
+	});
    }
-   else submitChat2(d);
+	else submitChat2(d);
     }   
 
 function submitChat2(d) {

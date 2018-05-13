@@ -1,5 +1,3 @@
-function createGameStats(){
-}
 function hideGameStats() {
 	$('#pan_6').remove();
 }
@@ -14,7 +12,6 @@ function getGameStats(value){
 		case 2:data={userid:userid, userrecords:true, usertotals:true};break;
 		case 3:data={userid:userid, indivrecords:true};break;
 	}
-	console.log("Data sent:"+JSON.stringify(data));
 	$.ajax({
 		type: "POST",		
 		url: "getLeaderboardStats.py",
@@ -23,7 +20,7 @@ function getGameStats(value){
 						$("#heading_text_pan_6").html('Game Stats <img src="images/ajaxLoad.gif" style="height:0.8em">');
 		},
 		success: function(response, responseStatus){
-					console.log("Game stat return:"+JSON.stringify(response));
+					//console.log("Game stat return:"+JSON.stringify(response));
 					$("#heading_text_pan_6").html("Game Stats");
 					showStatTable(response, responseStatus, value);						
 		},
@@ -175,7 +172,7 @@ function createGameStatsTable (tableId,data,title,pare){
 	var rowValue = new Array();
 	var heading = document.createElement('div');
 	heading.id=tableId+"Heading";
-	heading.classname+=" statTableHeading";
+	heading.classname+=" statTableHeading darksteelRowed";
 	$(heading).html(title);
 	for (var x=0;x<data.length;x++){
 		tableRow[x]=document.createElement('tr');

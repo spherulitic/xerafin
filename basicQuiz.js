@@ -1,3 +1,4 @@
+
 function startQuiz() {
     initGlobalsQuiz();
     initUIQuiz();   
@@ -13,12 +14,8 @@ function startQuiz() {
         url: "newQuiz.py",	
         beforeSend: function(){$("#quizConnect").html('<img src="images/ajaxLoad.gif" style="height:0.8em"> Initializing Quiz...');},
         success: function(response, responseStatus) {
+				gUpdateCardboxScores(response, 0);
 				$("#quizConnect").html('');
-				console.log(response);
-				if (typeof $('#cardboxInfoQToday')!=='undefined'){$('#cardboxInfoQToday').html(response.qAnswered);}
-				if (typeof $('#cardboxInfoScore')!=='undefined'){$('#cardboxInfoScore').html(response.score);}
-				var movement = Number(response.score)-Number(response.startScore);
-				if (typeof $('#cardboxInfoDiff')!=='undefined'){$('#cardboxInfoDiff').html((movement > 0 ? "+" : "")+movement);}
 				getQuestion();
 		},
         error: function(jqXHR, textStatus, errorThrown) {
@@ -40,41 +37,42 @@ function initGlobalsQuiz() {
     correctState = 0;
     correctPercent = 0.0;
     hintQuantity = 0;
-	if (typeof localStorage.cardboxCurrent=='undefined'){localStorage.setItem('cardboxCurrent','0')};
-	if (typeof localStorage.cardboxSent=='undefined'){localStorage.setItem('cardboxSent',false)};
+	if (typeof localStorage.cardboxCurrent=='undefined'){localStorage.setItem('cardboxCurrent','0');}
+	if (typeof localStorage.cardboxSent=='undefined'){localStorage.setItem('cardboxSent',false);}
 }
 
 function initUIQuiz() {
 	
 	if (!document.getElementById("pan_1_a")) {	
 		panelData = {	
-					"contentClass" : "quizContent",
+					"contentClass" : "panelContentDefault",
 					"title": "Basic Quiz",
-					"minimizeObject": "content_pan_1_a",
+					"minimizeObject": 'content_pan_1_a',
 					"variant": "a",
 					"closeButton": false,
 					"refreshButton" : false,	
-					"style" : 'Light',
-					"tooltip": "<p>Something helpful will go here.</p>"
+					"style" : 'Dark',
+					"tooltip": "Occasional bug in tile window that pushes tiles to new line if many hooks."
 					};
 		generatePanel(1,panelData,"leftArea");
 		
     /** Generate ordered DOM for Quiz [localName, type, classes, id, parent, innerHTML] **/    
 		createElemArray([
-    /*0*/           ['a','div','quizAlphaSuper','alphaSuper','content_pan_1_a',''],
+					['a0','div','quizContent','quizContent','content_pan_1_a',''],
+    /*0*/           ['a','div','quizAlphaSuper','alphaSuper','quizContent',''],
                     ['a1','div','quizAlphaContain','alphaContainer','a',''],
                     ['a1a','div','quizAlphaLeft','leftHook','a1',''],
                     ['a1b','div','quizAlpha','alphagram','a1',''],
                     ['a1c','div','quizAlphaRight','rightHook','a1',''],
-					['a2','div','quizConnection','quizConnect','content_pan_1_a',''],
-                    ['b','div','quizAnswerRegion','','content_pan_1_a',''],
-                    ['b1','button','btn quizButton quizButtonCorrect','markAsCorrect','b','<span class="glyphicon glyphicon-ok"></span>'],
-                    ['b2','button','btn quizButton quizButtonNext','nextQuestion','b','<span class="glyphicon glyphicon-arrow-right"></span>'],
-                    ['b3','button','btn quizButton quizButtonIncorrect','markAsIncorrect','b','<span class="glyphicon glyphicon-remove"></span>'],
+					['a2','div','quizConnection','quizConnect','quizContent',''],
+                    ['b','div','quizAnswerRegion','','quizContent',''],
+                    ['b1','button','btn quizButton quizButtonCorrect highlightRow','markAsCorrect','b','<span class="glyphicon glyphicon-ok"></span>'],
+                    ['b2','button','btn quizButton quizButtonNext blueRowed','nextQuestion','b','<span class="glyphicon glyphicon-arrow-right"></span>'],
+                    ['b3','button','btn quizButton quizButtonIncorrect redRowed','markAsIncorrect','b','<span class="glyphicon glyphicon-remove"></span>'],
                     ['b4','div','quizAnswerContain','answerContainer','b',''],
      /*10*/         ['b4a','div','quizAnswerNumber','answerAmount','b4',''],
                     ['b4b','input','quizAnswerBox','answerBox','b4',''],
-                    ['c','table','quizSessionTable','sessionInfo','content_pan_1_a',''],
+                    ['c','table','quizSessionTable','sessionInfo','quizContent',''],
                     ['c1','thead','','sessionHeader','c',''],
                     ['c1a','th','','sessionHeaderCell1','c1','questions'],
                     ['c1b','th','quizSessionTableHCardbox','sessionHeaderCell2','c1','cardbox'],
@@ -87,29 +85,29 @@ function initUIQuiz() {
                     ['c2c','td','','sessionContentCell3','c2','<span id="dueDate"></span>'],
                     ['c2d','td','','sessionContentCell4','c2','<span id="sessionScore">' + localStorage.qQAlpha + '</span>'],
                     ['c2e','td','','sessionContentCell5','c2','<span id="correctPercent">' + correctPercent.toFixed(2) + '%' + '</span>'],
-                    ['d','div','btn-group btn-group-justified quizButtonRow','buttonRow','content_pan_1_a',''],
+                    ['d','div','btn-group btn-group-justified quizButtonRow','buttonRow','quizContent',''],
 					['d1','div','btn-group','','d',''],
-                    ['d1a','button','btn btn-default quizSubButton','shuffleButton','d1','<span class="glyphicon glyphicon-random"></span>'],
+                    ['d1a','button','btn btn-default quizSubButton silverRowed','shuffleButton','d1','<span class="glyphicon glyphicon-random"></span>'],
 					['d2','div','btn-group','','d',''],
-                    ['d2a','button','btn btn-default quizSubButton','slothButton','d2','<img id="imgSloth" src="sloth.png" style="width:28px;height:28px;margin:auto auto;padding:0px;">'],    
+                    ['d2a','button','btn btn-default quizSubButton silverRowed','slothButton','d2','<img id="imgSloth" src="sloth.png" style="width:28px;height:28px;margin:auto auto;padding:0px;">'],    
                     ['d3','div','btn-group','','d',''],
-				    ['d3a','button','btn btn-default quizSubButton','skipButton','d3','<span class="glyphicon glyphicon-step-forward"></span>'],
+				    ['d3a','button','btn btn-default quizSubButton silverRowed','skipButton','d3','<span class="glyphicon glyphicon-step-forward"></span>'],
 					['d4','div','btn-group','','d',''],
-                    ['d4a','button','btn btn-default quizSubButton','advancedButton','d4','<span class="glyphicon glyphicon-menu-hamburger"></span>'],
-                    ['e','div','quizAdvancedBox','advancedBox','content_pan_1_a',''],
+                    ['d4a','button','btn btn-default quizSubButton silverRowed','advancedButton','d4','<span class="glyphicon glyphicon-menu-hamburger"></span>'],
+                    ['e','div','quizAdvancedBox','advancedBox','quizContent',''],
 					['e1','div','btn-group btn-group-justified','','e',''], 
 					['e1a','div','btn-group','','e1',''],
-                    ['e1a1','button','btn btn-default quizAdvancedButton','counterReset','e1a','Reset #'],
+                    ['e1a1','button','btn btn-default quizAdvancedButton silverRowed','counterReset','e1a','Reset #'],
 					['e1b','div','btn-group','','e1',''],
-                    ['e1b1','button','btn btn-default quizAdvancedButton','addHint','e1b','Hint'],
+                    ['e1b1','button','btn btn-default quizAdvancedButton silverRowed','addHint','e1b','Hint'],
 					['e1c','div','btn-group','','e1',''],
-                    ['e1c1','button','btn btn-default quizAdvancedButton','showQuestionStats','e1c','Stats'],
+                    ['e1c1','button','btn btn-default quizAdvancedButton silverRowed','showQuestionStats','e1c','Stats'],
 					['e1d', 'div', 'btn-group quizBlankWrapper','','e1',''],
                     ['e1d1', 'div', 'quizBlankCheckbox', 'blankQuizBox', 'e1d', ''],
                     ['e1d1a', 'input', '', 'blankQuizCheck', 'e1d1', ''],
                     ['e1d1b', 'label', 'noselect', 'blankQuizLabel', 'e1d1', '?'],
-                    ['f','table','wordTable','correctAnswers','content_pan_1_a',''],
-                    ['g','div','wordTableWrong','wrongAnswers','content_pan_1_a','']
+                    ['f','table','wordTable','correctAnswers','quizContent',''],
+                    ['g','div','wordTableWrong','wrongAnswers','quizContent','']
                     ]);
                    
     /** Additional initialisation **/
@@ -125,8 +123,9 @@ function initUIQuiz() {
     document.getElementById('blankQuizBox').title = 'Blank Quiz';
     document.getElementById('blankQuizCheck').type = 'checkbox';
     document.getElementById('blankQuizCheck').value = '1';
+	document.getElementById('blankQuizCheck').spellcheck = 'false';
     document.getElementById('blankQuizLabel').htmlFor = 'blankQuizCheck';
-    $('#blankQuizCheck').change(function() {getQuestion()});
+    $('#blankQuizCheck').change(function() {getQuestion();});
     var buttonId=['shuffleButton','slothButton','skipButton','advancedButton','counterReset','addHint', 'showQuestionStats'];
     var buttonTitle=['Shuffle Tiles','Sloth This Word!','Skip Word','Advanced...','Clear Questions, Score and Correct % for this device.','See one more letter of solution(s).', 'Show stats and change cardbox for this question'];
     for (var i=0;i<buttonTitle.length;i++){
@@ -160,7 +159,7 @@ function initClickEventsQuiz(){
     $('#nextQuestion').click(function() {textFocus = false;getQuestion();});
     $('#showQuestionStats').click(function() {showAlphaStats(alphagram);}); 
     $('#shuffleButton').click(function() {
-        if ((Number(localStorage.gAlphaDisplay))==0) {stringToTiles(alphaShuffle(alphagram), '#alphagram')}
+        if ((Number(localStorage.gAlphaDisplay))===0) {stringToTiles(alphaShuffle(alphagram), '#alphagram');}
         else {$('#alphagram').html(alphaShuffle(alphagram));}
     });
     $('#slothButton').click(function() {initSloth(alphagram);});
@@ -179,7 +178,7 @@ function getQuestion() {
     var callback;
     $('#nextQuestion').off("click");
 	if (localStorage.cardboxSent=='false'){var d= {numQuestions: 1, user:userid};}
-	else {var d = {numQuestions: 1,user: userid,cardbox: localStorage.cardboxCurrent};};
+	else {var d = {numQuestions: 1,user: userid,cardbox: localStorage.cardboxCurrent};}
     if (document.getElementById('blankQuizCheck').checked) {
        url = "getBlankQuestion.py";
        callback = initBlankQuestion;
@@ -192,14 +191,16 @@ function getQuestion() {
         type: "POST",
         url: url,
         data: JSON.stringify(d),
-		beforeSend: function (){delayTimer=setTimeout(function(){$("#quizConnect").html('<img src="images/ajaxLoad.gif" style="height:0.8em"> Loading Next Question...')},300);},
-            complete: function (){if (typeof scrollTimer !== 'undefined' && scrollTimer !== null ){
+		beforeSend: function (){
+			delayTimer=setTimeout(function(){$("#quizConnect").html('<img src="images/ajaxLoad.gif" style="height:0.8em"> Loading Next Question...');},300);
+		},
+		complete: function (){if (typeof scrollTimer !== 'undefined' && scrollTimer !== null ){
                 clearInterval(scrollTimer);}   
                 clearTimeout(delayTimer);},
         success: callback,
         error: function(jqXHR, textStatus, errorThrown) {
 			gNetworkErrorReport (jqXHR.status, '#quizConnect');
-            console.log("Error, status = " + textStatus + " error: " + errorThrown)
+            console.log("Error, status = " + textStatus + " error: " + errorThrown);
             stopScrollTimer();
             $('#answerBox').removeAttr("disabled", "disabled");
             $('#nextQuestion').click(function() {
@@ -240,7 +241,7 @@ function resetHookWidthsQuiz () {
 }
 
 function prepareNewWords() {
-            d = { userid: userid };
+            var d = { userid: userid };
             $.ajax({
                 type: "POST",
                 url: "prepareNewWords.py",
@@ -262,7 +263,7 @@ function initBlankQuestion(response, responseStatus) {
     // if we finished the previous question and the new alpha is the same as the old
     // we have a lag problem -- need to wait and get question again
     if (r.fullAlpha == fullAlpha && quizState == "finished") {
-        setTimeout(getQuestion, 700)
+        setTimeout(getQuestion, 700);
         // the previous question took too long
         // to submit, so we need to wait to get a fresh one
         $('#answerBox').val("Loading Question ...");
@@ -301,7 +302,7 @@ function initQuestionData(response, responseStatus) {
     wordData = r.words;
     aux = r.aux[0];
     if (r.getFromStudyOrder) {
-        d = {
+        var d = {
             userid: userid
         };
         $.ajax({
@@ -358,10 +359,10 @@ function displayQuestion() {
          else {
             document.getElementById('slothButton').title = 'Alphagram is too short for sloths!'; }
         }     
-	$('#alphaSuper').removeClass('incorrect'); 
-	$('#alphaSuper').removeClass('correct');
+	$('#alphaSuper').removeClass('redRowed incorrect'); 
+	$('#alphaSuper').removeClass('highlightRowInv correct');
    document.getElementById('nextQuestion').disabled = false;
-   if ((Number(localStorage.gAlphaDisplay))==0) {
+   if ((Number(localStorage.gAlphaDisplay))===0) {
       stringToTiles(alphaSortMethod(alphagram, Number(localStorage.gAlphaSortInput)), '#alphagram');
 	
 	
@@ -370,7 +371,7 @@ function displayQuestion() {
       $('#alphagram').html(alphaSortMethod(alphagram, Number(localStorage.gAlphaSortInput)));
 	  
    } 
-   $('#alphaSuper').addClass('unanswered');
+   $('#alphaSuper').addClass('blueRowed unanswered');
    $('#quizConnect').html(""); 
    $('#leftHook').html("");
    $('#rightHook').html("");
@@ -391,7 +392,7 @@ function displayQuestion() {
      $('#cardboxNumber').html("");
    } else {
      var dueDate = new Date(aux.nextScheduled * 1000);
-     $('#dueDate').html(formatDateForDisplay(dueDate));  
+     $('#dueDate').html(gFormatDateForDisplay(dueDate));  
      $('#cardboxNumber').html(aux.cardbox); }
    if (localStorage.qQCounter > 0)
        correctPercent = (localStorage.qQCorrect / localStorage.qQCounter) * 100;
@@ -431,7 +432,7 @@ function submitAnswer() {
     } 
     else {
         answer = $.trim($('#answerBox').val().toUpperCase());
-        if (answer == "") {
+        if (answer === "") {
            if (document.getElementById('blankQuizCheck').checked) {
               submitBlankQuestion(); }
            else  {
@@ -446,7 +447,7 @@ function submitAnswer() {
                 var data = eval("wordData." + answer);
                 var cellContent = getTableLineData(answer, data);
                 displayAnswer(answer, cellContent);
-                if (answers.length == 0) {
+                if (answers.length === 0) {
                    if(document.getElementById('blankQuizCheck').checked ) {
                       submitBlankQuestion(); 
                    } else {
@@ -455,15 +456,13 @@ function submitAnswer() {
             else {
                 console.log("Incorrect Answer");
                 if ($.inArray(answer, allAnswers) >= 0 || toAlpha(answer) != alphagram)
-                    $('#answerBox').css('background', 'yellow');
+                    $('#answerBox').addClass('flashTypo');
                 else {
-                    $('#answerBox').css('background', 'red');
+                    $('#answerBox').addClass('flashWrong');
                     incorrectAnswerFlag = true;
                     document.getElementById("wrongAnswers").innerHTML += answer + " ";
                 }
-                setTimeout(function() {
-                    $('#answerBox').css('background', 'url("images/b34.png") repeat');
-                }, 200);
+                setTimeout(function() {$('#answerBox').removeClass('flashWrong');$('#answerBox').removeClass('flashTypo');}, 1000);
             }
             document.getElementById("answerBox").value = "";
         }
@@ -471,17 +470,7 @@ function submitAnswer() {
         $('#answerBox').focus();
     }
 }
-function checkMilestones(answered) {
-    var ranges = [[50, 49, 501], [100, 501, 1001], [200, 1001, 50000]];
-    for (var i = 0; i < ranges.length; i++) {
-        if ((answered % (ranges[i][0]) == 0) && (answered > ranges[i][1]) && (answered < ranges[i][2])) {
-            // only cornify if the user is in basic quiz
-//            if(localStorage.gUnicorns == "true" && document.getElementById("pan_1_a")) {
-//                   cornify_add(); }
-            //submitChat(username + " has completed <b>" + answered + "</b> alphagrams today!", true);
-        }
-    }
-}
+
 function adjustAlphaChange(corrected, states) {
     var adjustment = [[0 - aux.cardbox, 0 - aux.cardbox - 1], [1, (aux.cardbox + 1)]];
     var a = (corrected) ? 1 : 0;
@@ -557,7 +546,7 @@ function submitBlankQuestion() {
       if (notInCardbox) 
          continue; 
       if (wrongAlphas.indexOf(a) > -1) {
-         d = { user: userid,
+         var d = { user: userid,
               question: a,
               correct: false,
               cardbox: currentCardbox,
@@ -586,18 +575,18 @@ function submitBlankQuestion() {
     $('#sessionScore').html(localStorage.qQAlpha);
 }               
 
-
 function submitQuestion(correct) {
     document.getElementById('shuffleButton').disabled = true;
     document.getElementById('skipButton').disabled = true;
     var failFlag = false;
-    d = {
-        user: userid,
-        question: alphagram,
-        correct: correct,
-        cardbox: aux.cardbox,
-        incrementQ: incrementQ
+    var d = {
+        "user": userid,
+        "question": alphagram,
+        "correct": correct,
+        "cardbox": aux.cardbox,
+        "incrementQ": incrementQ
     };
+	console.log(d);
     $.ajax({
         type: "POST",
         url: "submitQuestion.py",
@@ -607,16 +596,13 @@ function submitQuestion(correct) {
             if (quizState == "finished") {
                 var aux = response[0].aux;
                 var dueDate = new Date(aux.nextScheduled * 1000);
-                $('#dueDate').html(formatDateForDisplay(dueDate));  
+                $('#dueDate').html(gFormatDateForDisplay(dueDate));  
                 $('#cardboxNumber').html(aux.cardbox); }
             if ((response[0].qAnswered !== null ) ) {
                 if (incrementQ) {
 					console.log(response);
-                    checkMilestones(response[0].qAnswered);
-					if (typeof $('#cardboxInfoQToday')!=='undefined'){$('#cardboxInfoQToday').html(response[0].qAnswered);}
-					if (typeof $('#cardboxInfoScore')!=='undefined'){$('#cardboxInfoScore').html(response[0].score);}
-					var movement = Number(response[0].score)-Number(response[0].startScore);
-				    if (typeof $('#cardboxInfoDiff')!=='undefined'){$('#cardboxInfoDiff').html((movement > 0 ? "+" : "")+movement);}
+                    gCheckMilestones(response[0].qAnswered);
+					gUpdateCardboxScores(response[0]);
                     incrementQ = false;
                 }
             } 
@@ -635,15 +621,15 @@ function submitQuestion(correct) {
     }
     if (correct) {
         //console.log("Correct Question");
-		$('#alphaSuper').removeClass('incorrect');
-		$('#alphaSuper').removeClass('unanswered');
-		$('#alphaSuper').addClass('correct');
+		$('#alphaSuper').removeClass('redRowed incorrect');
+		$('#alphaSuper').removeClass('blueRowed unanswered');
+		$('#alphaSuper').addClass('highlightRowInv correct');
 	  
         $('#markAsCorrect').hide();
         $('#markAsIncorrect').show();
         $('#nextQuestion').show();
         $('#nextQuestion').css('float', 'left');
-        if (correctState == 0) {
+        if (correctState === 0) {
             if (incrementQ) {
                 localStorage.qQCounter++;
             }
@@ -654,14 +640,14 @@ function submitQuestion(correct) {
     } 
     else {
         //console.log("Incorrect Question");
-		$('#alphaSuper').removeClass('unanswered');
-		$('#alphaSuper').removeClass('correct');
-		$('#alphaSuper').addClass('incorrect');
+		$('#alphaSuper').removeClass('blueRowed unanswered');
+		$('#alphaSuper').removeClass('highlightRowInv correct');
+		$('#alphaSuper').addClass('redRowed incorrect');
         $('#markAsIncorrect').hide();
         $('#markAsCorrect').show();
         $('#nextQuestion').show();
         $('#nextQuestion').css('float', 'right');
-        if (correctState == 0) {
+        if (correctState === 0) {
             if (incrementQ) {
                 localStorage.qQCounter++;
             }
@@ -684,13 +670,13 @@ function submitQuestion(correct) {
         displayAnswer(answers[x], cellContent);
     }
     answers = [];
-    var temp = getWordWithHook(Object.keys(wordData)[0])
+    var temp = getWordWithHook(Object.keys(wordData)[0]);
     var maxWidths = hookWidth;
     $('#rightHook').width(hookWidth);
     $('#leftHook').width(hookWidth);
     temp[0] = addLineBreaks(temp[0], 7);
     temp[2] = addLineBreaks(temp[2], 7);
-    if ((Number(localStorage.gAlphaDisplay))==0) {stringToTiles(temp[1], '#alphagram')}
+    if ((Number(localStorage.gAlphaDisplay))===0) {stringToTiles(temp[1], '#alphagram');}
     else {$('#alphagram').html(temp[1]);}
     $('#leftHook').html(temp[0]);
     $('#rightHook').html(temp[2]);
@@ -701,9 +687,9 @@ function submitQuestion(correct) {
 function findPosInTable(el,answer,sortCol){
     if (el.rows.length > 0) {
         for (var z = 0; z < el.rows.length; z++) {     
-            if (answer.toUpperCase() < el.rows[z].cells[sortCol].innerHTML) {return z}  
+            if (answer.toUpperCase() < el.rows[z].cells[sortCol].innerHTML) {return z;}  
          }
-    } return -1
+    } return -1;
 }
 
 function getRowFromWord(word) {
@@ -762,7 +748,7 @@ function withHints (data,a,h,obj,ans){
     }
     obj.innerHTML="";
     for (var i=0;i<tableLines.length;i++){
-        if (ans==tableLines[i][2]) {displayAnswerRow(a[i],tableLines[i],true)}
+        if (ans==tableLines[i][2]) {displayAnswerRow(a[i],tableLines[i],true);}
         else {displayAnswerRow(a[i],tableLines[i], false);}  
     } 
 }
@@ -775,7 +761,7 @@ function displayAnswerRow(answer, data, highlight) {
     var x = document.getElementById('correctAnswers');
     if (hintQuantity>0){var row = x.insertRow(-1);}
     else {row = x.insertRow(findPosInTable(x,answer,2));}
-    if (hintQuantity==0){
+    if (hintQuantity===0){
     for (var i = 0; i < x.rows.length; i++) {
         if (x.rows[i].classList.contains('wordTableHighlight')) 
         {x.rows[i].classList.remove('wordTableHighlight');}
@@ -793,8 +779,8 @@ function displayAnswerRow(answer, data, highlight) {
 }
 
 function displayAnswer (answer, data){   
-    if (hintQuantity===0){displayAnswerRow(answer,data)}
-    else { withHints(wordData, allAnswers,hintQuantity,document.getElementById('correctAnswers'),answer)}
+    if (hintQuantity===0){displayAnswerRow(answer,data);}
+    else { withHints(wordData, allAnswers,hintQuantity,document.getElementById('correctAnswers'),answer);}
 }
 
 function toAlpha(word) {return word.split('').sort().join('');}
@@ -802,11 +788,6 @@ function toAlpha(word) {return word.split('').sort().join('');}
 function getWordWithHook(word) {
     var result = [eval("wordData." + word)[0], word, eval("wordData." + word)[1]];    
     return result;
-}
-
-function formatDateForDisplay(d) {
-    var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    return d.getDate() + " " + months[d.getMonth()] + " '" + d.getFullYear().toString().substr(2,2) + " " + d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes();
 }
 
 function isSubAlpha(a1, a2) {
@@ -852,7 +833,7 @@ function alphaSortVC(content, type) {
 
 function alphaShuffle(content) {
     return content.split('').sort(function() {
-        return 0.5 - Math.random()
+        return 0.5 - Math.random();
     }).join('');
 }
 
@@ -969,7 +950,7 @@ function scrollTimerInstance(counter) {
     temp2[2] = addLineBreaks(temp2[2], 7);
     $('#rightHook').width(hookWidth);
     $('#leftHook').width(hookWidth);
-    if ((Number(localStorage.gAlphaDisplay))==0) {stringToTiles(temp2[1], '#alphagram')}
+    if ((Number(localStorage.gAlphaDisplay))===0) {stringToTiles(temp2[1], '#alphagram');}
     else {$('#alphagram').html(temp2[1]);}
     $('#leftHook').html(temp2[0]);
     $('#rightHook').html(temp2[2]);     
@@ -1046,7 +1027,7 @@ function markAsCorrectFromQuiz(alpha) {
 
 function markAsIncorrectFromQuiz(alpha) {
    if (confirm("Mark " + alpha + " as incorrect?")) {
-      d = { user: userid,
+      var d = { user: userid,
           question: alpha,
           correct: false,
           cardbox: getCardboxFromAlpha(alpha),
@@ -1059,7 +1040,7 @@ function markAsIncorrectFromQuiz(alpha) {
              localStorage.qQAlpha -= (getCardboxFromAlpha(alpha)+1);
              for(var y=0;y<aux[x].words.length;y++) {
                 r = getRowFromWord(aux[x].words[y]);
-                r.title = "Incorrect - moved to Cardbox 0"
+                r.title = "Incorrect - moved to Cardbox 0";
                 r.classList.remove("wordTableHighlightCorrect");
                 r.classList.remove("wordTableHighlightNotDue");
                 r.classList.add("wordTableHighlightWrong2");
@@ -1087,10 +1068,5 @@ function getCardboxFromAlpha(alpha) {
      } 
   }
   return null;
-}
-function gNetworkErrorReport (code, target){
-    if (code<400) {$(target).html('Network Error. Please Check your connection settings and try again.')};
-    if (code>=400) {$(target).html('Server Error ['+code+'].  Please try again.')};
-    if (code==502) {$(target).html('Connection Error.  Please reconnect to internet and try again.')};
 }
         

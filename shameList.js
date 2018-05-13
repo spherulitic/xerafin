@@ -8,32 +8,23 @@ function showShameList() {
 					"variant": "e",
 					"closeButton": false,
 					"refreshButton" : false,	
-					"style" : 'Light',
+					"style" : 'Dark',
 					"tooltip": "<p>Something helpful will go here.</p>"
 					};
 		generatePanel(1,panelData,"leftArea");
-  
-  var textArea = document.createElement("textarea");
-  textArea.cols = 40;
-  textArea.rows = 10;
-  textArea.id = "shameList";
-  textArea.style.textTransform = "uppercase";
-  x = document.createElement("div");
-  x.style.textAlign = "left";
-  x.innerHTML = "Enter a list of alphagrams or words.<br>Each of these will be reset to cardbox 0 or queued to be added to your cardbox.";
-  document.getElementById("content_pan_1_e").appendChild(x);
-  document.getElementById("content_pan_1_e").appendChild(textArea);
-  x = document.createElement("div");
-  x.style.textAlign = "center";
-  var y = document.createElement("button");
-  y.innerHTML = "Submit";
-  y.id = "shameButton";
-
-  x.appendChild(y);
-  document.getElementById("content_pan_1_e").appendChild(x);
-  $('#shameButton').click(function() { submitShameList($("#shameList").val()); });
+		gCreateElemArray([
+			['a0','div','well well-sm quizContent','shameDiv','content_pan_1_e',''],
+			['a1','div','shameDesc','shameDesc','a0','Enter a list of alphagrams or words.<br>Each of these will be reset to cardbox 0 or queued to be added to your cardbox.'],
+			['a2','div','shameWrap','shameWrap','a0',''],
+			['a2a','textArea','shameList','shameList','a2',''],
+			['a3','button','btn btn-default shameButton','shameButton','a0','Submit']
+		]);
+		$('#shameList').prop('cols',40);
+		$('#shameList').prop('rows',10);
+		$('#shameList').css('textTransform','uppercase');
+		$('#shameButton').click(function() { submitShameList($("#shameList").val()); });
 	}
-  }
+}
 
 function submitShameList(text) {
   var shameArr = text.replace(/[\r\n]+/g, " ").split(" ");

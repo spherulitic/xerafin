@@ -1,13 +1,17 @@
 function showAlphaStats (alpha) {
-  d = { userid: userid, alpha: alpha };
-  $.ajax({type: "POST",
-          url: "getAuxInfo.py",
-          data: JSON.stringify(d),
-          success: displayAlphaStats,
-          error: function(jqXHR, textStatus, errorThrown) {
-          console.log("Error getting alphagram stats, status = " + textStatus + " error: " + errorThrown);
-          } } );
-
+	if (alpha!==''){
+		alpha=alpha.toUpperCase();
+		d = { userid: userid, alpha: alpha };
+		$.ajax({
+			type: "POST",
+			url: "getAuxInfo.py",
+			data: JSON.stringify(d),
+			success: displayAlphaStats,
+			error: function(jqXHR, textStatus, errorThrown) {
+				console.log("Error getting alphagram stats, status = " + textStatus + " error: " + errorThrown);
+			} 
+		});
+	}
 }
 
 function createAlphaStatsTable() {
@@ -59,13 +63,13 @@ function getCardboxNumberDropdown(alpha) {
                 url: "submitQuestion.py",
                 data: JSON.stringify(d),
                 success: function(response, responseStatus) {
-                    console.log("Question " + alphagram + " updated in cardbox.");
+					gFloatingAlert("cardboxUploadAlert",3000,"Alphagram Info", "Question "+alpha+" updated in cardbox",500);
                     var aux = response[0].aux;
                     var dueDate = new Date(aux.nextScheduled * 1000);
-                    $('#alphaStatsDueDate').html(formatDateForDisplay(dueDate));  
+                    $('#alphaStatsDueDate').html(gFormatDateForDisplay(dueDate));  
                 },  
                 error: function(jqXHR, textStatus, errorThrown) {
-                console.log("Error: question " + alphagram + " could not be updated.");
+				gFloatingAlert("cardboxUploadAlert",3000,"Alphagram Info", "Error: question " + alpha+ " could not be updated.",500);
                 }   
     }); 
   };
@@ -128,7 +132,7 @@ function displayAlphaStats (response, responseStatus) {
         col1.innerHTML = "Next Scheduled";
         if (!jQuery.isEmptyObject(aux)) {
            var dueDate = new Date(aux.nextScheduled * 1000);
-           col2.innerHTML = formatDateForDisplay(dueDate);  
+           col2.innerHTML = gFormatDateForDisplay(dueDate);  
            col2.id = 'alphaStatsDueDate';
         }
         row.appendChild(col1);
@@ -161,6 +165,8 @@ function addedToCardboxFromStats(response, responseStatus) {
    if (response[1].status == "success") {
       showAlphaStats(response[0].question);
    } else if (response[1].status == "Invalid Alphagram") {
-      alert("Could not add to cardbox: Invalid Alphagram"); 
-   } else { alert("Error adding to your Cardbox. Please try again."); }
+	    gFloatingAlert("cardboxUploadAlert",3000,"Alphagram Info", "Could not add to cardbox: Invalid Alphagram.",500);  
+   } else { 
+		gFloatingAlert("cardboxUploadAlert",3000,"Alphagram Info", "Error adding to your Cardbox. Please try again.",500); 
+	}
 }
