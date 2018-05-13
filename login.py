@@ -18,6 +18,7 @@ token = params["token"]
 name = params["name"]
 photo = params["photo"]
 
+
 try:
   first = params["firstName"]
   last = params["lastName"]
@@ -25,6 +26,9 @@ except:
   first = name
   last = ""
 
+name = name.replace(u'\u0142', 'l')
+first = first.replace(u'\u0142', 'l')
+last = last.replace(u'\u0142', 'l')
 now = int(time.time())
 
 with xs.getMysqlCon() as con:
