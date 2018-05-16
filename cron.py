@@ -3,14 +3,12 @@
 import xerafinSetup as xs
 import time
 import os, sys
-
+import math
 
 #print "Content-type: text/html\n\n"
 #print "<html><head>"
 #print "<title>Cron Test</title>"
 #print "</head><body>"
-#print "Hello, world!"
-#print "</body></html>"
 
 
 now = int(time.time())
@@ -63,6 +61,40 @@ try:
             msg = unicode(userid)+u','+unicode(chatTime)+u','+unicode(message)+u'\n'
             f.write(msg.encode('utf8'))
     
+
+     # Daily Awards
+#     con.execute("delete from user_coin_total")
+ #    con.execute("delete from user_coin_log")
+     command = 'select userid, questionsAnswered from leaderboard where dateStamp = curdate() - interval 1 day order by questionsAnswered desc'
+     awards = [users, 1000, 100, 20, 8, 4];
+     awardNames = ["emerald", "ruby", "sapphire", "gold", "silver", "bronze"]
+     awardRanks = [math.ceil(float(users)/x) for x in awards]
+     rank = 1
+     con.execute(command)
+     results = con.fetchall()
+     for row in results:
+       j = 0
+       while j < len(awardRanks):
+         if rank <= awardRanks[j]:
+           command = 'insert into user_coin_log values (%s, curdate() - interval 1 day, %s, %s, %s, %s, %s)'
+           con.execute(command, (row[0], 1, 'DAY', 'QA', j, '{0}-{1}'.format(row[1], rank)))
+           command = 'select count(*) from user_coin_total where userid = %s'
+           con.execute(command, (row[0]))
+           if con.fetchone()[0] == 0:
+             command = 'insert into user_coin_total values (%s, 0, 0, 0, 0, 0, 0, 0, 0, curdate() - interval 1 day)'
+             con.execute(command, (row[0]))
+           command = 'update user_coin_total set {0} = {1} + 1 where userid = %s'.format(awardNames[j], awardNames[j])
+           con.execute(command, (row[0]))
+           break 
+         else:
+            j += 1
+       rank += 1
+       if rank > awardRanks[-1]:
+         break 
+#    con.execute("create table if not exists user_coin_log (userid varchar(50), dateStamp date, amount integer, period varchar(100), reason varchar(500), coinType integer, data varchar(500))")
+#    con.execute("create table if not exists user_coin_total (userid varchar(50), bronze integer, silver integer, gold integer, platinum integer, emerald integer, sapphire integer, ruby integer, diamond integer, dateStamp date)")
+#  print "Hello, world!"
+# print "</body></html>"
 except Exception as ex:
   template = "An exception of type {0} occured. Arguments:\n{1!r}"
   message = template.format(type(ex).__name__, ex.args)
